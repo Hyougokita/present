@@ -14,7 +14,7 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_MAX		(1)				// テクスチャの数
-
+#define DEBUG
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -102,7 +102,8 @@ HRESULT InitMeshField(XMFLOAT3 pos, XMFLOAT3 rot,
 	g_Time = 0.0f;								// 波の経過時間(＋とーとで内側外側になる)
 	g_wave_frequency = 1.0f;					// 波の周波数（上下運動の速さ）
 	g_wave_correction = 0.02f;					// 波の距離補正（変えなくても良いと思う）
-	g_wave_amplitude = 30.0f;					// 波の振幅(波の高さ)
+	//g_wave_amplitude = 30.0f;					// 波の振幅(波の高さ)
+	g_wave_amplitude = 0.0f;					// 波の振幅(波の高さ)
 
 	for (int z = 0; z < (g_nNumBlockZField + 1); z++)
 	{
@@ -275,7 +276,13 @@ void UpdateMeshField(void)
 		}
 
 	}
+#ifdef DEBUG
+
+#elif NAMI
 	g_Time += dt;
+#endif // DEBUG
+
+
 
 
 	// 頂点バッファに値をセットする

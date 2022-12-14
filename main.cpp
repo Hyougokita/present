@@ -25,6 +25,7 @@
 #define CLASS_NAME		"AppClass"				// ウインドウのクラス名
 #define WINDOW_NAME		"影表示"	// ウインドウのキャプション名
 
+#define DEBUG
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -50,7 +51,13 @@ char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
 
 #endif
 
-int g_Mode = MODE_TITLE;					// 起動時の画面を設定
+#ifdef DEBUG
+	int g_Mode = MODE_GAME;					// 起動時の画面を設定	
+#else
+	int g_Mode = MODE_TITLE;					// 起動時の画面を設定	
+#endif // DEBUG
+
+
 
 //=============================================================================
 // メイン関数
@@ -102,6 +109,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	// DirectXの初期化(ウィンドウを作成してから行う)
 	bool mode = true;
 
+#ifdef DEBUG
+
+#else
 	int id = MessageBox(NULL, "Windowモードでプレイしますか？", "起動モード", MB_YESNOCANCEL | MB_ICONQUESTION);
 	switch (id)
 	{
@@ -116,6 +126,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return -1;
 		break;
 	}
+#endif // DEBUG
+
+
 
 	// DirectXの初期化(ウィンドウを作成してから行う)
 	if (FAILED(Init(hInstance, hWnd, mode)))

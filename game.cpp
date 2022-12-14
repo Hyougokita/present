@@ -22,6 +22,9 @@
 #include "bullet.h"
 #include "score.h"
 #include "particle.h"
+#include "wall.h"
+
+
 #include "collision.h"
 #include "debugproc.h"
 
@@ -97,6 +100,9 @@ HRESULT InitGame(void)
 	// パーティクルの初期化
 	InitParticle();
 
+	// 壁の初期化
+	InitWall();
+
 	// BGM再生
 	PlaySound(SOUND_LABEL_BGM_sample001);
 
@@ -134,6 +140,9 @@ void UninitGame(void)
 
 	// 影の終了処理
 	UninitShadow();
+
+	// 壁の終了
+	UninitWall();
 
 }
 
@@ -189,6 +198,9 @@ void UpdateGame(void)
 
 	// スコアの更新処理
 	UpdateScore();
+
+	// 壁の更新
+	UpdateWall();
 }
 
 //=============================================================================
@@ -220,6 +232,9 @@ void DrawGame0(void)
 
 	// パーティクルの描画処理
 	DrawParticle();
+
+	// 壁の描画
+	DrawWall();
 
 
 	// 2Dの物を描画する処理
@@ -358,7 +373,6 @@ void CheckHit(void)
 		}
 
 	}
-
 
 	// エネミーが全部死亡したら状態遷移
 	int enemy_count = 0;

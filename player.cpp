@@ -15,10 +15,13 @@
 #include "bullet.h"
 #include "debugproc.h"
 #include "meshfield.h"
+#include "collision.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
+#define DEBUG
+
 #define	MODEL_PLAYER		"data/MODEL/cone.obj"			// 読み込むモデル名
 #define	MODEL_PLAYER_PARTS	"data/MODEL/torus.obj"			// 読み込むモデル名
 
@@ -35,7 +38,7 @@
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-
+BOOL CheckTest();
 
 //*****************************************************************************
 // グローバル変数
@@ -48,6 +51,14 @@ static float		roty = 0.0f;
 
 static LIGHT		g_Light;
 
+#ifdef DEBUG
+	BOOL isHitWall = false;
+
+	static XMFLOAT3 vPos0 = XMFLOAT3(-15.0f, 0.0f, 5.0f);
+	static XMFLOAT3 vPos1 = XMFLOAT3(15.0f, 0.0f, 5.0f);
+	static XMFLOAT3 vPos2 = XMFLOAT3(-15.0f, 10.0f, 5.0f);
+	static XMFLOAT3 vPos3 = XMFLOAT3(15.0f, 10.0f, 5.0f);
+#endif // DEBUG
 
 
 
@@ -200,6 +211,17 @@ void UpdatePlayer(void)
 	CAMERA *cam = GetCamera();
 
 	g_Player.spd *= 0.9f;
+
+#ifdef DEBUG
+	if (CheckTest()) {
+		isHitWall = true;
+	}
+	else {
+		isHitWall = false;
+	}
+#endif // DEBUG
+
+
 
 	// 移動処理
 	if (GetKeyboardPress(DIK_LEFT))
@@ -368,6 +390,7 @@ void UpdatePlayer(void)
 #ifdef _DEBUG
 	// デバッグ表示
 	PrintDebugProc("Player X:%f Y:%f Z:% N:%f\n", g_Player.pos.x, g_Player.pos.y, g_Player.pos.z, Normal.y);
+	PrintDebugProc("isHitWall: %d\n", isHitWall);
 #endif
 
 }
@@ -469,3 +492,30 @@ PLAYER *GetPlayer(void)
 	return &g_Player;
 }
 
+//　プレイヤーと壁の当たり判定
+BOOL CheckHitWall() {
+	//　プレイヤーの移動方向へ射線を作る
+
+	return false;
+}
+
+BOOL CheckTest() {
+	BOOL isHit;
+	XMFLOAT3 HitPosition;		// 交点
+	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
+	
+	XMFLOAT3 startPos = g_Player.pos;	//　始点をプレイヤーの位置にする
+	XMFLOAT3 endPos = g_Player.pos;		
+	endPos.z += 10.0f;					//	テストなので　終了位置をプレイヤーの位置より10.0f奥の位置にする
+	
+	isHit = RayCast(vPos0, vPos1, vPos2, startPos, endPos, &HitPosition, &Normal);
+	if (isHit) {
+		return TRUE;
+	}
+	isHit = RayCast(vPos1, vPos2, vPos3, startPos, endPos, &HitPosition, &Normal);
+	if (isHit) {
+		return TRUE;
+	}
+
+	return FALSE;
+}

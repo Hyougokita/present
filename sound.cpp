@@ -4,7 +4,7 @@
 //
 //=============================================================================
 #include "sound.h"
-
+#define DEBUG
 //*****************************************************************************
 // パラメータ構造体定義
 //*****************************************************************************
@@ -249,6 +249,13 @@ void PlaySound(int label)
 
 	// オーディオバッファの登録
 	g_apSourceVoice[label]->SubmitSourceBuffer(&buffer);
+
+#ifdef DEBUG
+	// 音量の調整
+	g_apSourceVoice[label]->SetVolume(0.0f);
+#endif // DEBUG
+
+
 
 	// 再生
 	g_apSourceVoice[label]->Start(0);
