@@ -12,6 +12,7 @@
 #include "enemy.h"
 #include "shadow.h"
 #include "meshfield.h"
+#include "player.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -28,8 +29,8 @@
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-
-
+void EnemyMoveForward(ENEMY* enemy, XMFLOAT3 vec);
+XMFLOAT3 MakeUnitVector(XMFLOAT3 start, XMFLOAT3 end);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -61,7 +62,7 @@ HRESULT InitEnemy(void)
 		g_Enemy[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		g_Enemy[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
-		g_Enemy[i].spd = 0.0f;			// 移動スピードクリア
+		g_Enemy[i].spd = 0.5f;			// 移動スピードクリア
 		g_Enemy[i].size = ENEMY_SIZE;	// 当たり判定の大きさ
 
 		// モデルのディフューズを保存しておく。色変え対応の為。
@@ -114,6 +115,7 @@ void UninitEnemy(void)
 //=============================================================================
 void UpdateEnemy(void)
 {
+	PLAYER *player = GetPlayer();
 	// エネミーを動かく場合は、影も合わせて動かす事を忘れないようにね！
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
@@ -154,6 +156,10 @@ void UpdateEnemy(void)
 				XMStoreFloat3(&g_Enemy[i].scl, s0 + scl * time);
 
 			}
+			else {
+				XMFLOAT3 vec = MakeUnitVector(g_Enemy[i].pos, player->pos);
+				EnemyMoveForward(&g_Enemy[i], vec);
+			}
 
 			
 			// レイキャストして足元の高さを求める
@@ -185,7 +191,7 @@ void UpdateEnemy(void)
 //=============================================================================
 void DrawEnemy(void)
 {
-	XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
+	XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld, quatMatrix;
 
 	// カリング無効
 	SetCullingMode(CULL_MODE_NONE);
@@ -205,9 +211,15 @@ void DrawEnemy(void)
 		mtxRot = XMMatrixRotationRollPitchYaw(g_Enemy[i].rot.x, g_Enemy[i].rot.y + XM_PI, g_Enemy[i].rot.z);
 		mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
 
+		// クォータニオンを反映
+		quatMatrix = XMMatrixRotationQuaternion(XMLoadFloat4(&g_Enemy[i].Quaternion));
+		mtxWorld = XMMatrixMultiply(mtxWorld, quatMatrix);
+
 		// 移動を反映
 		mtxTranslate = XMMatrixTranslation(g_Enemy[i].pos.x, g_Enemy[i].pos.y, g_Enemy[i].pos.z);
 		mtxWorld = XMMatrixMultiply(mtxWorld, mtxTranslate);
+
+
 
 		// ワールドマトリックスの設定
 		SetWorldMatrix(&mtxWorld);
@@ -229,4 +241,53 @@ void DrawEnemy(void)
 ENEMY *GetEnemy()
 {
 	return &g_Enemy[0];
+}
+
+//　エネミーをある方向に移動させる
+void EnemyMoveForward(ENEMY *enemy, XMFLOAT3 vec) {
+	enemy->pos.x += vec.x * enemy->spd;
+	enemy->pos.z += vec.z * enemy->spd;
+
+	//姿勢制御
+	XMFLOAT3 Normal;
+	Normal = { -vec.x,0.0f,-vec.z };
+
+	XMVECTOR vx, nvx, front;
+	XMVECTOR quat;
+	float len, angle;
+
+
+	enemy->XVector = Normal;
+	front = { 0.0f, 0.0f, 1.0f, 0.0f };
+	vx = XMVector3Cross(front, XMLoadFloat3(&enemy->XVector));
+
+	nvx = XMVector3Length(vx);
+	XMStoreFloat(&len, nvx);
+	nvx = XMVector3Normalize(vx);
+	//nvx = vx / len;
+	angle = asinf(len);
+
+	//quat = XMQuaternionIdentity();
+
+//	quat = XMQuaternionRotationAxis(nvx, angle);
+	quat = XMQuaternionRotationNormal(nvx, angle);
+
+
+	quat = XMQuaternionSlerp(XMLoadFloat4(&enemy->Quaternion), quat, 0.05f);
+	XMStoreFloat4(&enemy->Quaternion, quat);
+}
+
+
+// 両点の単位ベクトルを求める
+XMFLOAT3 MakeUnitVector(XMFLOAT3 start, XMFLOAT3 end) {
+	XMFLOAT3 vec = XMFLOAT3(0.0f,0.0f,0.0f);
+	float disX = end.x - start.x;
+	float disZ = end.z - start.z;
+
+	float distance = pow((pow(disX, 2) + pow(disZ, 2)), 0.5);
+	vec.x = disX / distance;
+	vec.z = disZ / distance;
+
+
+	return vec;
 }

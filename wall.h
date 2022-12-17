@@ -18,6 +18,13 @@
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
+
+//　長方形の構造体
+typedef struct _HITBOX {
+	XMFLOAT3 vPos[8];
+}HITBOX;
+
+
 struct WALL
 {
 	XMFLOAT4X4			mtxWorld;			// ワールドマトリックス
@@ -29,6 +36,7 @@ struct WALL
 	bool				load;
 	DX11_MODEL			model;				// モデル情報
 	XMFLOAT4			diffuse[MODEL_MAX_MATERIAL];	// モデルの色
+	HITBOX				hitbox;
 
 	float				size;				//　壁の大きさ
 

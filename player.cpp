@@ -16,7 +16,7 @@
 #include "debugproc.h"
 #include "meshfield.h"
 #include "collision.h"
-
+#include "wall.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -54,10 +54,29 @@ static LIGHT		g_Light;
 #ifdef DEBUG
 	BOOL isHitWall = false;
 
+	XMFLOAT3 vPosList[8] = {
+		XMFLOAT3(-15.0f, 0.0f, 5.0f),
+		XMFLOAT3(15.0f, 0.0f, 5.0f),
+		XMFLOAT3(-15.0f, 10.0f, 5.0f),
+		XMFLOAT3(15.0f, 10.0f, 5.0f),
+
+		XMFLOAT3(-15.0f, 0.0f, -5.0f),
+		XMFLOAT3(15.0f, 0.0f, -5.0f),
+		XMFLOAT3(-15.0f, 10.0f, -5.0f),
+		XMFLOAT3(15.0f, 10.0f, -5.0f),
+	};
+
 	static XMFLOAT3 vPos0 = XMFLOAT3(-15.0f, 0.0f, 5.0f);
 	static XMFLOAT3 vPos1 = XMFLOAT3(15.0f, 0.0f, 5.0f);
 	static XMFLOAT3 vPos2 = XMFLOAT3(-15.0f, 10.0f, 5.0f);
 	static XMFLOAT3 vPos3 = XMFLOAT3(15.0f, 10.0f, 5.0f);
+	
+	static XMFLOAT3 vPos4 = XMFLOAT3(-15.0f, 0.0f, -5.0f);
+	static XMFLOAT3 vPos5 = XMFLOAT3(15.0f, 0.0f, -5.0f);
+	static XMFLOAT3 vPos6 = XMFLOAT3(-15.0f, 10.0f, -5.0f);
+	static XMFLOAT3 vPos7 = XMFLOAT3(15.0f, 10.0f, -5.0f);
+	static HITBOX testHitBox;
+
 #endif // DEBUG
 
 
@@ -114,6 +133,10 @@ static INTERPOLATION_DATA run_tbl[] = {	// pos, rot, scl, frame
 //=============================================================================
 HRESULT InitPlayer(void)
 {
+	for (int i = 0; i < 8; i++) {
+		testHitBox.vPos[i] = vPosList[i];
+	}
+
 	g_Player.load = TRUE;
 	LoadModel(MODEL_PLAYER, &g_Player.model);
 
@@ -261,6 +284,7 @@ void UpdatePlayer(void)
 
 	{	// 押した方向にプレイヤーを移動させる
 		// 押した方向にプレイヤーを向かせている所
+		
 		g_Player.rot.y = roty + cam->rot.y;
 
 		g_Player.pos.x -= sinf(g_Player.rot.y) * g_Player.spd;
@@ -513,6 +537,15 @@ BOOL CheckTest() {
 		return TRUE;
 	}
 	isHit = RayCast(vPos1, vPos2, vPos3, startPos, endPos, &HitPosition, &Normal);
+	if (isHit) {
+		return TRUE;
+	}
+
+	isHit = RayCast(vPos4, vPos5, vPos6, startPos, endPos, &HitPosition, &Normal);
+	if (isHit) {
+		return TRUE;
+	}
+	isHit = RayCast(vPos5, vPos6, vPos7, startPos, endPos, &HitPosition, &Normal);
 	if (isHit) {
 		return TRUE;
 	}
