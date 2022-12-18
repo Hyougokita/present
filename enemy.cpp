@@ -250,7 +250,7 @@ void EnemyMoveForward(ENEMY *enemy, XMFLOAT3 vec) {
 
 	//Žp¨§Œä
 	XMFLOAT3 Normal;
-	Normal = { -vec.x,0.0f,-vec.z };
+	Normal = { -vec.x,0.0f,vec.z };
 
 	XMVECTOR vx, nvx, front;
 	XMVECTOR quat;
@@ -258,18 +258,26 @@ void EnemyMoveForward(ENEMY *enemy, XMFLOAT3 vec) {
 
 
 	enemy->XVector = Normal;
-	front = { 0.0f, 0.0f, 1.0f, 0.0f };
+
+	//front = { 0.0f, 0.0f, 1.0f, 0.0f };
+	if (vec.z > 0) {
+		enemy->rot.y = XMConvertToRadians(180.0f);
+		front = { 0.0f, 0.0f, -1.0f, 0.0f };
+	}
+	else {
+		enemy->rot.y = XMConvertToRadians(0.0f);
+		front = { 0.0f, 0.0f, 1.0f, 0.0f };
+	}
+
+
 	vx = XMVector3Cross(front, XMLoadFloat3(&enemy->XVector));
 
 	nvx = XMVector3Length(vx);
 	XMStoreFloat(&len, nvx);
 	nvx = XMVector3Normalize(vx);
-	//nvx = vx / len;
+
 	angle = asinf(len);
 
-	//quat = XMQuaternionIdentity();
-
-//	quat = XMQuaternionRotationAxis(nvx, angle);
 	quat = XMQuaternionRotationNormal(nvx, angle);
 
 
