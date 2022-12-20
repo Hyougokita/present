@@ -13,6 +13,7 @@
 #include "shadow.h"
 #include "meshfield.h"
 #include "player.h"
+#include "enemyAnimData.h"
 
 //*****************************************************************************
 // É}ÉNÉçíËã`
@@ -188,6 +189,7 @@ static int idle_tblSize[MAX_ENMEY_PARTS] = {
 	sizeof(idle_tbl_right_leg) / sizeof(INTERPOLATION_DATA),
 };
 
+static INTERPOLATION_DATA* moveTbl = GetMoveTbl();
 
 //=============================================================================
 // èâä˙âªèàóù
