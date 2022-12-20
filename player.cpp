@@ -70,6 +70,7 @@ XMFLOAT3 norScl2 = XMFLOAT3(1.0f, 1.0f, 1.0f);
 // プロトタイプ宣言
 //*****************************************************************************
 BOOL CheckTest();
+BOOL CheckTestWall();
 void SenkeihokanPlayer(PLAYER* player, int type);		//	線形補間計算
 void DrawPlayerSingle(PLAYER* player);					//	プレーヤー単体の描画
 
@@ -97,6 +98,7 @@ enum PLAYER_HOKAN_TYPE
 
 #ifdef DEBUG
 	BOOL isHitWall = false;
+	BOOL bCheckHitWall = false;
 
 	XMFLOAT3 vPosList[8] = {
 		XMFLOAT3(-15.0f, 0.0f, 5.0f),
@@ -350,6 +352,15 @@ void UpdatePlayer(void)
 	else {
 		isHitWall = false;
 	}
+
+	if (CheckTestWall()) {
+		bCheckHitWall = true;
+	}
+	else
+	{
+		bCheckHitWall = false;
+	}
+	
 #endif // DEBUG
 
 
@@ -492,6 +503,7 @@ void UpdatePlayer(void)
 	// デバッグ表示
 	PrintDebugProc("Player X:%f Y:%f Z:% N:%f\n", g_Player.pos.x, g_Player.pos.y, g_Player.pos.z, Normal.y);
 	PrintDebugProc("isHitWall: %d\n", isHitWall);
+	PrintDebugProc("bCheckHitWall: %d\n", bCheckHitWall);
 #endif
 
 }
@@ -598,6 +610,33 @@ BOOL CheckTest() {
 	return FALSE;
 }
 
+BOOL CheckTestWall() {
+	MESHWALL* meshwall = GetMeshWall();
+	BOOL isHit;
+	XMFLOAT3 HitPosition;		// 交点
+	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
+
+	XMFLOAT3 startPos = g_Player.pos;	//　始点をプレイヤーの位置にする
+	XMFLOAT3 endPos = g_Player.pos;
+	endPos.z += 10.0f;					//	テストなので　終了位置をプレイヤーの位置より10.0f奥の位置にする
+
+	for (int i = 0; i < MESHWALL_MAX; i++) {
+		if (meshwall[i].use) {
+			isHit = RayCast(meshwall[i].vPos[0], meshwall[i].vPos[1], meshwall[i].vPos[2], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return TRUE;
+			}
+			isHit = RayCast(meshwall[i].vPos[1], meshwall[i].vPos[2], meshwall[i].vPos[3], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return TRUE;
+			}
+		}
+	}
+
+
+	return FALSE;
+}
+
 
 void SenkeihokanPlayer(PLAYER* player, int type) {
 	// 使われているなら処理する
@@ -688,5 +727,10 @@ void DrawPlayerSingle(PLAYER* player) {
 		// モデル描画
 		DrawModel(&player->model);// ワールドマトリックスの初期化
 	}
+
+}
+
+//　タイトル用　プレイヤーの頭をエネミーに向かう
+void TurnHeadTo(PLAYER *head) {
 
 }

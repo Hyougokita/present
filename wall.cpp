@@ -12,7 +12,7 @@
 #include "wall.h"
 #include "shadow.h"
 #include "meshfield.h"
-
+#include "meshwall.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -24,7 +24,7 @@
 
 #define wall_OFFSET_Y		(0.0f)						// 地面に沈まないように
 
-
+static MESHWALL g_MeshWall[MESHWALL_MAX];
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -67,6 +67,10 @@ HRESULT InitWall(void)
 
 		g_Wall[i].use = false;			// true:生きてる
 
+	}
+
+	for (int i = 0; i < MESHWALL_MAX; i++) {
+		g_MeshWall[i].use = false;
 	}
 
 
@@ -153,4 +157,29 @@ void DrawWall(void)
 WALL* GetWall()
 {
 	return &g_Wall[0];
+}
+
+void SetMeshWall(XMFLOAT3 pos,XMFLOAT3 rot,XMFLOAT4 diff,float width,float height) {
+	for (int i = 0; i < MESHWALL_MAX; i++) {
+		if (g_MeshWall[i].use == false) {
+			InitMeshWall(pos, rot, diff, 1, 1, width, height);
+			// 頂点座標の保存
+			for (int nCntVtxY = 0; nCntVtxY < 2; nCntVtxY++)
+			{
+				for (int nCntVtxX = 0; nCntVtxX < 2; nCntVtxX++)
+				{
+					// 頂点座標の設定
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].x = -0.5 * width + nCntVtxX * width;
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].y = 1 * height - nCntVtxY * height;
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].z = 0.0f;
+				}
+			}
+			g_MeshWall[i].use = true;
+		}
+		return;
+	}
+}
+
+MESHWALL* GetMeshWall() {
+	return &g_MeshWall[0];
 }

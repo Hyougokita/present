@@ -14,7 +14,7 @@
 
 #define	WALL_SIZE		(5.0f)				// ìñÇΩÇËîªíËÇÃëÂÇ´Ç≥
 
-
+#define MESHWALL_MAX		(100)
 //*****************************************************************************
 // ç\ë¢ëÃíËã`
 //*****************************************************************************
@@ -23,6 +23,13 @@
 typedef struct _HITBOX {
 	XMFLOAT3 vPos[8];
 }HITBOX;
+
+
+
+typedef struct _MESHWALL {
+	XMFLOAT3	vPos[4];
+	BOOL		use;
+}MESHWALL;
 
 
 struct WALL
@@ -51,4 +58,6 @@ void UpdateWall(void);
 void DrawWall(void);
 
 WALL* GetWall(void);
+MESHWALL* GetMeshWall(void);
 
+void SetMeshWall(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height);

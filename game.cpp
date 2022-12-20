@@ -89,7 +89,8 @@ HRESULT InitGame(void)
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.25f), 16, 2, 80.0f, 80.0f);
 
 #ifdef DEBUG
-	InitMeshWall(XMFLOAT3(0.0f, 0.0f, -25), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 1, 1, 80.0f, 50.0f);
+	//InitMeshWall(XMFLOAT3(0.0f, 0.0f, -25), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 1, 1, 80.0f, 50.0f);
+
 #endif // DEBUG
 
 
@@ -107,7 +108,7 @@ HRESULT InitGame(void)
 
 	// ï«ÇÃèâä˙âª
 	InitWall();
-
+	SetMeshWall(XMFLOAT3(0.0f, 0.0f, -25.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
 	// BGMçƒê∂
 	PlaySound(SOUND_LABEL_BGM_sample001);
 

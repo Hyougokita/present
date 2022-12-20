@@ -45,6 +45,8 @@ static ENEMY			g_Enemy[MAX_ENEMY];				// エネミー
 static ENEMY_PARTS		g_EnemyParts[MAX_ENEMY];		// エネミー　パーツ
 static BOOL				g_Load = FALSE;
 
+static BOOL				g_enemyCanMove = FALSE;
+
 enum ENEMY_ANIM_TYPE
 {
 	ENEMY_IDLE,
@@ -319,6 +321,7 @@ void UpdateEnemy(void)
 			}
 			else {
 				XMFLOAT3 vec = MakeUnitVector(g_Enemy[i].pos, player->pos);
+				if(g_enemyCanMove)
 				EnemyMoveForward(&g_Enemy[i], vec);
 			}
 
