@@ -53,7 +53,7 @@ HRESULT InitWall(void)
 
 		g_Wall[i].pos = XMFLOAT3(0.0f * 30.0f, wall_OFFSET_Y, 0.0f);
 		g_Wall[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		g_Wall[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
+		g_Wall[i].scl = XMFLOAT3(5.0f, 5.0f, 5.0f);
 
 
 		g_Wall[i].size = WALL_SIZE;	// ìñÇΩÇËîªíËÇÃëÂÇ´Ç≥
@@ -65,7 +65,7 @@ HRESULT InitWall(void)
 		pos.y -= (wall_OFFSET_Y - 0.1f);
 
 
-		g_Wall[i].use = true;			// true:ê∂Ç´ÇƒÇÈ
+		g_Wall[i].use = false;			// true:ê∂Ç´ÇƒÇÈ
 
 	}
 

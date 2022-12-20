@@ -37,8 +37,9 @@ struct PLAYER
 	float				size;
 
 	// 階層アニメーション用のメンバー変数
-	INTERPOLATION_DATA	*tbl_adr;			// アニメデータのテーブル先頭アドレス
-	float				move_time;			// 実行時間
+	float				time;		// 線形補間用
+	int					tblNo;		// 行動データのテーブル番号
+	int					tblMax;		// そのテーブルのデータ数
 
 	// 親は、NULL、子供は親のアドレスを入れる
 	PLAYER				*parent;			// 自分が親ならNULL、自分が子供なら親のplayerアドレス
@@ -48,6 +49,14 @@ struct PLAYER
 
 	XMFLOAT3			UpVector;			// 自分が立っている所
 
+};
+
+enum PARTS_NAME {
+	RIGHT_HAND,
+	LEFT_HAND,
+	HEAD,
+	LEFT_LEG,
+	RIGHT_LEG
 };
 
 

@@ -32,7 +32,7 @@
 // マクロ定義
 //*****************************************************************************
 
-
+#define DEBUG
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -57,7 +57,7 @@ HRESULT InitGame(void)
 	g_ViewPortType_Game = TYPE_FULL_SCREEN;
 
 	// フィールドの初期化
-	InitMeshField(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), 100, 100, 13.0f, 13.0f);
+	InitMeshField(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), 10, 10, 13.0f, 13.0f);
 
 	// ライトを有効化	// 影の初期化処理
 	InitShadow();
@@ -87,6 +87,11 @@ HRESULT InitGame(void)
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.25f), 16, 2, 80.0f, 80.0f);
 	InitMeshWall(XMFLOAT3(0.0f, 0.0f, MAP_DOWN), XMFLOAT3(0.0f, 0.0f, 0.0f),
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.25f), 16, 2, 80.0f, 80.0f);
+
+#ifdef DEBUG
+	InitMeshWall(XMFLOAT3(0.0f, 0.0f, -25), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 1, 1, 80.0f, 50.0f);
+#endif // DEBUG
+
 
 	// 木を生やす
 	InitTree();

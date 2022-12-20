@@ -240,7 +240,7 @@ void UpdateParticle(void)
 			pos.y = fSize / 2;
 
 			// ビルボードの設定
-			SetParticle(pos, move, XMFLOAT4(0.8f, 0.7f, 0.2f, 0.85f), fSize, fSize, nLife);
+			//SetParticle(pos, move, XMFLOAT4(0.8f, 0.7f, 0.2f, 0.85f), fSize, fSize, nLife);
 		}
 	}
 }

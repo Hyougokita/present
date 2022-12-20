@@ -25,13 +25,44 @@
 #define	MODEL_PLAYER		"data/MODEL/cone.obj"			// 読み込むモデル名
 #define	MODEL_PLAYER_PARTS	"data/MODEL/torus.obj"			// 読み込むモデル名
 
+// プレーヤーのモデル名
+#define MODE_BERA_BODY			"data/MODEL/bear_body.obj"
+#define MODE_BERA_RIGHT_HAND	"data/MODEL/bear_righthand.obj"
+#define MODE_BERA_LEFT_HAND		"data/MODEL/bear_lefthand.obj"
+#define MODE_BEAR_HEAD			"data/MODEL/bear_head.obj"
+#define MODE_BEAR_RIGHT_LEG		"data/MODEL/bear_rightleg.obj"
+#define MODE_BEAR_LEFT_LEG		"data/MODEL/bear_leftleg.obj"
+
+//	武器のモデル名
+#define MODE_HAND_GUN			"data/MODEL/handgun.obj"
+
+char* playerModelPath[5] =
+{ MODE_BERA_RIGHT_HAND,
+	MODE_BERA_LEFT_HAND,
+	MODE_BEAR_HEAD,
+	MODE_BEAR_LEFT_LEG,
+	MODE_BEAR_RIGHT_LEG,
+};
+
+char* weaponModelPath[1] = {
+	MODE_HAND_GUN
+};
+
+
+#define MODE_BEAR_RIGHT_LEG2	"data/MODEL/bear_rightleg2.obj"
+#define MODE_BEAR_LEFT_LEG2		"data/MODEL/bear_leftleg2.obj"
+
 #define	VALUE_MOVE			(2.0f)							// 移動量
-#define	VALUE_ROTATE		(D3DX_PI * 0.02f)				// 回転量
+#define	VALUE_ROTATE		(XM_PI * 0.02f)					// 回転量
 
-#define PLAYER_SHADOW_SIZE	(0.4f)							// 影の大きさ
-#define PLAYER_OFFSET_Y		(7.0f)							// プレイヤーの足元をあわせる
+#define PLAYER_SHADOW_SIZE	(1.0f)							// 影の大きさ
+#define PLAYER_OFFSET_Y		(17.0f)							// プレイヤーの足元をあわせる
 
-#define PLAYER_PARTS_MAX	(2)								// プレイヤーのパーツの数
+#define PLAYER_PARTS_MAX	(6)								// プレイヤーのパーツの数
+#define PLAYER_WEAPONS_MAX	(1)								// プレイヤーのパーツの数
+
+XMFLOAT3 norScl = XMFLOAT3(0.4f, 0.4f, 0.4f);
+XMFLOAT3 norScl2 = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
 
 
@@ -39,6 +70,8 @@
 // プロトタイプ宣言
 //*****************************************************************************
 BOOL CheckTest();
+void SenkeihokanPlayer(PLAYER* player, int type);		//	線形補間計算
+void DrawPlayerSingle(PLAYER* player);					//	プレーヤー単体の描画
 
 //*****************************************************************************
 // グローバル変数
@@ -47,9 +80,20 @@ static PLAYER		g_Player;						// プレイヤー
 
 static PLAYER		g_Parts[PLAYER_PARTS_MAX];		// プレイヤーのパーツ用
 
+static PLAYER		g_Weapon[PLAYER_WEAPONS_MAX];	//	プレーヤーの武器用
+
 static float		roty = 0.0f;
 
 static LIGHT		g_Light;
+
+bool g_isMove = false;
+
+
+enum PLAYER_HOKAN_TYPE
+{
+	FULLOUT,
+	MOVE_BY_KEYBOARD,
+};
 
 #ifdef DEBUG
 	BOOL isHitWall = false;
@@ -82,45 +126,64 @@ static LIGHT		g_Light;
 
 
 
-// プレイヤーの階層アニメーションデータ
+	// プレイヤーの階層アニメーションデータ
+	// プレイヤーの頭を左右に動かしているアニメデータ
+	static INTERPOLATION_DATA move_tbl_right[] = {	// pos, rot, scl, frame
+		{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), norScl2, 15 },
+		{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f), norScl2, 15 },
+		{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f), norScl2, 15 },
+
+	};
+
+	static INTERPOLATION_DATA move_tbl_right_leg[] = {	// pos, rot, scl, frame
+		{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), norScl2, 15 },
+		{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f), norScl2, 15 },
+		{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f), norScl2, 15 },
+
+	};
+
+	static INTERPOLATION_DATA move_tbl_left[] = {	// pos, rot, scl, frame
+		{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), norScl2, 15 },
+		{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f),    norScl2, 15 },
+		{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f),    norScl2, 15 },
+
+	};
+
+	static INTERPOLATION_DATA move_tbl_left_leg[] = {	// pos, rot, scl, frame
+		{ XMFLOAT3(0.0f,  -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), norScl2, 15 },
+		{ XMFLOAT3(-0.0f, -0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f),    norScl2, 15 },
+		{ XMFLOAT3(-0.0f, -0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f),    norScl2, 15 },
+
+	};
+
+	static INTERPOLATION_DATA move_tbl_head[] = {	// pos, rot, scl, frame
+		{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),         norScl2, 15 },
+		{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),         norScl2, 15 },
+		{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f),    norScl2, 30 },
+
+	};
+
+	static INTERPOLATION_DATA move_tbl_handgun[] = {	// pos, rot, scl, frame
+		{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),         norScl2, 15 },
+		{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),         norScl2, 15 },
+		{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),		   norScl2, 30 },
+
+	};
 
 
-// プレイヤーの頭を左右に動かしているアニメデータ
-static INTERPOLATION_DATA move_tbl[] = {	// pos, rot, scl, frame
-	{ XMFLOAT3(20.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),      XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-	{ XMFLOAT3(20.0f, 10.0f, 0.0f), XMFLOAT3(XM_PI/2, 0.0f, 0.0f),   XMFLOAT3(1.0f, 1.0f, 1.0f), 240 },
-	{ XMFLOAT3(20.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),      XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-	{ XMFLOAT3(20.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),	     XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
 
-};
+	//タイトルのアニメーシ
 
-static INTERPOLATION_DATA move_tbl2[] = {	// pos, rot, scl, frame
-	{ XMFLOAT3(-20.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),         XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-	{ XMFLOAT3(-20.0f, 10.0f, 0.0f), XMFLOAT3(XM_PI / 2, 0.0f, 0.0f),    XMFLOAT3(1.0f, 1.0f, 1.0f), 240 },
-	{ XMFLOAT3(-20.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),         XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-	{ XMFLOAT3(-20.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),	     XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
+	static INTERPOLATION_DATA* g_MoveTblAdr[] =
+	{
+		move_tbl_right,
+		move_tbl_left,
+		move_tbl_head,
+		move_tbl_left_leg,
+		move_tbl_right_leg,
+		move_tbl_right
 
-};
-
-
-// プレイヤーの歩いているアニメデータ
-static INTERPOLATION_DATA walk_tbl[] = {	// pos, rot, scl, frame
-	{ XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),       XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-	{ XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, -XM_PI / 2, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 240 },
-	{ XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, XM_PI / 2, 0.0f),  XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-	{ XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),	     XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-
-};
-
-
-// プレイヤーの走っているアニメデータ
-static INTERPOLATION_DATA run_tbl[] = {	// pos, rot, scl, frame
-	{ XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),       XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-	{ XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, -XM_PI / 2, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 240 },
-	{ XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, XM_PI / 2, 0.0f),  XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-	{ XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),	     XMFLOAT3(1.0f, 1.0f, 1.0f), 120 },
-
-};
+	};
 
 
 
@@ -133,8 +196,10 @@ static INTERPOLATION_DATA run_tbl[] = {	// pos, rot, scl, frame
 //=============================================================================
 HRESULT InitPlayer(void)
 {
+	WALL* wall = GetWall();
+	XMFLOAT3 wallScale = wall[0].scl;
 	for (int i = 0; i < 8; i++) {
-		testHitBox.vPos[i] = vPosList[i];
+		
 	}
 
 	g_Player.load = TRUE;
@@ -165,32 +230,75 @@ HRESULT InitPlayer(void)
 	// 階層アニメーションの初期化
 	for (int i = 0; i < PLAYER_PARTS_MAX; i++)
 	{
-		g_Parts[i].use = TRUE;
+		LoadModel(MODE_BERA_BODY, &g_Player.model);
+		g_Player.load = true;
 
-		// 位置・回転・スケールの初期設定
-		g_Parts[i].pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		g_Parts[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		g_Parts[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
+		g_Player.pos = { 0.0f, PLAYER_OFFSET_Y, 0.0f };
+		g_Player.rot = { 0.0f, 0.0f, 0.0f };
+		g_Player.scl = XMFLOAT3(0.2f, 0.2f, 0.2f);
 
-		// 親子関係
-		g_Parts[i].parent = &g_Player;		// ← ここに親のアドレスを入れる
-	//	g_Parts[腕].parent= &g_Player;		// 腕だったら親は本体（プレイヤー）
-	//	g_Parts[手].parent= &g_Paerts[腕];	// 指が腕の子供だった場合の例
+		g_Player.spd = 0.0f;			// 移動スピードクリア
+		g_Player.size = PLAYER_SIZE;	// 当たり判定の大きさ
 
-		// 階層アニメーション用のメンバー変数の初期化
-		g_Parts[i].tbl_adr = move_tbl;	// 再生するアニメデータの先頭アドレスをセット
-		g_Parts[i].move_time = 0.0f;	// 実行時間をクリア
+		g_Player.use = true;
 
-		// パーツの読み込み
-		g_Parts[i].load = TRUE;
-		LoadModel(MODEL_PLAYER_PARTS, &g_Parts[i].model);
+		// ここでプレイヤー用の影を作成している
+		XMFLOAT3 pos = g_Player.pos;
+		pos.y -= (PLAYER_OFFSET_Y - 0.1f);
+		g_Player.shadowIdx = CreateShadow(pos, PLAYER_SHADOW_SIZE, PLAYER_SHADOW_SIZE);
+		//          ↑
+		//        このメンバー変数が生成した影のIndex番号
+
+
+
+		// 階層アニメーション用の初期化処理
+		g_Player.parent = NULL;			// 本体（親）なのでNULLを入れる
+
+
+		LoadModel(MODE_BERA_RIGHT_HAND, &g_Parts[RIGHT_HAND].model);
+		LoadModel(MODE_BERA_LEFT_HAND, &g_Parts[LEFT_HAND].model);
+		LoadModel(MODE_BEAR_HEAD, &g_Parts[HEAD].model);
+		LoadModel(MODE_BEAR_RIGHT_LEG, &g_Parts[RIGHT_LEG].model);
+		LoadModel(MODE_BEAR_LEFT_LEG, &g_Parts[LEFT_LEG].model);
+		LoadModel(MODE_HAND_GUN, &g_Parts[5].model);
+		// パーツの初期化
+		for (int i = 0; i < PLAYER_PARTS_MAX; i++)
+		{
+			g_Parts[i].use = true;
+			//LoadModel(MODEL_PLAYER_PARTS, &g_Parts[i].model);
+
+			// 位置・回転・スケールの初期設定
+			g_Parts[i].pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			g_Parts[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			g_Parts[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
+
+			// 親子関係
+			g_Parts[i].parent = &g_Player;		// ← ここに親のアドレスを入れる
+		//	g_Parts[腕].parent= &g_Player;		// 腕だったら親は本体（プレイヤー）
+		//	g_Parts[手].parent= &g_Paerts[腕];	// 指が腕の子供だった場合の例
+
+			// 階層アニメーション用のメンバー変数の初期化
+			g_Parts[i].time = 0.0f;			// 線形補間用のタイマーをクリア
+			g_Parts[i].tblNo = i;			// 再生する行動データテーブルNoをセット
+			g_Parts[i].tblMax = 3;			// 再生する行動データテーブルのレコード数をセット
+
+			// パーツの読み込みはまだしていない
+			g_Parts[i].load = 1;
+		}
+
+		//　プレーヤー武器の初期化
+		for (int i = 0; i < PLAYER_WEAPONS_MAX; i++) {
+			LoadModel(weaponModelPath[i], &g_Weapon[i].model); // ウェポンモデルをロードする
+			g_Weapon[i].parent = &g_Parts[RIGHT_HAND];	// ウェポンを右手で持つ
+
+			g_Weapon[i].pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			g_Weapon[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			g_Weapon[i].scl = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			g_Weapon[i].use = true;
+			g_Weapon[i].load = true;
+		}
 	}
 
-	g_Parts[0].parent = &g_Player;		// 
-	g_Parts[0].tbl_adr = move_tbl;		// 再生するアニメデータの先頭アドレスをセット
-	
-	g_Parts[1].parent = &g_Player;		// 
-	g_Parts[1].tbl_adr = move_tbl2;		// 再生するアニメデータの先頭アドレスをセット
 
 
 	// クォータニオンの初期化
@@ -232,7 +340,7 @@ void UninitPlayer(void)
 void UpdatePlayer(void)
 {
 	CAMERA *cam = GetCamera();
-
+	g_isMove = false;
 	g_Player.spd *= 0.9f;
 
 #ifdef DEBUG
@@ -247,26 +355,30 @@ void UpdatePlayer(void)
 
 
 	// 移動処理
-	if (GetKeyboardPress(DIK_LEFT))
+	if (GetKeyboardPress(DIK_LEFT) || GetKeyboardPress(DIK_A))
 	{
+		g_isMove = true;
 		g_Player.spd = VALUE_MOVE;
 		//g_Player.pos.x -= g_Player.spd;
 		roty = XM_PI / 2;
 	}
-	if (GetKeyboardPress(DIK_RIGHT))
+	if (GetKeyboardPress(DIK_RIGHT) || GetKeyboardPress(DIK_D))
 	{
+		g_isMove = true;
 		g_Player.spd = VALUE_MOVE;
 		//g_Player.pos.x += g_Player.spd;
 		roty = -XM_PI / 2;
 	}
-	if (GetKeyboardPress(DIK_UP))
+	if (GetKeyboardPress(DIK_UP) || GetKeyboardPress(DIK_W))
 	{
+		g_isMove = true;
 		g_Player.spd = VALUE_MOVE;
 		//g_Player.pos.z += g_Player.spd;
 		roty = XM_PI;
 	}
-	if (GetKeyboardPress(DIK_DOWN))
+	if (GetKeyboardPress(DIK_DOWN) || GetKeyboardPress(DIK_S))
 	{
+		g_isMove = true;
 		g_Player.spd = VALUE_MOVE;
 		//g_Player.pos.z -= g_Player.spd;
 		roty = 0.0f;
@@ -323,42 +435,7 @@ void UpdatePlayer(void)
 	// 階層アニメーション
 	for (int i = 0; i < PLAYER_PARTS_MAX; i++)
 	{
-		// 使われているなら処理する
-		if (g_Parts[i].use == TRUE)
-		{
-			// 移動処理
-			int		index = (int)g_Parts[i].move_time;
-			float	time = g_Parts[i].move_time - index;
-			int		size = sizeof(move_tbl) / sizeof(INTERPOLATION_DATA);
-
-			float dt = 1.0f / g_Parts[i].tbl_adr[index].frame;	// 1フレームで進める時間
-			g_Parts[i].move_time += dt;					// アニメーションの合計時間に足す
-
-			if (index > (size - 2))	// ゴールをオーバーしていたら、最初へ戻す
-			{
-				g_Parts[i].move_time = 0.0f;
-				index = 0;
-			}
-
-			// 座標を求める	X = StartX + (EndX - StartX) * 今の時間
-			XMVECTOR p1 = XMLoadFloat3(&g_Parts[i].tbl_adr[index + 1].pos);	// 次の場所
-			XMVECTOR p0 = XMLoadFloat3(&g_Parts[i].tbl_adr[index + 0].pos);	// 現在の場所
-			XMVECTOR vec = p1 - p0;
-			XMStoreFloat3(&g_Parts[i].pos, p0 + vec * time);
-
-			// 回転を求める	R = StartX + (EndX - StartX) * 今の時間
-			XMVECTOR r1 = XMLoadFloat3(&g_Parts[i].tbl_adr[index + 1].rot);	// 次の角度
-			XMVECTOR r0 = XMLoadFloat3(&g_Parts[i].tbl_adr[index + 0].rot);	// 現在の角度
-			XMVECTOR rot = r1 - r0;
-			XMStoreFloat3(&g_Parts[i].rot, r0 + rot * time);
-
-			// scaleを求める S = StartX + (EndX - StartX) * 今の時間
-			XMVECTOR s1 = XMLoadFloat3(&g_Parts[i].tbl_adr[index + 1].scl);	// 次のScale
-			XMVECTOR s0 = XMLoadFloat3(&g_Parts[i].tbl_adr[index + 0].scl);	// 現在のScale
-			XMVECTOR scl = s1 - s0;
-			XMStoreFloat3(&g_Parts[i].scl, s0 + scl * time);
-
-		}
+		SenkeihokanPlayer(&g_Parts[i], MOVE_BY_KEYBOARD);
 	}
 
 
@@ -455,53 +532,21 @@ void DrawPlayer(void)
 
 
 	// 縁取りの設定
-	SetFuchi(1);
+	//SetFuchi(1);
 
 	// モデル描画
 	DrawModel(&g_Player.model);
 
 
 
-	// 階層アニメーション
+	// パーツの階層アニメーション
 	for (int i = 0; i < PLAYER_PARTS_MAX; i++)
 	{
-		// ワールドマトリックスの初期化
-		mtxWorld = XMMatrixIdentity();
-
-		// スケールを反映
-		mtxScl = XMMatrixScaling(g_Parts[i].scl.x, g_Parts[i].scl.y, g_Parts[i].scl.z);
-		mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
-
-		// 回転を反映
-		mtxRot = XMMatrixRotationRollPitchYaw(g_Parts[i].rot.x, g_Parts[i].rot.y, g_Parts[i].rot.z);
-		mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
-
-		// 移動を反映
-		mtxTranslate = XMMatrixTranslation(g_Parts[i].pos.x, g_Parts[i].pos.y, g_Parts[i].pos.z);
-		mtxWorld = XMMatrixMultiply(mtxWorld, mtxTranslate);
-
-		if (g_Parts[i].parent != NULL)	// 子供だったら親と結合する
-		{
-			mtxWorld = XMMatrixMultiply(mtxWorld, XMLoadFloat4x4(&g_Parts[i].parent->mtxWorld));
-																			// ↑
-																			// g_Player.mtxWorldを指している
-		}
-
-		XMStoreFloat4x4(&g_Parts[i].mtxWorld, mtxWorld);
-
-		// 使われているなら処理する
-		if (g_Parts[i].use == false) continue;
-
-		// ワールドマトリックスの設定
-		SetWorldMatrix(&mtxWorld);
-
-
-		// モデル描画
-		DrawModel(&g_Parts[i].model);
+		DrawPlayerSingle(&g_Parts[i]);
 
 	}
 
-	SetFuchi(0);
+	//SetFuchi(0);
 
 	// カリング設定を戻す
 	SetCullingMode(CULL_MODE_BACK);
@@ -551,4 +596,97 @@ BOOL CheckTest() {
 	}
 
 	return FALSE;
+}
+
+
+void SenkeihokanPlayer(PLAYER* player, int type) {
+	// 使われているなら処理する
+	if ((player->use == true) && (player->tblMax > 0))
+	{	// 線形補間の処理
+		int nowNo = (int)player->time;			// 整数分であるテーブル番号を取り出している
+		int maxNo = player->tblMax;				// 登録テーブル数を数えている
+		int nextNo = (nowNo + 1) % maxNo;			// 移動先テーブルの番号を求めている
+		INTERPOLATION_DATA* tbl = g_MoveTblAdr[player->tblNo];	// 行動テーブルのアドレスを取得
+
+		XMVECTOR nowPos = XMLoadFloat3(&tbl[nowNo].pos);	// XMVECTORへ変換
+		XMVECTOR nowRot = XMLoadFloat3(&tbl[nowNo].rot);	// XMVECTORへ変換
+		XMVECTOR nowScl = XMLoadFloat3(&tbl[nowNo].scl);	// XMVECTORへ変換
+
+		XMVECTOR Pos = XMLoadFloat3(&tbl[nextNo].pos) - nowPos;	// XYZ移動量を計算している
+		XMVECTOR Rot = XMLoadFloat3(&tbl[nextNo].rot) - nowRot;	// XYZ回転量を計算している
+		XMVECTOR Scl = XMLoadFloat3(&tbl[nextNo].scl) - nowScl;	// XYZ拡大率を計算している
+
+		float nowTime = player->time - nowNo;	// 時間部分である少数を取り出している
+
+		Pos *= nowTime;								// 現在の移動量を計算している
+		Rot *= nowTime;								// 現在の回転量を計算している
+		Scl *= nowTime;								// 現在の拡大率を計算している
+
+		// 計算して求めた移動量を現在の移動テーブルXYZに足している＝表示座標を求めている
+		XMStoreFloat3(&player->pos, nowPos + Pos);
+
+		// 計算して求めた回転量を現在の移動テーブルに足している
+		XMStoreFloat3(&player->rot, nowRot + Rot);
+
+		// 計算して求めた拡大率を現在の移動テーブルに足している
+		XMStoreFloat3(&player->scl, nowScl + Scl);
+
+		// frameを使て時間経過処理をする
+		if (type == MOVE_BY_KEYBOARD) {
+			if (g_isMove) {
+				player->time += 1.0f / tbl[nowNo].frame;	// 時間を進めている
+				if ((int)player->time >= maxNo)			// 登録テーブル最後まで移動したか？
+				{
+					player->time -= maxNo;				// ０番目にリセットしつつも小数部分を引き継いでいる
+				}
+			}
+			else {
+				player->time = 0;
+			}
+		}
+		else if (type == FULLOUT) {
+			player->time += 1.0f / tbl[nowNo].frame;	// 時間を進めている
+			if ((int)player->time >= maxNo)			// 登録テーブル最後まで移動したか？
+			{
+				player->time -= maxNo;				// ０番目にリセットしつつも小数部分を引き継いでいる
+			}
+		}
+	}
+}
+
+void DrawPlayerSingle(PLAYER* player) {
+	XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
+
+	// ワールドマトリックスの初期化
+	mtxWorld = XMMatrixIdentity();
+
+	// スケールを反映
+	mtxScl = XMMatrixScaling(player->scl.x, player->scl.y, player->scl.z);
+	mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
+
+	// 回転を反映
+	mtxRot = XMMatrixRotationRollPitchYaw(player->rot.x, player->rot.y, player->rot.z);
+	mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
+
+	// 移動を反映
+	mtxTranslate = XMMatrixTranslation(player->pos.x, player->pos.y, player->pos.z);
+	mtxWorld = XMMatrixMultiply(mtxWorld, mtxTranslate);
+
+	if (player->parent != NULL)	// 子供だったら親と結合する
+	{
+		mtxWorld = XMMatrixMultiply(mtxWorld, XMLoadFloat4x4(&player->parent->mtxWorld));
+		// ↑
+		// g_Player.mtxWorldを指している
+	}
+
+	XMStoreFloat4x4(&player->mtxWorld, mtxWorld);
+
+	// 使われているなら処理する。ここまで処理している理由は他のパーツがこのパーツを参照している可能性があるから。
+	if (player->use == true) {
+		// ワールドマトリックスの設定
+		SetWorldMatrix(&mtxWorld);
+		// モデル描画
+		DrawModel(&player->model);// ワールドマトリックスの初期化
+	}
+
 }

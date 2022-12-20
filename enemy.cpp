@@ -23,8 +23,14 @@
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
 
 #define ENEMY_SHADOW_SIZE	(0.4f)						// 影の大きさ
-#define ENEMY_OFFSET_Y		(7.0f)						// エネミーの足元をあわせる
+#define ENEMY_OFFSET_Y		(17.0f)						// エネミーの足元をあわせる
 
+#define MODE_BERA_BODY			"data/MODEL/bear_body.obj"
+#define MODE_BERA_RIGHT_HAND	"data/MODEL/bear_righthand.obj"
+#define MODE_BERA_LEFT_HAND		"data/MODEL/bear_lefthand.obj"
+#define MODE_BEAR_HEAD			"data/MODEL/bear_head.obj"
+#define MODE_BEAR_RIGHT_LEG		"data/MODEL/bear_rightleg.obj"
+#define MODE_BEAR_LEFT_LEG		"data/MODEL/bear_leftleg.obj"
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -35,16 +41,151 @@ XMFLOAT3 MakeUnitVector(XMFLOAT3 start, XMFLOAT3 end);
 // グローバル変数
 //*****************************************************************************
 static ENEMY			g_Enemy[MAX_ENEMY];				// エネミー
-
+static ENEMY_PARTS		g_EnemyParts[MAX_ENEMY];		// エネミー　パーツ
 static BOOL				g_Load = FALSE;
 
+enum ENEMY_ANIM_TYPE
+{
+	ENEMY_IDLE,
+	ENEMY_MOVE
+};
 
+//　モデルのファイルパス
+char* modelPath[5] =
+{ MODE_BERA_RIGHT_HAND,
+	MODE_BERA_LEFT_HAND,
+	MODE_BEAR_HEAD,
+	MODE_BEAR_LEFT_LEG,
+	MODE_BEAR_RIGHT_LEG,
+};
+
+
+
+// 歩くの線形補間
 static INTERPOLATION_DATA move_tbl[] = {	// pos, rot, scl, frame
-	{ XMFLOAT3(   0.0f, ENEMY_OFFSET_Y,  20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 60*2 },
-	{ XMFLOAT3(-200.0f, ENEMY_OFFSET_Y,  20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 60*1 },
-	{ XMFLOAT3(-200.0f, ENEMY_OFFSET_Y, 200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 60*0.5f },
-	{ XMFLOAT3(   0.0f, ENEMY_OFFSET_Y,  20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 60*2 },
+	{ XMFLOAT3(0.0f, ENEMY_OFFSET_Y,  20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 60 * 2 },
+	{ XMFLOAT3(-200.0f, ENEMY_OFFSET_Y,  20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 60 * 1 },
+	{ XMFLOAT3(-200.0f, ENEMY_OFFSET_Y, 200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 60 * 0.5f },
+	{ XMFLOAT3(0.0f, ENEMY_OFFSET_Y,  20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 60 * 2 },
 
+};
+
+static INTERPOLATION_DATA move_tbl_right[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f),	XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+static INTERPOLATION_DATA move_tbl_right_leg[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),			XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f),	XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+static INTERPOLATION_DATA move_tbl_left[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),			XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f),    XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+static INTERPOLATION_DATA move_tbl_left_leg[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f,  -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),				XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, -0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f),  30},
+	{ XMFLOAT3(-0.0f, -0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+static INTERPOLATION_DATA move_tbl_head[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),         XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),         XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 8, 0.0f, 0.0f),    XMFLOAT3(1.0f, 1.0f, 1.0f), 30 },
+
+};
+
+
+
+// IDLEの線形補間
+static INTERPOLATION_DATA idle_tbl[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f,	ENEMY_OFFSET_Y,  20.0f),		XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 60 * 2 },
+	{ XMFLOAT3(-200.0f, ENEMY_OFFSET_Y,  20.0f),		XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 60 * 1 },
+	{ XMFLOAT3(-200.0f, ENEMY_OFFSET_Y, 200.0f),		XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 60 * 0.5f },
+	{ XMFLOAT3(0.0f,	ENEMY_OFFSET_Y,  20.0f),		XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 60 * 2 },
+
+};
+
+static INTERPOLATION_DATA idle_tbl_right[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -XM_PI / 8), XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+static INTERPOLATION_DATA idle_tbl_right_leg[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+static INTERPOLATION_DATA idle_tbl_left[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),			XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, XM_PI / 8),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),			XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+static INTERPOLATION_DATA idle_tbl_left_leg[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f,  -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),		XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+static INTERPOLATION_DATA idle_tbl_head[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f),					XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, -XM_PI / 16, 0.0f),			XMFLOAT3(1.0f, 1.0f, 1.0f), 30 },
+	{ XMFLOAT3(-0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, XM_PI / 16, 0.0f),			XMFLOAT3(1.0f, 1.0f, 1.0f), 15 },
+
+};
+
+// 歩くのアニメーシ
+static INTERPOLATION_DATA* move_tblAdr[] = {
+	move_tbl_right,
+	move_tbl_left,
+	move_tbl_head,
+	move_tbl_left_leg,
+	move_tbl_right_leg,
+};
+
+
+// IDLEのアニメーシ
+static INTERPOLATION_DATA* idle_tblAdr[] = {
+	idle_tbl_right,
+	idle_tbl_left,
+	idle_tbl_head,
+	idle_tbl_left_leg,
+	idle_tbl_right_leg,
+};
+
+//　moveのアニメーシのサイズ
+static int move_tblSize[MAX_ENMEY_PARTS] = {
+	sizeof(move_tbl_right) / sizeof(INTERPOLATION_DATA),
+	sizeof(move_tbl_left) / sizeof(INTERPOLATION_DATA),
+	sizeof(move_tbl_head) / sizeof(INTERPOLATION_DATA),
+	sizeof(move_tbl_left_leg) / sizeof(INTERPOLATION_DATA),
+	sizeof(move_tbl_right_leg) / sizeof(INTERPOLATION_DATA),
+};
+
+//　idleのアニメーシのサイズ
+static int idle_tblSize[MAX_ENMEY_PARTS] = {
+	sizeof(idle_tbl_right) / sizeof(INTERPOLATION_DATA),
+	sizeof(idle_tbl_left) / sizeof(INTERPOLATION_DATA),
+	sizeof(idle_tbl_head) / sizeof(INTERPOLATION_DATA),
+	sizeof(idle_tbl_left_leg) / sizeof(INTERPOLATION_DATA),
+	sizeof(idle_tbl_right_leg) / sizeof(INTERPOLATION_DATA),
 };
 
 
@@ -53,16 +194,15 @@ static INTERPOLATION_DATA move_tbl[] = {	// pos, rot, scl, frame
 //=============================================================================
 HRESULT InitEnemy(void)
 {
+	// 本体
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
-		LoadModel(MODEL_ENEMY, &g_Enemy[i].model);
+		LoadModel(MODE_BERA_BODY, &g_Enemy[i].model);
 		g_Enemy[i].load = true;
-
 		g_Enemy[i].pos = XMFLOAT3(-50.0f + i * 30.0f, ENEMY_OFFSET_Y, 20.0f);
 		g_Enemy[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		g_Enemy[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
-
-		g_Enemy[i].spd = 0.5f;			// 移動スピードクリア
+		g_Enemy[i].scl = XMFLOAT3(0.2f, 0.2f, 0.2f);
+		g_Enemy[i].spd = 1.0f;			// 移動スピードクリア
 		g_Enemy[i].size = ENEMY_SIZE;	// 当たり判定の大きさ
 
 		// モデルのディフューズを保存しておく。色変え対応の為。
@@ -76,15 +216,34 @@ HRESULT InitEnemy(void)
 		g_Enemy[i].tbl_adr = NULL;		// 再生するアニメデータの先頭アドレスをセット
 		g_Enemy[i].tbl_size = 0;		// 再生するアニメデータのレコード数をセット
 
+		g_Enemy[i].Parent = NULL;
+
+		g_Enemy[i].actType = ENEMY_IDLE;
+
 		g_Enemy[i].use = true;			// true:生きてる
 
+		// これから　パーツの処理
+		for (int j = 0; j < MAX_ENMEY_PARTS; j++) {
+			// モデルの読み込み
+			LoadModel(modelPath[j], &g_EnemyParts[i].Parts[j].model);
+			g_EnemyParts[i].Parts[j].load = true;
+
+			//　位置　回転　拡大縮小
+			g_EnemyParts[i].Parts[j].pos = XMFLOAT3(-50.0f + i * 30.0f, ENEMY_OFFSET_Y, 20.0f);
+			g_EnemyParts[i].Parts[j].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			g_EnemyParts[i].Parts[j].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
+
+			//　線形補間
+			g_EnemyParts[i].Parts[j].move_time = 0.0f;
+			g_EnemyParts[i].Parts[j].tbl_adr = idle_tblAdr[j];
+			g_EnemyParts[i].Parts[j].tbl_size = idle_tblSize[j];
+			//　生きているかどうか
+			g_EnemyParts[i].Parts[j].use = true;
+
+			//	親子関係
+			g_EnemyParts[i].Parts[j].Parent = &g_Enemy[i];
+		}
 	}
-
-
-	// 0番だけ線形補間で動かしてみる
-	g_Enemy[0].move_time = 0.0f;		// 線形補間用のタイマーをクリア
-	g_Enemy[0].tbl_adr = move_tbl;		// 再生するアニメデータの先頭アドレスをセット
-	g_Enemy[0].tbl_size = sizeof(move_tbl) / sizeof(INTERPOLATION_DATA);	// 再生するアニメデータのレコード数をセット
 
 	g_Load = TRUE;
 	return S_OK;
@@ -184,7 +343,91 @@ void UpdateEnemy(void)
 		}
 	}
 
+	/*パーツ*/
+
+	//　本体の数
+	for (int i = 0; i < MAX_ENEMY; i++) {
+		//　パーツの数
+		for (int j = 0; j < MAX_ENMEY_PARTS; j++) {
+			// パーツが生きている場合
+			if (g_EnemyParts[i].Parts[j].use) {
+				/*行動状態の判断*/
+
+				// IDLEのとき
+				if (g_Enemy[i].actType == ENEMY_IDLE) {
+					for (int j = 0; j < MAX_ENMEY_PARTS; j++) {
+						g_EnemyParts[i].Parts[j].tbl_adr = idle_tblAdr[j];
+						g_EnemyParts[i].Parts[j].tbl_size = idle_tblSize[j];
+					}
+				}
+				else if (g_Enemy[i].actType == ENEMY_MOVE) {
+					for (int j = 0; j < MAX_ENMEY_PARTS; j++) {
+						g_EnemyParts[i].Parts[j].tbl_adr = move_tblAdr[j];
+						g_EnemyParts[i].Parts[j].tbl_size = move_tblSize[j];
+					}
+				}
+
+				{	// 線形補間の処理
+					int nowNo = (int)g_EnemyParts[i].Parts[j].move_time;		// 整数分であるテーブル番号を取り出している
+					int maxNo = g_EnemyParts[i].Parts[j].tbl_size;				// 登録テーブル数を数えている
+					int nextNo = (nowNo + 1) % maxNo;							// 移動先テーブルの番号を求めている
+					INTERPOLATION_DATA* tbl = g_EnemyParts[i].Parts[j].tbl_adr;	// 行動テーブルのアドレスを取得
+
+					XMVECTOR nowPos = XMLoadFloat3(&tbl[nowNo].pos);	// XMVECTORへ変換
+					XMVECTOR nowRot = XMLoadFloat3(&tbl[nowNo].rot);	// XMVECTORへ変換
+					XMVECTOR nowScl = XMLoadFloat3(&tbl[nowNo].scl);	// XMVECTORへ変換
+
+					XMVECTOR Pos = XMLoadFloat3(&tbl[nextNo].pos) - nowPos;	// XYZ移動量を計算している
+					XMVECTOR Rot = XMLoadFloat3(&tbl[nextNo].rot) - nowRot;	// XYZ回転量を計算している
+					XMVECTOR Scl = XMLoadFloat3(&tbl[nextNo].scl) - nowScl;	// XYZ拡大率を計算している
+
+					float nowTime = g_EnemyParts[i].Parts[j].move_time - nowNo;	// 時間部分である少数を取り出している
+
+					Pos *= nowTime;								// 現在の移動量を計算している
+					Rot *= nowTime;								// 現在の回転量を計算している
+					Scl *= nowTime;								// 現在の拡大率を計算している
+
+					// 計算して求めた移動量を現在の移動テーブルXYZに足している＝表示座標を求めている
+					XMStoreFloat3(&g_EnemyParts[i].Parts[j].pos, nowPos + Pos);
+
+					// 計算して求めた回転量を現在の移動テーブルに足している
+					XMStoreFloat3(&g_EnemyParts[i].Parts[j].rot, nowRot + Rot);
+
+					// 計算して求めた拡大率を現在の移動テーブルに足している
+					XMStoreFloat3(&g_EnemyParts[i].Parts[j].scl, nowScl + Scl);
+
+					// frameを使て時間経過処理をする
+
+					g_EnemyParts[i].Parts[j].move_time += 1.0f / tbl[nowNo].frame;	// 時間を進めている
+					if ((int)g_EnemyParts[i].Parts[j].move_time >= maxNo)			// 登録テーブル最後まで移動したか？
+					{
+						g_EnemyParts[i].Parts[j].move_time -= maxNo;				// ０番目にリセットしつつも小数部分を引き継いでいる
+					}
+				}
+			}
+		}
+	}
+
+#ifdef _DEBUG	// デバッグ情報を表示する
+
+	// キーKを押すと移動状態に変更する
+	if (GetKeyboardTrigger(DIK_K)) {
+		for (int i = 0; i < MAX_ENEMY; i++) {
+			g_Enemy[i].actType = ENEMY_MOVE;
+		}
+	}
+
+	// キーJを押すとIDLE状態に変更する
+	if (GetKeyboardTrigger(DIK_J)) {
+		for (int i = 0; i < MAX_ENEMY; i++) {
+			g_Enemy[i].actType = ENEMY_IDLE;
+		}
+	}
+
+#endif
 }
+
+
 
 //=============================================================================
 // 描画処理
@@ -229,7 +472,44 @@ void DrawEnemy(void)
 
 		// モデル描画
 		DrawModel(&g_Enemy[i].model);
+		for (int j = 0; j < MAX_ENMEY_PARTS; j++) {
+			// ワールドマトリックスの初期化
+			mtxWorld = XMMatrixIdentity();
+
+			// スケールを反映
+			mtxScl = XMMatrixScaling(g_EnemyParts[i].Parts[j].scl.x, g_EnemyParts[i].Parts[j].scl.y, g_EnemyParts[i].Parts[j].scl.z);
+			mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
+
+			// 回転を反映
+			mtxRot = XMMatrixRotationRollPitchYaw(g_EnemyParts[i].Parts[j].rot.x, g_EnemyParts[i].Parts[j].rot.y, g_EnemyParts[i].Parts[j].rot.z);
+			mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
+
+			// 移動を反映
+			mtxTranslate = XMMatrixTranslation(g_EnemyParts[i].Parts[j].pos.x, g_EnemyParts[i].Parts[j].pos.y, g_EnemyParts[i].Parts[j].pos.z);
+			mtxWorld = XMMatrixMultiply(mtxWorld, mtxTranslate);
+
+			if (&g_EnemyParts[i].Parts[j].Parent != NULL)	// 子供だったら親と結合する
+			{
+				mtxWorld = XMMatrixMultiply(mtxWorld, XMLoadFloat4x4(&g_EnemyParts[i].Parts[j].Parent->mtxWorld));
+				// ↑
+				// g_Player.mtxWorldを指している
+			}
+
+			XMStoreFloat4x4(&g_EnemyParts[i].Parts[j].mtxWorld, mtxWorld);
+
+			// 使われているなら処理する。ここまで処理している理由は他のパーツがこのパーツを参照している可能性があるから。
+			if (g_EnemyParts[i].Parts[j].use == false) continue;
+
+			// ワールドマトリックスの設定
+			SetWorldMatrix(&mtxWorld);
+
+
+			// モデル描画
+			DrawModel(&g_EnemyParts[i].Parts[j].model);
+		}
 	}
+
+
 
 	// カリング設定を戻す
 	SetCullingMode(CULL_MODE_BACK);
