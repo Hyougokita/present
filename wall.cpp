@@ -169,9 +169,9 @@ void SetMeshWall(XMFLOAT3 pos,XMFLOAT3 rot,XMFLOAT4 diff,float width,float heigh
 				for (int nCntVtxX = 0; nCntVtxX < 2; nCntVtxX++)
 				{
 					// ’¸“_À•W‚ÌÝ’è
-					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].x = -0.5 * width + nCntVtxX * width;
-					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].y = 1 * height - nCntVtxY * height;
-					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].z = 0.0f;
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].x = -0.5 * width + nCntVtxX * width + pos.x;
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].y = 1 * height - nCntVtxY * height + pos.y;
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].z = 0.0f + pos.z;
 				}
 			}
 			g_MeshWall[i].use = true;

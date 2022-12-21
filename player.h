@@ -22,6 +22,7 @@ struct PLAYER
 {
 	XMFLOAT4X4			mtxWorld;			// ワールドマトリックス
 	XMFLOAT3			pos;				// モデルの位置
+	XMFLOAT3			prePos;				// 移動する前の位置を記録する
 	XMFLOAT3			rot;				// モデルの向き(回転)
 	XMFLOAT3			scl;				// モデルの大きさ(スケール)
 

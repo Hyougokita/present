@@ -108,7 +108,7 @@ HRESULT InitGame(void)
 
 	// ï«ÇÃèâä˙âª
 	InitWall();
-	SetMeshWall(XMFLOAT3(0.0f, 0.0f, -25.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
+	SetMeshWall(XMFLOAT3(0.0f, 0.0f, -100.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
 	// BGMçƒê∂
 	PlaySound(SOUND_LABEL_BGM_sample001);
 

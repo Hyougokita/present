@@ -207,7 +207,7 @@ HRESULT InitPlayer(void)
 	g_Player.load = TRUE;
 	LoadModel(MODEL_PLAYER, &g_Player.model);
 
-	g_Player.pos = XMFLOAT3(-10.0f, PLAYER_OFFSET_Y+50.0f, -50.0f);
+	g_Player.pos = XMFLOAT3(-10.0f, PLAYER_OFFSET_Y+50.0f, -200.0f);
 	g_Player.rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	g_Player.scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
@@ -410,8 +410,14 @@ void UpdatePlayer(void)
 		
 		g_Player.rot.y = roty + cam->rot.y;
 
+		g_Player.prePos = g_Player.pos;
+
 		g_Player.pos.x -= sinf(g_Player.rot.y) * g_Player.spd;
 		g_Player.pos.z -= cosf(g_Player.rot.y) * g_Player.spd;
+
+		if (bCheckHitWall) {
+			g_Player.pos = g_Player.prePos;
+		}
 	}
 
 
@@ -618,7 +624,7 @@ BOOL CheckTestWall() {
 
 	XMFLOAT3 startPos = g_Player.pos;	//　始点をプレイヤーの位置にする
 	XMFLOAT3 endPos = g_Player.pos;
-	endPos.z += 10.0f;					//	テストなので　終了位置をプレイヤーの位置より10.0f奥の位置にする
+	endPos.z -= 30.0f;					//	テストなので　終了位置をプレイヤーの位置より10.0f奥の位置にする
 
 	for (int i = 0; i < MESHWALL_MAX; i++) {
 		if (meshwall[i].use) {
