@@ -20,22 +20,27 @@
 //*****************************************************************************
 struct PLAYER
 {
+	// 位置関係
 	XMFLOAT4X4			mtxWorld;			// ワールドマトリックス
 	XMFLOAT3			pos;				// モデルの位置
 	XMFLOAT3			prePos;				// 移動する前の位置を記録する
 	XMFLOAT3			rot;				// モデルの向き(回転)
 	XMFLOAT3			scl;				// モデルの大きさ(スケール)
 
+	//　移動
 	float				spd;				// 移動スピード
+	char				font;				// 向いている方向
 	
+	//　モデル
 	BOOL				load;
 	DX11_MODEL			model;				// モデル情報
 
 	int					shadowIdx;			// 影のインデックス番号
 
-	BOOL				use;
+	BOOL				use;				//　使用されているかどうか
 
-	float				size;
+	//　当たり判定
+	float				size;		// 当たり判定のサイズ
 
 	// 階層アニメーション用のメンバー変数
 	float				time;		// 線形補間用
@@ -47,9 +52,7 @@ struct PLAYER
 
 	// クォータニオン
 	XMFLOAT4			Quaternion;
-
 	XMFLOAT3			UpVector;			// 自分が立っている所
-
 };
 
 enum PARTS_NAME {

@@ -61,6 +61,8 @@ char* weaponModelPath[1] = {
 #define PLAYER_PARTS_MAX	(6)								// プレイヤーのパーツの数
 #define PLAYER_WEAPONS_MAX	(1)								// プレイヤーのパーツの数
 
+#define DISTANCE_OF_RAYCAST_PLAYER  (20.0f)
+
 XMFLOAT3 norScl = XMFLOAT3(0.4f, 0.4f, 0.4f);
 XMFLOAT3 norScl2 = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
@@ -212,7 +214,7 @@ HRESULT InitPlayer(void)
 	g_Player.scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
 	g_Player.spd = 0.0f;			// 移動スピードクリア
-
+	g_Player.font = XMConvertToRadians(0.0f);
 	g_Player.use = TRUE;			// true:生きてる
 	g_Player.size = PLAYER_SIZE;	// 当たり判定の大きさ
 
@@ -624,7 +626,24 @@ BOOL CheckTestWall() {
 
 	XMFLOAT3 startPos = g_Player.pos;	//　始点をプレイヤーの位置にする
 	XMFLOAT3 endPos = g_Player.pos;
-	endPos.z -= 30.0f;					//	テストなので　終了位置をプレイヤーの位置より10.0f奥の位置にする
+	//endPos.z -= 30.0f;					//	テストなので　終了位置をプレイヤーの位置より10.0f奥の位置にする
+	
+	//float rot = g_Player.rot.y;
+	//if (rot == XM_PI) {
+	//	endPos.z += DISTANCE_OF_RAYCAST_PLAYER;
+	//}
+	//else if (rot == 0.0f) {
+	//	endPos.z -= DISTANCE_OF_RAYCAST_PLAYER;
+	//}
+	//else if (rot == XM_PI / 2) {
+	//	endPos.x -= DISTANCE_OF_RAYCAST_PLAYER;
+	//}
+	//else {
+	//	endPos.x += DISTANCE_OF_RAYCAST_PLAYER;
+	//}
+
+	endPos.x -= sinf(g_Player.rot.y) * DISTANCE_OF_RAYCAST_PLAYER;
+	endPos.z -= cosf(g_Player.rot.y) * DISTANCE_OF_RAYCAST_PLAYER;
 
 	for (int i = 0; i < MESHWALL_MAX; i++) {
 		if (meshwall[i].use) {

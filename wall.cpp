@@ -159,6 +159,7 @@ WALL* GetWall()
 	return &g_Wall[0];
 }
 
+// メッシュウォール当たり判定用ポリゴン
 void SetMeshWall(XMFLOAT3 pos,XMFLOAT3 rot,XMFLOAT4 diff,float width,float height) {
 	for (int i = 0; i < MESHWALL_MAX; i++) {
 		if (g_MeshWall[i].use == false) {
@@ -169,9 +170,48 @@ void SetMeshWall(XMFLOAT3 pos,XMFLOAT3 rot,XMFLOAT4 diff,float width,float heigh
 				for (int nCntVtxX = 0; nCntVtxX < 2; nCntVtxX++)
 				{
 					// 頂点座標の設定
-					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].x = -0.5 * width + nCntVtxX * width + pos.x;
-					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].y = 1 * height - nCntVtxY * height + pos.y;
-					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].z = 0.0f + pos.z;
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].x = -0.5 * width + nCntVtxX * width;
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].y = 1 * height - nCntVtxY * height;
+					g_MeshWall[i].vPos[nCntVtxY*2+nCntVtxX].z = 0.0f;
+
+
+					//	拡大縮小　回転　移動の変換の反映
+					XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
+					// ワールドマトリックスの初期化
+					mtxWorld = XMMatrixIdentity();
+
+					// スケールを反映
+					mtxScl = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
+
+					// 回転を反映
+					mtxRot = XMMatrixRotationRollPitchYaw(rot.x, rot.y + XM_PI, rot.z);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
+
+					// 移動を反映
+					mtxTranslate = XMMatrixTranslation(pos.x, pos.y, pos.z);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxTranslate);
+
+					//　位置を行列に保存する
+					XMMATRIX vPos;
+					for (int m = 0; m < 4; m++) {
+						for (int n = 0; n < 4; n++) {
+							vPos.r[m].m128_f32[n] = 0;
+						}
+					}
+					vPos.r[0].m128_f32[0] = g_MeshWall[i].vPos[nCntVtxY * 2 + nCntVtxX].x;
+					vPos.r[0].m128_f32[1] = g_MeshWall[i].vPos[nCntVtxY * 2 + nCntVtxX].y;
+					vPos.r[0].m128_f32[2] = g_MeshWall[i].vPos[nCntVtxY * 2 + nCntVtxX].z;
+					vPos.r[0].m128_f32[3] = 1.0f;
+
+					// 変換後の座標を計算する
+					XMMATRIX result = XMMatrixMultiply(vPos, mtxWorld);
+
+					// 変換したあとの座標を保存する
+					g_MeshWall[i].vPos[nCntVtxY * 2 + nCntVtxX].x = result.r[0].m128_f32[0];
+					g_MeshWall[i].vPos[nCntVtxY * 2 + nCntVtxX].y = result.r[0].m128_f32[1];
+					g_MeshWall[i].vPos[nCntVtxY * 2 + nCntVtxX].z = result.r[0].m128_f32[2];
+
 				}
 			}
 			g_MeshWall[i].use = true;
