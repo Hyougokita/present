@@ -97,8 +97,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	hWnd = CreateWindow(CLASS_NAME,
 		WINDOW_NAME,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,																		// ウィンドウの左座標
-		CW_USEDEFAULT,																		// ウィンドウの上座標
+		GetSystemMetrics(SM_CXSCREEN) / 2 - SCREEN_WIDTH / 2,																		// ウィンドウの左座標
+		GetSystemMetrics(SM_CYSCREEN) / 2 - SCREEN_HEIGHT / 2,																		// ウィンドウの上座標
 		SCREEN_WIDTH + GetSystemMetrics(SM_CXDLGFRAME) * 2,									// ウィンドウ横幅
 		SCREEN_HEIGHT + GetSystemMetrics(SM_CXDLGFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION),	// ウィンドウ縦幅
 		NULL,

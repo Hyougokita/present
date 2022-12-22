@@ -77,7 +77,7 @@ XMFLOAT3 norScl2 = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
 //　初めてマウスロードする
 bool g_FirstMouseLoad = false;
-XMFLOAT2 g_MousePos = XMFLOAT2(0.0f,0.0f);
+
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -358,9 +358,11 @@ void UninitPlayer(void)
 void UpdatePlayer(void)
 {
 	if (g_FirstMouseLoad == false) {
-		g_MousePos.x = (float)GetMousePosX();
-		g_MousePos.y = (float)GetMousePosY();
-		g_FirstMouseLoad = true;
+		//GetCursorPos(&lpPoint);
+		//g_MousePos.x = (float)lpPoint.x;
+		//g_MousePos.y = (float)lpPoint.y;
+		//g_FirstMouseLoad = true;
+
 	}
 
 
@@ -534,7 +536,8 @@ void UpdatePlayer(void)
 	PrintDebugProc("isHitWall: %d\n", isHitWall);
 	PrintDebugProc("bCheckHitWall: %d\n", bCheckHitWall);
 	PrintDebugProc("font.y:%f\n",g_Player.font.y);
-	PrintDebugProc("Mouse Pos: X:%f,Y:%f", g_MousePos.x, g_MousePos.y);
+	//PrintDebugProc("Mouse Pos: X:%f,Y:%f", g_MousePos.x, g_MousePos.y);
+	PrintDebugProc("DisplaySize:%d\n", GetSystemMetrics(SM_CXSCREEN));
 #endif
 
 }

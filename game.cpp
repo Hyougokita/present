@@ -276,7 +276,7 @@ void DrawGame(void)
 
 	// プレイヤー視点
 	pos = GetPlayer()->pos;
-	pos.y = 20.0f;			// カメラ酔いを防ぐためにクリアしている
+	pos.y = 20.0f + GetCamera()->upDown;			// カメラ酔いを防ぐためにクリアしている
 
 
 	pos.x -= sinf(GetPlayer()->rot.y + GetCamera()->rot.y) * 50.0f;

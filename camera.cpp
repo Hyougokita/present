@@ -36,6 +36,9 @@ static CAMERA			g_Camera;		// カメラデータ
 
 static int				g_ViewPortType = TYPE_FULL_SCREEN;
 
+// マウス関連
+tagPOINT lpPoint;
+XMFLOAT2 g_MousePos = XMFLOAT2(0.0f, 0.0f);
 //=============================================================================
 // 初期化処理
 //=============================================================================
@@ -45,6 +48,7 @@ void InitCamera(void)
 	g_Camera.at  = { 0.0f, 0.0f, 0.0f };
 	g_Camera.up  = { 0.0f, 1.0f, 0.0f };
 	g_Camera.rot = { 0.0f, 0.0f, 0.0f };
+	g_Camera.upDown = 0.0f;
 
 	// 視点と注視点の距離を計算
 	float vx, vz;
@@ -71,6 +75,65 @@ void UninitCamera(void)
 //=============================================================================
 void UpdateCamera(void)
 {
+
+	if (GetMode() == MODE_GAME) {
+		ShowCursor(false);
+
+		//　マウスの位置をスクリーンの真ん中に固定する
+		int ScreenMidX = GetSystemMetrics(SM_CXSCREEN) / 2;
+		int ScreenMidY = GetSystemMetrics(SM_CYSCREEN) / 2;
+		SetCursorPos(ScreenMidX, ScreenMidY);
+
+
+		//	現在のマウスの位置を取得する
+		GetCursorPos(&lpPoint);
+		g_MousePos.x = (float)lpPoint.x;
+		g_MousePos.y = (float)lpPoint.y;
+
+		if ((int)GetMouseX() + 10.0f< SCREEN_CENTER_X)
+		{// 視点旋回「左」
+			g_Camera.rot.y += VALUE_ROTATE_CAMERA;
+			if (g_Camera.rot.y > XM_PI)
+			{
+				g_Camera.rot.y -= XM_PI * 2.0f;
+			}
+
+			g_Camera.pos.x = g_Camera.at.x - sinf(g_Camera.rot.y) * g_Camera.len;
+			g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * g_Camera.len;
+		}
+
+		if ((int)GetMouseX() - 10.0f > SCREEN_CENTER_X)
+		{// 視点旋回「右」
+			g_Camera.rot.y -= VALUE_ROTATE_CAMERA;
+			if (g_Camera.rot.y < -XM_PI)
+			{
+				g_Camera.rot.y += XM_PI * 2.0f;
+			}
+
+			g_Camera.pos.x = g_Camera.at.x - sinf(g_Camera.rot.y) * g_Camera.len;
+			g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * g_Camera.len;
+		}
+
+		if ((int)GetMouseY() + 10.0f < 240.0f)
+		{// 視点旋回「右」
+			g_Camera.upDown += 2.0f;
+
+			if (g_Camera.upDown >= 50.0f) {
+				g_Camera.upDown = 50.0f;
+			}
+		}
+
+		if ((int)GetMouseY() - 10.0f > 240.0f)
+		{// 視点旋回「右」
+			g_Camera.upDown -= 2.0f;
+
+			if (g_Camera.upDown <= -50.0f) {
+				g_Camera.upDown = -50.0f;
+			}
+		}
+
+
+	}
 
 	if (GetKeyboardPress(DIK_Z))
 	{// 視点旋回「左」
@@ -167,6 +230,9 @@ void UpdateCamera(void)
 
 #ifdef _DEBUG	// デバッグ情報を表示する
 	PrintDebugProc("Camera:ZC QE TB YN UM\n");
+	PrintDebugProc("MouseCurrentPos: %f %f\n", g_MousePos.x, g_MousePos.y);
+	PrintDebugProc("Camera Rot X:%f\n", g_Camera.rot.x);
+	PrintDebugProc("Camera Updown %f\n", g_Camera.upDown);
 #endif
 }
 
