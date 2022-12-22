@@ -215,8 +215,8 @@ void SetMeshWall(XMFLOAT3 pos,XMFLOAT3 rot,XMFLOAT4 diff,float width,float heigh
 				}
 			}
 			g_MeshWall[i].use = true;
+			return;
 		}
-		return;
 	}
 }
 

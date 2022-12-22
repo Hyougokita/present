@@ -109,6 +109,7 @@ HRESULT InitGame(void)
 	// 壁の初期化
 	InitWall();
 	SetMeshWall(XMFLOAT3(0.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
+	SetMeshWall(XMFLOAT3(160.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, XM_PI / 2, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
 	// BGM再生
 	PlaySound(SOUND_LABEL_BGM_sample001);
 
@@ -275,7 +276,11 @@ void DrawGame(void)
 
 	// プレイヤー視点
 	pos = GetPlayer()->pos;
-	pos.y = 0.0f;			// カメラ酔いを防ぐためにクリアしている
+	pos.y = 20.0f;			// カメラ酔いを防ぐためにクリアしている
+
+
+	pos.x -= sinf(GetPlayer()->rot.y + GetCamera()->rot.y) * 50.0f;
+	pos.z += cosf(GetPlayer()->rot.y + GetCamera()->rot.y) * 50.0f;
 	SetCameraAT(pos);
 	SetCamera();
 

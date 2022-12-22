@@ -48,6 +48,15 @@ char* weaponModelPath[1] = {
 	MODE_HAND_GUN
 };
 
+enum PLAYER_PART_NAME
+{
+	PLAYER_RIGHT_HAND,
+	PLAYER_LEFT_HAND,
+	PLAYER_HEAD,
+	PLAYER_LEFT_LEG,
+	PLAYER_RIGHT_LEG
+};
+
 
 #define MODE_BEAR_RIGHT_LEG2	"data/MODEL/bear_rightleg2.obj"
 #define MODE_BEAR_LEFT_LEG2		"data/MODEL/bear_leftleg2.obj"
@@ -66,7 +75,9 @@ char* weaponModelPath[1] = {
 XMFLOAT3 norScl = XMFLOAT3(0.4f, 0.4f, 0.4f);
 XMFLOAT3 norScl2 = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
-
+//　初めてマウスロードする
+bool g_FirstMouseLoad = false;
+XMFLOAT2 g_MousePos = XMFLOAT2(0.0f,0.0f);
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -214,7 +225,7 @@ HRESULT InitPlayer(void)
 	g_Player.scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
 	g_Player.spd = 0.0f;			// 移動スピードクリア
-	g_Player.font = XMConvertToRadians(0.0f);
+	g_Player.font = XMFLOAT3(0.0f,0.0f,0.0f);
 	g_Player.use = TRUE;			// true:生きてる
 	g_Player.size = PLAYER_SIZE;	// 当たり判定の大きさ
 
@@ -301,6 +312,9 @@ HRESULT InitPlayer(void)
 			g_Weapon[i].use = true;
 			g_Weapon[i].load = true;
 		}
+
+		//fpsなので　頭が邪魔　falseにする
+		g_Parts[PLAYER_HEAD].use = false;
 	}
 
 
@@ -343,6 +357,13 @@ void UninitPlayer(void)
 //=============================================================================
 void UpdatePlayer(void)
 {
+	if (g_FirstMouseLoad == false) {
+		g_MousePos.x = (float)GetMousePosX();
+		g_MousePos.y = (float)GetMousePosY();
+		g_FirstMouseLoad = true;
+	}
+
+
 	CAMERA *cam = GetCamera();
 	g_isMove = false;
 	g_Player.spd *= 0.9f;
@@ -373,14 +394,14 @@ void UpdatePlayer(void)
 		g_isMove = true;
 		g_Player.spd = VALUE_MOVE;
 		//g_Player.pos.x -= g_Player.spd;
-		roty = XM_PI / 2;
+		roty = -XM_PI / 2;
 	}
 	if (GetKeyboardPress(DIK_RIGHT) || GetKeyboardPress(DIK_D))
 	{
 		g_isMove = true;
 		g_Player.spd = VALUE_MOVE;
 		//g_Player.pos.x += g_Player.spd;
-		roty = -XM_PI / 2;
+		roty = XM_PI / 2;
 	}
 	if (GetKeyboardPress(DIK_UP) || GetKeyboardPress(DIK_W))
 	{
@@ -410,12 +431,12 @@ void UpdatePlayer(void)
 	{	// 押した方向にプレイヤーを移動させる
 		// 押した方向にプレイヤーを向かせている所
 		
-		g_Player.rot.y = roty + cam->rot.y;
+		g_Player.font.y = roty + cam->rot.y;
 
 		g_Player.prePos = g_Player.pos;
 
-		g_Player.pos.x -= sinf(g_Player.rot.y) * g_Player.spd;
-		g_Player.pos.z -= cosf(g_Player.rot.y) * g_Player.spd;
+		g_Player.pos.x += sinf(g_Player.font.y) * g_Player.spd;
+		g_Player.pos.z -= cosf(g_Player.font.y) * g_Player.spd;
 
 		if (bCheckHitWall) {
 			g_Player.pos = g_Player.prePos;
@@ -512,6 +533,8 @@ void UpdatePlayer(void)
 	PrintDebugProc("Player X:%f Y:%f Z:% N:%f\n", g_Player.pos.x, g_Player.pos.y, g_Player.pos.z, Normal.y);
 	PrintDebugProc("isHitWall: %d\n", isHitWall);
 	PrintDebugProc("bCheckHitWall: %d\n", bCheckHitWall);
+	PrintDebugProc("font.y:%f\n",g_Player.font.y);
+	PrintDebugProc("Mouse Pos: X:%f,Y:%f", g_MousePos.x, g_MousePos.y);
 #endif
 
 }
@@ -642,8 +665,8 @@ BOOL CheckTestWall() {
 	//	endPos.x += DISTANCE_OF_RAYCAST_PLAYER;
 	//}
 
-	endPos.x -= sinf(g_Player.rot.y) * DISTANCE_OF_RAYCAST_PLAYER;
-	endPos.z -= cosf(g_Player.rot.y) * DISTANCE_OF_RAYCAST_PLAYER;
+	endPos.x += sinf(g_Player.font.y) * DISTANCE_OF_RAYCAST_PLAYER;
+	endPos.z -= cosf(g_Player.font.y) * DISTANCE_OF_RAYCAST_PLAYER;
 
 	for (int i = 0; i < MESHWALL_MAX; i++) {
 		if (meshwall[i].use) {
