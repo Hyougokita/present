@@ -11,7 +11,7 @@
 #include "shadow.h"
 #include "bullet.h"
 #include "sound.h"
-
+#include "player.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -120,14 +120,15 @@ void UninitBullet(void)
 //=============================================================================
 void UpdateBullet(void)
 {
-
+	CAMERA* camera = GetCamera();
 	for (int i = 0; i < MAX_BULLET; i++)
 	{
 		if (g_Bullet[i].use)
 		{
 			// 弾の移動処理
 			g_Bullet[i].pos.x -= sinf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
-			g_Bullet[i].pos.z -= cosf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
+			g_Bullet[i].pos.z += cosf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
+			g_Bullet[i].pos.y += cosf(XM_PI / 4) * g_Bullet[i].spd;
 
 			// 影の位置設定
 			SetPositionShadow(g_Bullet[i].shadowIdx, XMFLOAT3(g_Bullet[i].pos.x, 0.1f, g_Bullet[i].pos.z));
@@ -292,3 +293,18 @@ BULLET *GetBullet(void)
 	return &(g_Bullet[0]);
 }
 
+float BulletY() {
+	float angle = 0.0f;
+
+
+	PLAYER* player = GetPlayer();
+	CAMERA* camera = GetCamera();
+
+	float DistanceY = camera->at.y - camera->pos.y;
+	float DistanceX = 50.0f;
+
+	angle = atanf(DistanceY/DistanceX);
+
+
+	return angle;
+}

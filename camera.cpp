@@ -233,6 +233,7 @@ void UpdateCamera(void)
 	PrintDebugProc("MouseCurrentPos: %f %f\n", g_MousePos.x, g_MousePos.y);
 	PrintDebugProc("Camera Rot X:%f\n", g_Camera.rot.x);
 	PrintDebugProc("Camera Updown %f\n", g_Camera.upDown);
+	PrintDebugProc("Camera Pos X:%f,Y:%f,Z:%f", g_Camera.pos.x, g_Camera.pos.y, g_Camera.pos.z);
 #endif
 }
 
@@ -355,6 +356,7 @@ void SetCameraAT(XMFLOAT3 pos)
 	//g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * g_Camera.len;
 	g_Camera.pos.x = GetPlayer()->pos.x;
 	g_Camera.pos.z = GetPlayer()->pos.z;
-
+	g_Camera.pos.y = GetPlayer()->pos.y + PLAYER_HEAD_HEIGHT;
+										//ª“ª‚Ì‚‚³
 }
 

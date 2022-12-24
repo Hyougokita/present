@@ -225,9 +225,14 @@ HRESULT InitPlayer(void)
 	g_Player.scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
 	g_Player.spd = 0.0f;			// 移動スピードクリア
+	g_Player.spdValue = VALUE_MOVE;	// 移動の基礎値
 	g_Player.font = XMFLOAT3(0.0f,0.0f,0.0f);
 	g_Player.use = TRUE;			// true:生きてる
 	g_Player.size = PLAYER_SIZE;	// 当たり判定の大きさ
+
+	// ジャンプ用
+	g_Player.jumpType = JUMP_NONE;
+	g_Player.jumpCnt = 0;
 
 	// ここでプレイヤー用の影を作成している
 	XMFLOAT3 pos = g_Player.pos;
@@ -394,28 +399,28 @@ void UpdatePlayer(void)
 	if (GetKeyboardPress(DIK_LEFT) || GetKeyboardPress(DIK_A))
 	{
 		g_isMove = true;
-		g_Player.spd = VALUE_MOVE;
+		g_Player.spd = g_Player.spdValue;
 		//g_Player.pos.x -= g_Player.spd;
 		roty = -XM_PI / 2;
 	}
 	if (GetKeyboardPress(DIK_RIGHT) || GetKeyboardPress(DIK_D))
 	{
 		g_isMove = true;
-		g_Player.spd = VALUE_MOVE;
+		g_Player.spd = g_Player.spdValue;
 		//g_Player.pos.x += g_Player.spd;
 		roty = XM_PI / 2;
 	}
 	if (GetKeyboardPress(DIK_UP) || GetKeyboardPress(DIK_W))
 	{
 		g_isMove = true;
-		g_Player.spd = VALUE_MOVE;
+		g_Player.spd = g_Player.spdValue;
 		//g_Player.pos.z += g_Player.spd;
 		roty = XM_PI;
 	}
 	if (GetKeyboardPress(DIK_DOWN) || GetKeyboardPress(DIK_S))
 	{
 		g_isMove = true;
-		g_Player.spd = VALUE_MOVE;
+		g_Player.spd = g_Player.spdValue;
 		//g_Player.pos.z -= g_Player.spd;
 		roty = 0.0f;
 	}
@@ -446,25 +451,60 @@ void UpdatePlayer(void)
 	}
 
 
+
+
+
+	// 弾発射処理
+	if (IsMouseLeftTriggered())
+	{
+		SetBullet(g_Player.pos, g_Player.font);
+	}
+
+	// 加速の処理
+	g_Player.spdValue = VALUE_MOVE;
+	if (GetKeyboardPress(DIK_LSHIFT)) {
+		g_Player.spdValue = VALUE_MOVE * 2;
+	}
+
+	// ジャンプ処理
+	if(GetKeyboardPress(DIK_SPACE)){
+		// ジャンプしていない場合
+		if (g_Player.jumpType == JUMP_NONE) {
+			//　普通のジャンプ
+			g_Player.jumpType = JUMP_NORMAL;
+		}
+	}
+
+	// 普通のジャンプの場合
+	if (g_Player.jumpType == JUMP_NORMAL) {
+		g_Player.jumpCnt++;
+		g_Player.pos.y += (JUMP_POWER - g_Player.jumpCnt * 0.3f);
+		//g_Player.pos.y += 20.0f;
+		if (g_Player.jumpCnt >= PLAYER_JUMP_COUNT_MAX) {
+			g_Player.jumpCnt = 0;
+			g_Player.jumpType = JUMP_NONE;
+		}
+	}
+
+	//　重力より落下する
+	g_Player.pos.y -= G;
+
+	if (g_Player.pos.y <= PLAYER_OFFSET_Y) {
+		g_Player.pos.y = PLAYER_OFFSET_Y;
+	}
+
 	// レイキャストして足元の高さを求める
 	XMFLOAT3 HitPosition;		// 交点
 	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
 	bool ans = RayHitField(g_Player.pos, &HitPosition, &Normal);
 	if (ans)
 	{
-		g_Player.pos.y = HitPosition.y + PLAYER_OFFSET_Y;
+		//g_Player.pos.y = HitPosition.y + PLAYER_OFFSET_Y;
 	}
 	else
 	{
-		g_Player.pos.y = PLAYER_OFFSET_Y;
+		//g_Player.pos.y = PLAYER_OFFSET_Y;
 		Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	}
-
-
-	// 弾発射処理
-	if (GetKeyboardTrigger(DIK_SPACE))
-	{
-		SetBullet(g_Player.pos, g_Player.rot);
 	}
 
 
@@ -538,6 +578,7 @@ void UpdatePlayer(void)
 	PrintDebugProc("font.y:%f\n",g_Player.font.y);
 	//PrintDebugProc("Mouse Pos: X:%f,Y:%f", g_MousePos.x, g_MousePos.y);
 	PrintDebugProc("DisplaySize:%d\n", GetSystemMetrics(SM_CXSCREEN));
+	PrintDebugProc("Player Jump Flag:%d\n", g_Player.jumpType);
 #endif
 
 }

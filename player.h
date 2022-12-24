@@ -14,6 +14,19 @@
 #define	PLAYER_SIZE		(5.0f)				// 当たり判定の大きさ
 
 
+#define PLAYER_HEAD_HEIGHT	(10.0f)
+
+
+//　プレイヤージャンプ関連
+#define	JUMP_POWER				(8.0f)					//	ジャンプの大きさ
+#define G						(5.0f)					//　重力
+#define PLAYER_JUMP_COUNT_MAX	(30)					//	ジャンプ時間の上限
+enum PLAYER_JUMP_TYPE {
+	JUMP_NORMAL,		//	普通のジャンプ
+	JUMP_OVER_THE_WALL,	//	壁を越えるのジャンプ
+	JUMP_NONE,				//	ジャンプしていない
+};
+
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -29,7 +42,12 @@ struct PLAYER
 	//　移動
 	float				spd;				// 移動スピード
 	XMFLOAT3			font;				// 移動用向いている方向
-	
+	float				spdValue;			// 移動の基礎値
+
+	//　ジャンプ
+	int					jumpType;			// ジャンプの種類
+	int					jumpCnt;			// ジャンプのカウント
+
 	//　モデル
 	BOOL				load;
 	DX11_MODEL			model;				// モデル情報
