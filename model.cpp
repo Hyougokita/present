@@ -191,6 +191,12 @@ void DrawModel( DX11_MODEL *Model )
 //ÉÇÉfÉãì«çû////////////////////////////////////////////
 void LoadObj( char *FileName, MODEL *Model )
 {
+	int countMax = 0;
+	for (int i = 0; i < 256; i++) {
+		if (FileName[i] == '/') {
+			countMax++;
+		}
+	}
 
 	XMFLOAT3	*positionArray;
 	XMFLOAT3	*normalArray;
@@ -311,7 +317,23 @@ void LoadObj( char *FileName, MODEL *Model )
 			fscanf( file, "%s", str );
 
 			char path[256];
-			strcpy( path, "data/model/" );
+
+
+			int count = 0;
+			for (int i = 0; i < 100; i++) {
+
+				if (count >= 2) {
+					//printf("%s\n", &path[0]);
+					path[i] = '\0';
+					break;
+				}
+				path[i] = FileName[i];
+				if (path[i] == '/') {
+					count++;
+
+				}
+			}
+			//strcpy( path, "data/model/" );
 			strcat( path, str );
 
 			LoadMaterial( path, &materialArray, &materialNum );

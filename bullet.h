@@ -26,6 +26,7 @@ typedef struct
 	float		fWidth;			// •
 	float		fHeight;		// ‚‚³
 	int			shadowIdx;		// ‰eID
+	float       angleY;
 	bool		use;			// g—p‚µ‚Ä‚¢‚é‚©‚Ç‚¤
 #ifdef DEBUG
 	int			count;

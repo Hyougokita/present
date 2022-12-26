@@ -19,8 +19,8 @@
 //*****************************************************************************
 #define TEXTURE_MAX			(1)				// テクスチャの数
 
-#define	BULLET_WIDTH		(20.0f)			// 頂点サイズ
-#define	BULLET_HEIGHT		(20.0f)			// 頂点サイズ
+#define	BULLET_WIDTH		(5.0f)			// 頂点サイズ
+#define	BULLET_HEIGHT		(5.0f)			// 頂点サイズ
 
 #define	BULLET_SPEED		(5.0f)			// 弾の移動スピード
 
@@ -47,7 +47,7 @@ static BOOL							g_Load = FALSE;
 
 static char *g_TextureName[TEXTURE_MAX] =
 {
-	"data/TEXTURE/bullet00.png",
+	"data/TEXTURE/bullet01.png",
 };
 
 //=============================================================================
@@ -75,11 +75,12 @@ HRESULT InitBullet(void)
 	for (int nCntBullet = 0; nCntBullet < MAX_BULLET; nCntBullet++)
 	{
 		ZeroMemory(&g_Bullet[nCntBullet].material, sizeof(g_Bullet[nCntBullet].material));
-		g_Bullet[nCntBullet].material.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
+		g_Bullet[nCntBullet].material.Diffuse = { 1.0f, 0.0f, 0.0f, 1.0f };
 
 		g_Bullet[nCntBullet].pos = { 0.0f, 0.0f, 0.0f };
 		g_Bullet[nCntBullet].rot = { 0.0f, 0.0f, 0.0f };
 		g_Bullet[nCntBullet].scl = { 1.0f, 1.0f, 1.0f };
+		g_Bullet[nCntBullet].angleY = 0.0f;
 		g_Bullet[nCntBullet].spd = BULLET_SPEED;
 		g_Bullet[nCntBullet].fWidth = BULLET_WIDTH;
 		g_Bullet[nCntBullet].fHeight = BULLET_HEIGHT;
@@ -134,7 +135,7 @@ void UpdateBullet(void)
 			g_Bullet[i].pos.x += sinf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
 			g_Bullet[i].pos.z -= cosf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
 			//g_Bullet[i].pos.y += cosf(XM_PI / 4) * g_Bullet[i].spd;
-			g_Bullet[i].pos.y += sinf(BulletY()) * g_Bullet[i].spd;
+			g_Bullet[i].pos.y += sinf(g_Bullet[i].angleY) * g_Bullet[i].spd;
 
 			// 影の位置設定
 			SetPositionShadow(g_Bullet[i].shadowIdx, XMFLOAT3(g_Bullet[i].pos.x, 0.1f, g_Bullet[i].pos.z));
@@ -179,7 +180,13 @@ void DrawBullet(void)
 {
 	// ライティングを無効
 	SetLightEnable(false);
+	
 
+
+	// αテストを有効に
+	SetAlphaTestEnable(true);
+
+	//SetBlendState(BLEND_MODE_ADD);
 	XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
 
 	// 頂点バッファ設定
@@ -202,7 +209,7 @@ void DrawBullet(void)
 			mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
 
 			// 回転を反映
-			mtxRot = XMMatrixRotationRollPitchYaw(g_Bullet[i].rot.x, g_Bullet[i].rot.y + XM_PI, g_Bullet[i].rot.z);
+			mtxRot = XMMatrixRotationRollPitchYaw(g_Bullet[i].rot.x, XM_PI-g_Bullet[i].rot.y , g_Bullet[i].rot.z);
 			mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
 
 			// 移動を反映
@@ -226,6 +233,8 @@ void DrawBullet(void)
 		}
 	}
 
+	SetAlphaTestEnable(false);
+	//SetBlendState(BLEND_MODE_ALPHABLEND);
 	// ライティングを有効に
 	SetLightEnable(true);
 
@@ -256,10 +265,10 @@ HRESULT MakeVertexBullet(void)
 	float fHeight = BULLET_HEIGHT;
 
 	// 頂点座標の設定
-	vertex[0].Position = { -fWidth / 2.0f, 0.0f,  fHeight / 2.0f };
-	vertex[1].Position = {  fWidth / 2.0f, 0.0f,  fHeight / 2.0f };
-	vertex[2].Position = { -fWidth / 2.0f, 0.0f, -fHeight / 2.0f };
-	vertex[3].Position = {  fWidth / 2.0f, 0.0f, -fHeight / 2.0f };
+	vertex[0].Position = { -fWidth / 2.0f, fHeight / 2.0f,  0.0f };
+	vertex[1].Position = {  fWidth / 2.0f, fHeight / 2.0f,  0.0f };
+	vertex[2].Position = { -fWidth / 2.0f, -fHeight / 2.0f, 0.0f };
+	vertex[3].Position = {  fWidth / 2.0f, -fHeight / 2.0f, 0.0f };
 
 	// 拡散光の設定
 	vertex[0].Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -292,6 +301,7 @@ int SetBullet(XMFLOAT3 pos, XMFLOAT3 rot)
 			g_Bullet[nCntBullet].pos = pos;
 			g_Bullet[nCntBullet].rot = rot;
 			g_Bullet[nCntBullet].scl = { 1.0f, 1.0f, 1.0f };
+			g_Bullet[nCntBullet].angleY = BulletY();
 			g_Bullet[nCntBullet].use = true;
 
 			// 影の設定
