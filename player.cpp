@@ -464,11 +464,15 @@ void UpdatePlayer(void)
 		XMFLOAT3 rot;
 		rot = g_Player.front;
 		rot.y = GetCamera()->rot.y + XM_PI;
+
+		XMFLOAT3 pos;
+		pos = g_Player.pos;
+		pos.y += PLAYER_HEAD_HEIGHT;
 #ifdef _DEBUG
 
 #endif // _DEBUG
 
-		SetBullet(g_Player.pos, rot);
+		SetBullet(pos, rot);
 	}
 
 	// â¡ë¨ÇÃèàóù

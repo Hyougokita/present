@@ -23,7 +23,7 @@
 #include "score.h"
 #include "particle.h"
 #include "wall.h"
-
+#include "gamemodeUI.h"
 
 #include "collision.h"
 #include "debugproc.h"
@@ -103,6 +103,9 @@ HRESULT InitGame(void)
 	// スコアの初期化
 	InitScore();
 
+	// UIの初期化
+	InitGMUI();
+
 	// パーティクルの初期化
 	InitParticle();
 
@@ -132,6 +135,9 @@ void UninitGame(void)
 
 	// 木の終了処理
 	UninitTree();
+
+	// UIの終了処理
+	UninitGMUI();
 
 	// 壁の終了処理
 	UninitMeshWall();
@@ -253,6 +259,9 @@ void DrawGame0(void)
 
 	// スコアの描画処理
 	DrawScore();
+
+	// UIの描画処理
+	DrawGMUI();
 
 
 	// ライティングを有効に
