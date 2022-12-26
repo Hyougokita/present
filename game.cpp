@@ -24,6 +24,7 @@
 #include "particle.h"
 #include "wall.h"
 #include "gamemodeUI.h"
+#include "item.h"
 
 #include "collision.h"
 #include "debugproc.h"
@@ -67,6 +68,9 @@ HRESULT InitGame(void)
 
 	// エネミーの初期化
 	InitEnemy();
+
+	// アイテムの初期化
+	InitItem();
 
 	// 壁の初期化
 	InitMeshWall(XMFLOAT3(0.0f, 0.0f, MAP_TOP), XMFLOAT3(0.0f, 0.0f, 0.0f),
@@ -112,7 +116,12 @@ HRESULT InitGame(void)
 	// 壁の初期化
 	InitWall();
 	SetMeshWall(XMFLOAT3(0.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
-	SetMeshWall(XMFLOAT3(160.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, XM_PI / 2, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
+	//SetMeshWall(XMFLOAT3(160.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, XM_PI / 2, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
+
+	// アイテムの当たり判定の初期化
+	SetMeshWall(XMFLOAT3(-160.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 160.0f, 50.0f);
+	SetMeshBox(XMFLOAT3(-320.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 160.0f, 50.0f,50.0f);
+
 	// BGM再生
 	PlaySound(SOUND_LABEL_BGM_sample001);
 
@@ -156,6 +165,9 @@ void UninitGame(void)
 
 	// 壁の終了
 	UninitWall();
+
+	// アイテムの終了処理
+	UninitItem();
 
 }
 
@@ -214,6 +226,9 @@ void UpdateGame(void)
 
 	// 壁の更新
 	UpdateWall();
+
+	// アイテムの更新処理
+	UpdateItem();
 }
 
 //=============================================================================
@@ -233,6 +248,9 @@ void DrawGame0(void)
 
 	// プレイヤーの描画処理
 	DrawPlayer();
+
+	// アイテムの描画処理
+	DrawItem();
 
 	// 弾の描画処理
 	DrawBullet();

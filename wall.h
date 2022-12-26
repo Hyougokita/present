@@ -31,6 +31,11 @@ typedef struct _MESHWALL {
 	BOOL		use;
 }MESHWALL;
 
+typedef struct _MESHBOX {
+	XMFLOAT3	vPos[8];
+	BOOL		use;
+}MESHBOX;
+
 
 struct WALL
 {
@@ -61,3 +66,4 @@ WALL* GetWall(void);
 MESHWALL* GetMeshWall(void);
 
 void SetMeshWall(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height);
+void SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height, float depth);

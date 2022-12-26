@@ -25,6 +25,7 @@
 #define wall_OFFSET_Y		(0.0f)						// 地面に沈まないように
 
 static MESHWALL g_MeshWall[MESHWALL_MAX];
+static MESHBOX g_MeshBox[10];
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -73,6 +74,9 @@ HRESULT InitWall(void)
 		g_MeshWall[i].use = false;
 	}
 
+	for (int i = 0; i < 10; i++) {
+		g_MeshBox[i].use = false;
+	}
 
 	
 	g_Load = TRUE;
@@ -222,4 +226,152 @@ void SetMeshWall(XMFLOAT3 pos,XMFLOAT3 rot,XMFLOAT4 diff,float width,float heigh
 
 MESHWALL* GetMeshWall() {
 	return &g_MeshWall[0];
+}
+
+// メッシュウォール当たり判定用ポリゴン
+void SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height,float depth) {
+	for (int i = 0; i < 10; i++) {
+		if (g_MeshBox[i].use == false) {
+
+
+			//前面の初期化
+			XMFLOAT3 frontPos = pos;
+			frontPos.z -= 0.5 * depth;
+
+			// 頂点座標の保存
+			for (int nCntVtxY = 0; nCntVtxY < 2; nCntVtxY++)
+			{
+				for (int nCntVtxX = 0; nCntVtxX < 2; nCntVtxX++)
+				{
+					// 頂点座標の設定
+					g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].x = -0.5 * width + nCntVtxX * width;
+					g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].y = 1 * height - nCntVtxY * height;
+					g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].z = 0.0f;
+
+
+					//	拡大縮小　回転　移動の変換の反映
+					XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
+					// ワールドマトリックスの初期化
+					mtxWorld = XMMatrixIdentity();
+
+					// スケールを反映
+					mtxScl = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
+
+					// 回転を反映
+					mtxRot = XMMatrixRotationRollPitchYaw(rot.x, rot.y + XM_PI, rot.z);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
+
+					// 移動を反映
+					mtxTranslate = XMMatrixTranslation(pos.x, pos.y, frontPos.z);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxTranslate);
+
+					//　位置を行列に保存する
+					XMMATRIX vPos;
+					for (int m = 0; m < 4; m++) {
+						for (int n = 0; n < 4; n++) {
+							vPos.r[m].m128_f32[n] = 0;
+						}
+					}
+					vPos.r[0].m128_f32[0] = g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].x;
+					vPos.r[0].m128_f32[1] = g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].y;
+					vPos.r[0].m128_f32[2] = g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].z;
+					vPos.r[0].m128_f32[3] = 1.0f;
+
+					// 変換後の座標を計算する
+					XMMATRIX result = XMMatrixMultiply(vPos, mtxWorld);
+
+					// 変換したあとの座標を保存する
+					g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].x = result.r[0].m128_f32[0];
+					g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].y = result.r[0].m128_f32[1];
+					g_MeshBox[i].vPos[nCntVtxY * 2 + nCntVtxX].z = result.r[0].m128_f32[2];
+
+				}
+			}
+
+
+
+			//後ろの初期化
+			XMFLOAT3 backPos = pos;
+			backPos.z += 0.5 * depth;
+
+			XMFLOAT3 backrot = rot;
+			backrot.y += XM_PI;
+
+			// 頂点座標の保存
+			for (int nCntVtxY = 0; nCntVtxY < 2; nCntVtxY++)
+			{
+				for (int nCntVtxX = 0; nCntVtxX < 2; nCntVtxX++)
+				{
+					// 頂点座標の設定
+					g_MeshBox[i].vPos[4+nCntVtxY * 2 + nCntVtxX].x = -0.5 * width + nCntVtxX * width;
+					g_MeshBox[i].vPos[4+nCntVtxY * 2 + nCntVtxX].y = 1 * height - nCntVtxY * height;
+					g_MeshBox[i].vPos[4+nCntVtxY * 2 + nCntVtxX].z = 0.0f;
+
+
+					//	拡大縮小　回転　移動の変換の反映
+					XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
+					// ワールドマトリックスの初期化
+					mtxWorld = XMMatrixIdentity();
+
+					// スケールを反映
+					mtxScl = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
+
+					// 回転を反映
+					mtxRot = XMMatrixRotationRollPitchYaw(rot.x, backrot.y + XM_PI, rot.z);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
+
+					// 移動を反映
+					mtxTranslate = XMMatrixTranslation(pos.x, pos.y, backPos.z);
+					mtxWorld = XMMatrixMultiply(mtxWorld, mtxTranslate);
+
+					//　位置を行列に保存する
+					XMMATRIX vPos;
+					for (int m = 0; m < 4; m++) {
+						for (int n = 0; n < 4; n++) {
+							vPos.r[m].m128_f32[n] = 0;
+						}
+					}
+					vPos.r[0].m128_f32[0] = g_MeshBox[i].vPos[4 + nCntVtxY * 2 + nCntVtxX].x;
+					vPos.r[0].m128_f32[1] = g_MeshBox[i].vPos[4 + nCntVtxY * 2 + nCntVtxX].y;
+					vPos.r[0].m128_f32[2] = g_MeshBox[i].vPos[4 + nCntVtxY * 2 + nCntVtxX].z;
+					vPos.r[0].m128_f32[3] = 1.0f;
+
+					// 変換後の座標を計算する
+					XMMATRIX result = XMMatrixMultiply(vPos, mtxWorld);
+
+					// 変換したあとの座標を保存する
+					g_MeshBox[i].vPos[4 + nCntVtxY * 2 + nCntVtxX].x = result.r[0].m128_f32[0];
+					g_MeshBox[i].vPos[4 + nCntVtxY * 2 + nCntVtxX].y = result.r[0].m128_f32[1];
+					g_MeshBox[i].vPos[4 + nCntVtxY * 2 + nCntVtxX].z = result.r[0].m128_f32[2];
+
+				}
+			}
+#ifdef _DEBUG
+			//可視化部分
+			// left
+			XMFLOAT3 leftPos = pos;
+			leftPos.x -= 0.5 * width;
+			XMFLOAT3 leftRot = rot;
+			leftRot.y = XM_PI / 2;
+			InitMeshWall(leftPos, leftRot, diff, 1, 1, depth, height);
+
+			// right
+			XMFLOAT3 rightPos = pos;
+			rightPos.x += 0.5 * width;
+			XMFLOAT3 rightRot = rot;
+			rightRot.y = -XM_PI / 2;
+			InitMeshWall(rightPos, rightRot, diff, 1, 1, depth, height);
+
+			// front
+			InitMeshWall(frontPos, rot, diff, 1, 1, width, height);
+
+			// back
+			InitMeshWall(backPos, backrot, diff, 1, 1, width, height);
+#endif // DEBUG
+			g_MeshBox[i].use = true;
+			return;
+		}
+	}
 }

@@ -29,6 +29,7 @@
 #define	VALUE_MOVE_CAMERA	(2.0f)										// カメラの移動量
 #define	VALUE_ROTATE_CAMERA	(XM_PI * 0.01f)								// カメラの回転量
 
+bool g_LockMouse = true;
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -82,7 +83,14 @@ void UpdateCamera(void)
 		//　マウスの位置をスクリーンの真ん中に固定する
 		int ScreenMidX = GetSystemMetrics(SM_CXSCREEN) / 2;
 		int ScreenMidY = GetSystemMetrics(SM_CYSCREEN) / 2;
-		SetCursorPos(ScreenMidX, ScreenMidY);
+		if (g_LockMouse) {
+			SetCursorPos(ScreenMidX, ScreenMidY);
+		}
+
+		//	マウスロックの解錠
+		if (GetKeyboardTrigger(DIK_X)) {
+			g_LockMouse = false ? g_LockMouse : g_LockMouse == false;
+		}
 
 
 		//	現在のマウスの位置を取得する
@@ -235,6 +243,7 @@ void UpdateCamera(void)
 	PrintDebugProc("Camera Updown %f\n", g_Camera.upDown);
 	PrintDebugProc("Camera Pos X:%f,Y:%f,Z:%f\n", g_Camera.pos.x, g_Camera.pos.y, g_Camera.pos.z);
 	PrintDebugProc("Camera Length:%f\n", g_Camera.len);
+	PrintDebugProc("Mouse lock:%d\n", g_LockMouse);
 #endif
 }
 
