@@ -233,7 +233,8 @@ void UpdateCamera(void)
 	PrintDebugProc("MouseCurrentPos: %f %f\n", g_MousePos.x, g_MousePos.y);
 	PrintDebugProc("Camera Rot X:%f\n", g_Camera.rot.x);
 	PrintDebugProc("Camera Updown %f\n", g_Camera.upDown);
-	PrintDebugProc("Camera Pos X:%f,Y:%f,Z:%f", g_Camera.pos.x, g_Camera.pos.y, g_Camera.pos.z);
+	PrintDebugProc("Camera Pos X:%f,Y:%f,Z:%f\n", g_Camera.pos.x, g_Camera.pos.y, g_Camera.pos.z);
+	PrintDebugProc("Camera Length:%f\n", g_Camera.len);
 #endif
 }
 

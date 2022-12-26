@@ -39,9 +39,12 @@ struct PLAYER
 	XMFLOAT3			rot;				// モデルの向き(回転)
 	XMFLOAT3			scl;				// モデルの大きさ(スケール)
 
+	//　射撃	
+	float			    shootY;				//　射撃用方向管理	
+
 	//　移動
 	float				spd;				// 移動スピード
-	XMFLOAT3			font;				// 移動用向いている方向
+	XMFLOAT3			front;				// 移動用向いている方向
 	float				spdValue;			// 移動の基礎値
 
 	//　ジャンプ

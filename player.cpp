@@ -226,9 +226,12 @@ HRESULT InitPlayer(void)
 
 	g_Player.spd = 0.0f;			// 移動スピードクリア
 	g_Player.spdValue = VALUE_MOVE;	// 移動の基礎値
-	g_Player.font = XMFLOAT3(0.0f,0.0f,0.0f);
+	g_Player.front = XMFLOAT3(0.0f,0.0f,0.0f);
 	g_Player.use = TRUE;			// true:生きてる
 	g_Player.size = PLAYER_SIZE;	// 当たり判定の大きさ
+
+	// 射撃用
+	g_Player.shootY = XM_PI;
 
 	// ジャンプ用
 	g_Player.jumpType = JUMP_NONE;
@@ -438,12 +441,13 @@ void UpdatePlayer(void)
 	{	// 押した方向にプレイヤーを移動させる
 		// 押した方向にプレイヤーを向かせている所
 		
-		g_Player.font.y = roty + cam->rot.y;
+		g_Player.front.y = roty + cam->rot.y;
+		g_Player.shootY = cam->rot.y;
 
 		g_Player.prePos = g_Player.pos;
 
-		g_Player.pos.x += sinf(g_Player.font.y) * g_Player.spd;
-		g_Player.pos.z -= cosf(g_Player.font.y) * g_Player.spd;
+		g_Player.pos.x += sinf(g_Player.front.y) * g_Player.spd;
+		g_Player.pos.z -= cosf(g_Player.front.y) * g_Player.spd;
 
 		if (bCheckHitWall) {
 			g_Player.pos = g_Player.prePos;
@@ -457,7 +461,14 @@ void UpdatePlayer(void)
 	// 弾発射処理
 	if (IsMouseLeftTriggered())
 	{
-		SetBullet(g_Player.pos, g_Player.font);
+		XMFLOAT3 rot;
+		rot = g_Player.front;
+		rot.y = GetCamera()->rot.y + XM_PI;
+#ifdef _DEBUG
+
+#endif // _DEBUG
+
+		SetBullet(g_Player.pos, rot);
 	}
 
 	// 加速の処理
@@ -575,10 +586,13 @@ void UpdatePlayer(void)
 	PrintDebugProc("Player X:%f Y:%f Z:% N:%f\n", g_Player.pos.x, g_Player.pos.y, g_Player.pos.z, Normal.y);
 	PrintDebugProc("isHitWall: %d\n", isHitWall);
 	PrintDebugProc("bCheckHitWall: %d\n", bCheckHitWall);
-	PrintDebugProc("font.y:%f\n",g_Player.font.y);
+	PrintDebugProc("font.y:%f\n",g_Player.front.y);
 	//PrintDebugProc("Mouse Pos: X:%f,Y:%f", g_MousePos.x, g_MousePos.y);
 	PrintDebugProc("DisplaySize:%d\n", GetSystemMetrics(SM_CXSCREEN));
 	PrintDebugProc("Player Jump Flag:%d\n", g_Player.jumpType);
+
+	//PrintDebugProc("rot:X:%f,Y:%f,Z:%f,\n", rot.x, rot.y, rot.z);
+	//PrintDebugProc("Player front:X:%f,Y:%f,Z:%f,\n", g_Player.front.x, g_Player.front.y, g_Player.front.z);
 #endif
 
 }
@@ -709,8 +723,8 @@ BOOL CheckTestWall() {
 	//	endPos.x += DISTANCE_OF_RAYCAST_PLAYER;
 	//}
 
-	endPos.x += sinf(g_Player.font.y) * DISTANCE_OF_RAYCAST_PLAYER;
-	endPos.z -= cosf(g_Player.font.y) * DISTANCE_OF_RAYCAST_PLAYER;
+	endPos.x += sinf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
+	endPos.z -= cosf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
 
 	for (int i = 0; i < MESHWALL_MAX; i++) {
 		if (meshwall[i].use) {

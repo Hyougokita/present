@@ -12,6 +12,7 @@
 #include "bullet.h"
 #include "sound.h"
 #include "player.h"
+#include "debugproc.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -23,7 +24,7 @@
 
 #define	BULLET_SPEED		(5.0f)			// 弾の移動スピード
 
-
+#define DEBUG
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -33,7 +34,7 @@
 // プロトタイプ宣言
 //*****************************************************************************
 HRESULT MakeVertexBullet(void);
-
+float BulletY();
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -83,6 +84,10 @@ HRESULT InitBullet(void)
 		g_Bullet[nCntBullet].fWidth = BULLET_WIDTH;
 		g_Bullet[nCntBullet].fHeight = BULLET_HEIGHT;
 		g_Bullet[nCntBullet].use = false;
+#ifdef DEBUG
+		g_Bullet[nCntBullet].count = 0;
+#endif // DEBUG
+
 
 	}
 
@@ -126,9 +131,10 @@ void UpdateBullet(void)
 		if (g_Bullet[i].use)
 		{
 			// 弾の移動処理
-			g_Bullet[i].pos.x -= sinf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
-			g_Bullet[i].pos.z += cosf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
-			g_Bullet[i].pos.y += cosf(XM_PI / 4) * g_Bullet[i].spd;
+			g_Bullet[i].pos.x += sinf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
+			g_Bullet[i].pos.z -= cosf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
+			//g_Bullet[i].pos.y += cosf(XM_PI / 4) * g_Bullet[i].spd;
+			g_Bullet[i].pos.y += sinf(BulletY()) * g_Bullet[i].spd;
 
 			// 影の位置設定
 			SetPositionShadow(g_Bullet[i].shadowIdx, XMFLOAT3(g_Bullet[i].pos.x, 0.1f, g_Bullet[i].pos.z));
@@ -143,11 +149,28 @@ void UpdateBullet(void)
 				g_Bullet[i].use = false;
 				ReleaseShadow(g_Bullet[i].shadowIdx);
 			}
+#ifdef DEBUG
+			if (g_Bullet[i].count >= 100) {
+				g_Bullet[i].use = false;
+				ReleaseShadow(g_Bullet[i].shadowIdx);
+			}
+
+#endif // DEBUG
 
 		}
 	}
 
+#ifdef _DEBUG
+	// デバッグ表示
+	PrintDebugProc("Bullet X:%f Y:%f Z:%f\n", g_Bullet[0].pos.x, g_Bullet[0].pos.y, g_Bullet[0].pos.z);
+	PrintDebugProc("Bullet CameraAT Y:%f CameraPos Y:%f\n", GetCamera()->at.y,GetCamera()->pos.y);
+
+#endif
+
 }
+
+
+
 
 //=============================================================================
 // 描画処理
@@ -301,7 +324,7 @@ float BulletY() {
 	CAMERA* camera = GetCamera();
 
 	float DistanceY = camera->at.y - camera->pos.y;
-	float DistanceX = 50.0f;
+	float DistanceX = camera->len;
 
 	angle = atanf(DistanceY/DistanceX);
 
