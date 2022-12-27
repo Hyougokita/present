@@ -34,9 +34,10 @@ typedef struct _MESHWALL {
 }MESHWALL;
 
 typedef struct _MESHBOX {
-	XMFLOAT3		vPos[8];
-	BOOL			use;
-	char			itemNum;
+	XMFLOAT3		vPos[8];		//	頂点位置
+	BOOL			use;			//	使用されているかどうか	
+	char			itemNum;		//	番号
+	char			itemType;		//	タイプ
 }MESHBOX;
 
 
@@ -70,5 +71,5 @@ MESHWALL* GetMeshWall(void);
 MESHBOX* GetMeshBox(void);
 
 void SetMeshWall(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height);
-int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height, float depth, char itemNum);
+int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height, float depth, char itemNum, char itemType);
 void DestoryMeshBox(int num);

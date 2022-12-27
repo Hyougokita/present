@@ -10,12 +10,22 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define SCORE_MAX			(99999)		// スコアの最大値
-#define SCORE_DIGIT			(5)			// 桁数
 
+typedef struct _SCORE {
+	int			score;		//	表示したい数値
+	XMFLOAT3	pos;		//	位置
+	float		width;		//	幅
+	float		height;		//	縦
+	bool		use;		//	使用されているかどうか
+	int			digit;		//	数値の桁
+}SCORE;
 
-
-
+enum SCORE_TYPE
+{
+	SCORE_CUR_MAGAZINE,
+	SCORE_SUB_MAGAZINE,
+	SCORE_TYPE_MAX
+};
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -24,7 +34,5 @@ void UninitScore(void);
 void UpdateScore(void);
 void DrawScore(void);
 
-void AddScore(int add);
-int GetScore(void);
 
 

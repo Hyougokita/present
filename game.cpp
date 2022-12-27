@@ -378,8 +378,7 @@ void CheckHit(void)
 			enemy[i].use = false;
 			ReleaseShadow(enemy[i].shadowIdx);
 
-			// スコアを足す
-			AddScore(100);
+
 		}
 	}
 
@@ -409,8 +408,7 @@ void CheckHit(void)
 				enemy[j].use = false;
 				ReleaseShadow(enemy[j].shadowIdx);
 
-				// スコアを足す
-				AddScore(10);
+
 			}
 		}
 

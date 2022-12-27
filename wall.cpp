@@ -230,7 +230,7 @@ MESHWALL* GetMeshWall() {
 }
 
 // メッシュウォール当たり判定用ポリゴン
-int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height,float depth,char itemNum) {
+int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height,float depth,char itemNum, char itemType) {
 	for (int i = 0; i < MESHBOX_MAX; i++) {
 		if (g_MeshBox[i].use == false) {
 
@@ -374,6 +374,7 @@ int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float hei
 			g_MeshBox[i].use = true;
 			//　HITBOXが対応しているアイテムを記録する
 			g_MeshBox[i].itemNum = itemNum;
+			g_MeshBox[i].itemType = itemType;
 			return i;
 		}
 	}
@@ -386,5 +387,5 @@ MESHBOX* GetMeshBox(void) {
 // 指定されたHITBOXを無効化する
 void DestoryMeshBox(int num) {
 	g_MeshBox[num].use = false;
-	DestoryItem(g_MeshBox[num].itemNum);
+	DestoryItem(g_MeshBox[num].itemNum,g_MeshBox[num].itemType);
 }

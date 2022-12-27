@@ -50,3 +50,6 @@ int SetBullet(XMFLOAT3 pos, XMFLOAT3 rot);
 
 BULLET *GetBullet(void);
 
+int GetCurMagazine();
+int GetSubMagazine();
+void AddSubMagazine(int num);

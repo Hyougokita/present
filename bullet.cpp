@@ -50,6 +50,9 @@ static char *g_TextureName[TEXTURE_MAX] =
 	"data/TEXTURE/bullet01.png",
 };
 
+int g_CurMagazine = 0;	//@Œ»İ‚Ì’e‚Ì”
+int g_SubMagazine = 0;	//	Œã”õ‚Ì’e‚Ì”
+
 //=============================================================================
 // ‰Šú‰»ˆ—
 //=============================================================================
@@ -341,4 +344,18 @@ float AngleY() {
 
 
 	return angle;
+}
+
+// Œ»İ‚Ì’e‚Ì”‚ğ“¾‚é
+int GetCurMagazine() {
+	return g_CurMagazine;
+}
+// Œã”õ‚Ì’e‚Ì”‚ğ“¾‚é
+int GetSubMagazine() {
+	return g_SubMagazine;
+}
+
+//	Œã”õ‚Ì’e‚Ì”‚ğ‘‚â‚·
+void AddSubMagazine(int num) {
+	g_SubMagazine += num;
 }

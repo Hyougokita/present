@@ -10,11 +10,14 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAX_ITEM		(5)					// エネミーの数
+#define MAX_ITEMBULLET		(5)					// エネミーの数
 #define MAX_ENMEY_PARTS	(5)
 #define	ITEM_SIZE		(5.0f)				// 当たり判定の大きさ
 
-
+enum ITEM_TYPE {
+	ITEM_AMMO_BOX,
+	ITEM_TYPE_MAX
+};
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -33,10 +36,7 @@ struct ITEM
 
 	float				size;				// 当たり判定の大きさ
 	int					hitBoxIndex;		// HITBOXの何番目
-
-	
-
-
+	int					itemType;			// アイテムのタイプ
 
 
 };
@@ -51,5 +51,5 @@ void UninitItem(void);
 void UpdateItem(void);
 void DrawItem(void);
 
-ITEM *GetItem(void);
-void DestoryItem(int num);
+ITEM *GetItemBullet(void);
+void DestoryItem(int num, char itemType);

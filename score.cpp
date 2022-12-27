@@ -8,13 +8,13 @@
 #include "renderer.h"
 #include "score.h"
 #include "sprite.h"
-
+#include "bullet.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_WIDTH				(16)	// キャラサイズ
 #define TEXTURE_HEIGHT				(32)	// 
-#define TEXTURE_MAX					(1)		// テクスチャの数
+#define TEXTURE_MAX					(2)		// テクスチャの数
 
 
 //*****************************************************************************
@@ -29,16 +29,12 @@ static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 static char *g_TexturName[TEXTURE_MAX] = {
-	"data/TEXTURE/number16x32.png",
+	"data/TEXTURE/numTexture001.png",
+	"data/TEXTURE/slash.png",
 };
 
+static SCORE g_Score[SCORE_TYPE_MAX];
 
-static bool						g_Use;						// true:使っている  false:未使用
-static float					g_w, g_h;					// 幅と高さ
-static XMFLOAT3					g_Pos;						// ポリゴンの座標
-static int						g_TexNo;					// テクスチャ番号
-
-static int						g_Score;					// スコア
 
 static BOOL						g_Load = FALSE;
 
@@ -73,14 +69,23 @@ HRESULT InitScore(void)
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 
 
-	// プレイヤーの初期化
-	g_Use   = true;
-	g_w     = TEXTURE_WIDTH;
-	g_h     = TEXTURE_HEIGHT;
-	g_Pos   = { 500.0f, 20.0f, 0.0f };
-	g_TexNo = 0;
+	// 初期化
+	for (int i = 0; i < SCORE_TYPE_MAX; i++) {
+		g_Score[i].use = true;
+		g_Score[i].pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		g_Score[i].width = TEXTURE_WIDTH;
+		g_Score[i].height = TEXTURE_HEIGHT;
+		g_Score[i].score = 0;
+		g_Score[i].digit = 2;
+	}
 
-	g_Score = 0;	// スコアの初期化
+	g_Score[SCORE_CUR_MAGAZINE].digit = 2;
+	g_Score[SCORE_SUB_MAGAZINE].digit = 3;
+
+	g_Score[SCORE_SUB_MAGAZINE].pos = XMFLOAT3(SCREEN_WIDTH - 1.0f * TEXTURE_WIDTH, SCREEN_HEIGHT - 0.5f * TEXTURE_HEIGHT, 0.0f);
+	g_Score[SCORE_CUR_MAGAZINE].pos = XMFLOAT3(g_Score[SCORE_SUB_MAGAZINE].pos.x - (g_Score[SCORE_SUB_MAGAZINE].digit + 1.5f) * TEXTURE_WIDTH, g_Score[SCORE_SUB_MAGAZINE].pos.y, 0.0f);
+
+
 
 	g_Load = TRUE;
 	return S_OK;
@@ -116,6 +121,11 @@ void UninitScore(void)
 //=============================================================================
 void UpdateScore(void)
 {
+	//	現在の弾の数の更新
+	g_Score[SCORE_CUR_MAGAZINE].score = GetCurMagazine();
+
+	//	後備の弾の数の更新
+	g_Score[SCORE_SUB_MAGAZINE].score = GetSubMagazine();
 
 
 #ifdef _DEBUG	// デバッグ情報を表示する
@@ -149,56 +159,54 @@ void DrawScore(void)
 	SetMaterial(material);
 
 	// テクスチャ設定
-	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_TexNo]);
+	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
+	for (int j = 0; j < SCORE_TYPE_MAX; j++) {
+		// 桁数分処理する
+		int number = g_Score[j].score;
+		for (int i = 0; i < g_Score[j].digit; i++)
+		{
+			// 今回表示する桁の数字
+			float x = (float)(number % 10);
 
-	// 桁数分処理する
-	int number = g_Score;
-	for (int i = 0; i < SCORE_DIGIT; i++)
-	{
-		// 今回表示する桁の数字
-		float x = (float)(number % 10);
+			// スコアの位置やテクスチャー座標を反映
+			float px = g_Score[j].pos.x - g_Score[j].width * i;	// スコアの表示位置X
+			float py = g_Score[j].pos.y;						// スコアの表示位置Y
+			float pw = g_Score[j].width;						// スコアの表示幅
+			float ph = g_Score[j].height;						// スコアの表示高さ
 
-		// スコアの位置やテクスチャー座標を反映
-		float px = g_Pos.x - g_w*i;	// スコアの表示位置X
-		float py = g_Pos.y;			// スコアの表示位置Y
-		float pw = g_w;				// スコアの表示幅
-		float ph = g_h;				// スコアの表示高さ
+			float tw = 1.0f / 10;		// テクスチャの幅
+			float th = 1.0f / 1;		// テクスチャの高さ
+			float tx = x * tw;			// テクスチャの左上X座標
+			float ty = 0.0f;			// テクスチャの左上Y座標
 
-		float tw = 1.0f / 10;		// テクスチャの幅
-		float th = 1.0f / 1;		// テクスチャの高さ
-		float tx = x * tw;			// テクスチャの左上X座標
-		float ty = 0.0f;			// テクスチャの左上Y座標
+			// １枚のポリゴンの頂点とテクスチャ座標を設定
+			SetSpriteColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+				XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
-		SetSpriteColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+			// ポリゴン描画
+			GetDeviceContext()->Draw(4, 0);
 
-		// ポリゴン描画
-		GetDeviceContext()->Draw(4, 0);
-
-		// 次の桁へ
-		number /= 10;
-	}
-}
-
-
-//=============================================================================
-// スコアを加算する
-// 引数:add :追加する点数。マイナスも可能
-//=============================================================================
-void AddScore(int add)
-{
-	g_Score += add;
-	if (g_Score > SCORE_MAX)
-	{
-		g_Score = SCORE_MAX;
+			// 次の桁へ
+			number /= 10;
+		}
 	}
 
+	// スラッシュを描く
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColor(g_VertexBuffer, g_Score[SCORE_CUR_MAGAZINE].pos.x + 1.5f * TEXTURE_WIDTH, g_Score[SCORE_CUR_MAGAZINE].pos.y, g_Score[SCORE_CUR_MAGAZINE].width, g_Score[SCORE_CUR_MAGAZINE].height, 0.0f, 0.0f, 1.0f, 1.0f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
 }
 
 
-int GetScore(void)
-{
-	return g_Score;
-}
+
+
+
+
+
+
 
