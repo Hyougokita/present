@@ -17,6 +17,7 @@
 #include "meshfield.h"
 #include "collision.h"
 #include "wall.h"
+#include "gamemodeUI.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -78,15 +79,18 @@ XMFLOAT3 norScl2 = XMFLOAT3(1.0f, 1.0f, 1.0f);
 //　初めてマウスロードする
 bool g_FirstMouseLoad = false;
 
+// アイテムを確認するための射線の長さ
+#define DISTANCE_ITEM_CHECK_RAY	(100.0f)
+
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-BOOL CheckTest();
-BOOL CheckTestWall();
+BOOL CheckTest(void);
+BOOL CheckTestWall(void);
 void SenkeihokanPlayer(PLAYER* player, int type);		//	線形補間計算
 void DrawPlayerSingle(PLAYER* player);					//	プレーヤー単体の描画
-
+int CheckItemHitBox(void);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -101,6 +105,8 @@ static float		roty = 0.0f;
 static LIGHT		g_Light;
 
 bool g_isMove = false;
+
+int g_checkItem = 0;
 
 
 enum PLAYER_HOKAN_TYPE
@@ -365,6 +371,16 @@ void UninitPlayer(void)
 //=============================================================================
 void UpdatePlayer(void)
 {
+	//	アイテムとの当たり
+	g_checkItem = CheckItemHitBox();
+	if (g_checkItem != -1) {
+		TurnOnOffUI(UI_GET, true);
+	}
+	else {
+		TurnOnOffUI(UI_GET, false);
+	}
+
+
 	if (g_FirstMouseLoad == false) {
 		//GetCursorPos(&lpPoint);
 		//g_MousePos.x = (float)lpPoint.x;
@@ -376,7 +392,7 @@ void UpdatePlayer(void)
 
 	CAMERA *cam = GetCamera();
 	g_isMove = false;
-	g_Player.spd *= 0.9f;
+	g_Player.spd = 0.0f;
 
 #ifdef DEBUG
 	if (CheckTest()) {
@@ -426,6 +442,11 @@ void UpdatePlayer(void)
 		g_Player.spd = g_Player.spdValue;
 		//g_Player.pos.z -= g_Player.spd;
 		roty = 0.0f;
+	}
+
+	//　アイテムを手に入れる
+	if (GetKeyboardPress(DIK_E) && g_checkItem != -1) {
+		DestoryMeshBox(g_checkItem);
 	}
 
 #ifdef _DEBUG
@@ -594,6 +615,7 @@ void UpdatePlayer(void)
 	//PrintDebugProc("Mouse Pos: X:%f,Y:%f", g_MousePos.x, g_MousePos.y);
 	PrintDebugProc("DisplaySize:%d\n", GetSystemMetrics(SM_CXSCREEN));
 	PrintDebugProc("Player Jump Flag:%d\n", g_Player.jumpType);
+	PrintDebugProc("Player Item Check:%d", g_checkItem);
 
 	//PrintDebugProc("rot:X:%f,Y:%f,Z:%f,\n", rot.x, rot.y, rot.z);
 	//PrintDebugProc("Player front:X:%f,Y:%f,Z:%f,\n", g_Player.front.x, g_Player.front.y, g_Player.front.z);
@@ -843,5 +865,96 @@ void DrawPlayerSingle(PLAYER* player) {
 //　タイトル用　プレイヤーの頭をエネミーに向かう
 void TurnHeadTo(PLAYER *head) {
 
+}
+
+//  アイテム拾い用当たり判定ボックス
+int CheckItemHitBox(void) {
+	//プレーヤーが見ている方向へ射線を射出
+
+	//　向いて方向
+	XMFLOAT3 rot;
+	rot = g_Player.front;
+	rot.y = GetCamera()->rot.y + XM_PI;
+
+	//	発射の始点
+	XMFLOAT3 startPos;
+	startPos = g_Player.pos;
+	startPos.y += PLAYER_HEAD_HEIGHT;
+
+	//  垂直の角度
+	float angleY = AngleY();
+
+	// 終了位置
+	XMFLOAT3 endPos;
+	endPos.x = startPos.x + sinf(rot.y) * DISTANCE_ITEM_CHECK_RAY;
+	endPos.z = startPos.z - cosf(rot.y) * DISTANCE_ITEM_CHECK_RAY;
+	endPos.y = startPos.y + sinf(angleY) * DISTANCE_ITEM_CHECK_RAY;
+
+	// Meshbox取得
+	MESHBOX* meshbox = GetMeshBox();
+
+	//  Meshboxとの当たり判定
+	BOOL isHit;
+	XMFLOAT3 HitPosition;		// 交点
+	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
+	for (int i = 0; i < MESHBOX_MAX; i++) {
+		if (meshbox[i].use) {
+			//裏
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[2], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[2], meshbox[i].vPos[3], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			//前
+			isHit = RayCast(meshbox[i].vPos[4], meshbox[i].vPos[5], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			isHit = RayCast(meshbox[i].vPos[5], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			//左
+			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[3], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[5], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			//右
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[2], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[4], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			//上
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			//底
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[3], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return i;
+			}
+		}
+	}
+	return -1;
 }
 

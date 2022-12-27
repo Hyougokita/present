@@ -44,6 +44,7 @@ HRESULT InitBullet(void);
 void UninitBullet(void);
 void UpdateBullet(void);
 void DrawBullet(void);
+float AngleY();
 
 int SetBullet(XMFLOAT3 pos, XMFLOAT3 rot);
 

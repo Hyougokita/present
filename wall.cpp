@@ -13,6 +13,7 @@
 #include "shadow.h"
 #include "meshfield.h"
 #include "meshwall.h"
+#include "item.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -25,7 +26,7 @@
 #define wall_OFFSET_Y		(0.0f)						// 地面に沈まないように
 
 static MESHWALL g_MeshWall[MESHWALL_MAX];
-static MESHBOX g_MeshBox[10];
+static MESHBOX g_MeshBox[MESHBOX_MAX];
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -74,7 +75,7 @@ HRESULT InitWall(void)
 		g_MeshWall[i].use = false;
 	}
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < MESHBOX_MAX; i++) {
 		g_MeshBox[i].use = false;
 	}
 
@@ -229,8 +230,8 @@ MESHWALL* GetMeshWall() {
 }
 
 // メッシュウォール当たり判定用ポリゴン
-void SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height,float depth) {
-	for (int i = 0; i < 10; i++) {
+int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height,float depth,char itemNum) {
+	for (int i = 0; i < MESHBOX_MAX; i++) {
 		if (g_MeshBox[i].use == false) {
 
 
@@ -371,7 +372,19 @@ void SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float he
 			InitMeshWall(backPos, backrot, diff, 1, 1, width, height);
 #endif // DEBUG
 			g_MeshBox[i].use = true;
-			return;
+			//　HITBOXが対応しているアイテムを記録する
+			g_MeshBox[i].itemNum = itemNum;
+			return i;
 		}
 	}
+}
+
+MESHBOX* GetMeshBox(void) {
+	return &g_MeshBox[0];
+}
+
+// 指定されたHITBOXを無効化する
+void DestoryMeshBox(int num) {
+	g_MeshBox[num].use = false;
+	DestoryItem(g_MeshBox[num].itemNum);
 }

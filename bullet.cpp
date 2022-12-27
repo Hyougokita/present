@@ -34,7 +34,7 @@
 // プロトタイプ宣言
 //*****************************************************************************
 HRESULT MakeVertexBullet(void);
-float BulletY();
+
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -301,7 +301,7 @@ int SetBullet(XMFLOAT3 pos, XMFLOAT3 rot)
 			g_Bullet[nCntBullet].pos = pos;
 			g_Bullet[nCntBullet].rot = rot;
 			g_Bullet[nCntBullet].scl = { 1.0f, 1.0f, 1.0f };
-			g_Bullet[nCntBullet].angleY = BulletY();
+			g_Bullet[nCntBullet].angleY = AngleY();
 			g_Bullet[nCntBullet].use = true;
 
 			// 影の設定
@@ -326,7 +326,8 @@ BULLET *GetBullet(void)
 	return &(g_Bullet[0]);
 }
 
-float BulletY() {
+//  垂直と水平線の角度を求める
+float AngleY() {
 	float angle = 0.0f;
 
 

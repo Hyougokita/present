@@ -15,6 +15,8 @@
 #define	WALL_SIZE		(5.0f)				// ìñÇΩÇËîªíËÇÃëÂÇ´Ç≥
 
 #define MESHWALL_MAX		(100)
+
+#define MESHBOX_MAX			(10)	// ìñÇΩÇËîªíËópÇÃóßï˚ëÃÇÃêî
 //*****************************************************************************
 // ç\ë¢ëÃíËã`
 //*****************************************************************************
@@ -32,8 +34,9 @@ typedef struct _MESHWALL {
 }MESHWALL;
 
 typedef struct _MESHBOX {
-	XMFLOAT3	vPos[8];
-	BOOL		use;
+	XMFLOAT3		vPos[8];
+	BOOL			use;
+	char			itemNum;
 }MESHBOX;
 
 
@@ -64,6 +67,8 @@ void DrawWall(void);
 
 WALL* GetWall(void);
 MESHWALL* GetMeshWall(void);
+MESHBOX* GetMeshBox(void);
 
 void SetMeshWall(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height);
-void SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height, float depth);
+int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height, float depth, char itemNum);
+void DestoryMeshBox(int num);

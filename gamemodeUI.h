@@ -6,6 +6,21 @@
 //=============================================================================
 #pragma once
 
+enum UITexture
+{
+	UI_CROSS,	//è∆èÄ
+	UI_GET,		//ì¸éË	
+	UI_MAX,
+};
+
+
+typedef struct _GMUI {
+	bool			use;
+	XMFLOAT3		pos;
+	float			width;
+	float			height;
+	XMFLOAT4        diff;
+}GMUI;
 
 //*****************************************************************************
 // É}ÉNÉçíËã`
@@ -21,5 +36,5 @@ HRESULT InitGMUI(void);
 void UninitGMUI(void);
 void UpdateGMUI(void);
 void DrawGMUI(void);
-
+void TurnOnOffUI(int num, bool onoff);
 

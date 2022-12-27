@@ -14,7 +14,7 @@
 #include "meshfield.h"
 #include "player.h"
 #include "meshwall.h"
-
+#include "wall.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -59,12 +59,13 @@ HRESULT InitItem(void)
 	{
 		LoadModel(MODEL_ITEM, &g_Item[i].model);
 		g_Item[i].load = true;
-		g_Item[i].pos = XMFLOAT3(-50.0f + i * 30.0f, ITEM_OFFSET_Y, -40.0f);
+		g_Item[i].pos = XMFLOAT3(-50.0f + i * 50.0f, ITEM_OFFSET_Y, -40.0f);
 		g_Item[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		g_Item[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
+		g_Item[i].scl = XMFLOAT3(0.3f, 0.3f, 0.3f);
 
 		g_Item[i].size = ITEM_SIZE;	// 当たり判定の大きさ
 		g_Item[i].use = true;
+		g_Item[i].hitBoxIndex = SetMeshBox(g_Item[i].pos, g_Item[i].rot, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.3f), 28.0f * g_Item[i].scl.x, 8.0f * g_Item[i].scl.y, 18.0f * g_Item[i].scl.z, i);
 
 		// モデルのディフューズを保存しておく。色変え対応の為。
 		GetModelDiffuse(&g_Item[0].model, &g_Item[0].diffuse[0]);
@@ -162,6 +163,9 @@ ITEM *GetItem()
 	return &g_Item[0];
 }
 
-
+//　指定されたアイテムを無効化する
+void DestoryItem(int num) {
+	g_Item[num].use = false;
+}
 
 

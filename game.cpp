@@ -69,6 +69,9 @@ HRESULT InitGame(void)
 	// エネミーの初期化
 	InitEnemy();
 
+	// 壁の初期化
+	InitWall();
+
 	// アイテムの初期化
 	InitItem();
 
@@ -113,14 +116,13 @@ HRESULT InitGame(void)
 	// パーティクルの初期化
 	InitParticle();
 
-	// 壁の初期化
-	InitWall();
+
 	SetMeshWall(XMFLOAT3(0.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
 	//SetMeshWall(XMFLOAT3(160.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, XM_PI / 2, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 160.0f, 50.0f);
 
 	// アイテムの当たり判定の初期化
 	SetMeshWall(XMFLOAT3(-160.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 160.0f, 50.0f);
-	SetMeshBox(XMFLOAT3(-320.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 160.0f, 50.0f,50.0f);
+	//SetMeshBox(XMFLOAT3(-320.0f, 0.0f, -200.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 160.0f, 50.0f,50.0f);
 
 	// BGM再生
 	PlaySound(SOUND_LABEL_BGM_sample001);

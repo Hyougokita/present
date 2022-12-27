@@ -32,6 +32,7 @@ struct ITEM
 
 
 	float				size;				// “–‚½‚è”»’è‚Ì‘å‚«‚³
+	int					hitBoxIndex;		// HITBOX‚Ì‰½”Ô–Ú
 
 	
 
@@ -51,4 +52,4 @@ void UpdateItem(void);
 void DrawItem(void);
 
 ITEM *GetItem(void);
-
+void DestoryItem(int num);

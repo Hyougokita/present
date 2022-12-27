@@ -16,18 +16,22 @@
 // É}ÉNÉçíËã`
 //*****************************************************************************
 
-enum UITexture
-{
-	UI_CROSS,
-	UI_MAX,
-};
+
 
 #define TEXTURE_WIDTH				(SCREEN_WIDTH)	// îwåiÉTÉCÉY
 #define TEXTURE_HEIGHT				(SCREEN_HEIGHT)	// 
 #define TEXTURE_MAX					(UI_MAX)				// ÉeÉNÉXÉ`ÉÉÇÃêî
 
+//Å@è∆èÄ
 #define UI_CROSS_WIDTH				(32.0f)
 #define UI_CROSS_HEIGHT				(32.0f)
+#define UI_CROSS_POSITION			(XMFLOAT3(SCREEN_CENTER_X,SCREEN_CENTER_Y,0.0f))
+
+//  ì¸éË
+#define UI_GET_SCALE				(0.3f)
+#define UI_GET_WIDTH				(435.0f*UI_GET_SCALE)
+#define UI_GET_HEIGHT				(207.0f*UI_GET_SCALE)
+#define UI_GET_POSITION				(XMFLOAT3(SCREEN_CENTER_X + 1.0f * UI_GET_WIDTH,SCREEN_CENTER_Y,0.0f))
 
 //*****************************************************************************
 // ÉvÉçÉgÉ^ÉCÉvêÈåæ
@@ -42,10 +46,26 @@ static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// ÉeÉNÉXÉ`É
 
 static char *g_TexturName[TEXTURE_MAX] = {
 		"data/TEXTURE/gamemodeUI/cross.png",
+		"data/TEXTURE/gamemodeUI/get.png",
 };
 
 
+static GMUI g_GMUI[UI_MAX];
 
+static float uiTextureWidthList[UI_MAX] = {
+	UI_CROSS_WIDTH,
+	UI_GET_WIDTH,
+};
+
+static float uiTextureHeightList[UI_MAX] = {
+	UI_CROSS_HEIGHT,
+	UI_GET_HEIGHT,
+};
+
+static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
+	UI_CROSS_POSITION,
+	UI_GET_POSITION
+};
 
 
 bool g_Load = false;
@@ -79,8 +99,16 @@ HRESULT InitGMUI(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 
+	for (int i = 0; i < UI_MAX; i++) {
+		g_GMUI[i].use = true;
 
+		g_GMUI[i].pos = uiTexturePositionList[i];
+		g_GMUI[i].width = uiTextureWidthList[i];
+		g_GMUI[i].height = uiTextureHeightList[i];
+		g_GMUI[i].diff = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	}
 	
+	g_GMUI[UI_CROSS].diff = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 
 
 	g_Load = TRUE;
@@ -149,17 +177,23 @@ void DrawGMUI(void)
 	material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	// è∆èÄÇÃï`âÊ
-	{
-		// ÉeÉNÉXÉ`ÉÉê›íË
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[UI_CROSS]);
+	for (int i = 0; i < UI_MAX; i++) {
 
-		// ÇPñáÇÃÉ|ÉäÉSÉìÇÃí∏ì_Ç∆ÉeÉNÉXÉ`ÉÉç¿ïWÇê›íË
-		SetSpriteColor(g_VertexBuffer, SCREEN_CENTER_X, SCREEN_CENTER_Y, UI_CROSS_WIDTH, UI_CROSS_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+		// è∆èÄÇÃï`âÊ
+		{
+			if (g_GMUI[i].use) {
+				// ÉeÉNÉXÉ`ÉÉê›íË
+				GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[i]);
 
-		// É|ÉäÉSÉìï`âÊ
-		GetDeviceContext()->Draw(4, 0);
+				// ÇPñáÇÃÉ|ÉäÉSÉìÇÃí∏ì_Ç∆ÉeÉNÉXÉ`ÉÉç¿ïWÇê›íË
+				SetSpriteColor(g_VertexBuffer, g_GMUI[i].pos.x, g_GMUI[i].pos.y, g_GMUI[i].width, g_GMUI[i].height, 0.0f, 0.0f, 1.0f, 1.0f, g_GMUI[i].diff);
+
+				// É|ÉäÉSÉìï`âÊ
+				GetDeviceContext()->Draw(4, 0);
+			}
+		}
 	}
+
 
 	
 
@@ -169,4 +203,7 @@ void DrawGMUI(void)
 
 
 
-
+//Å@éwíËÇ≥ÇÍÇΩUIÇÃï\é¶ÇÃON/OFF
+void TurnOnOffUI(int num,bool onoff) {
+	g_GMUI[num].use = onoff;
+}
