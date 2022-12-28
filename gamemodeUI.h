@@ -8,8 +8,9 @@
 
 enum UITexture
 {
-	UI_CROSS,	//Æ€
-	UI_GET,		//“üŽè	
+	UI_CROSS,	//	Æ€
+	UI_GET,		//	“üŽè	
+	UI_HANDGUN,	//	ƒsƒXƒgƒ‹
 	UI_MAX,
 };
 

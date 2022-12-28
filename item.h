@@ -10,13 +10,36 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAX_ITEMBULLET		(5)					// エネミーの数
+#define MAX_ITEMBULLET		(1)					// エネミーの数
 #define MAX_ENMEY_PARTS	(5)
 #define	ITEM_SIZE		(5.0f)				// 当たり判定の大きさ
 
+// ITEM TYPE
 enum ITEM_TYPE {
 	ITEM_AMMO_BOX,
+	ITEM_HAND_GUN,
 	ITEM_TYPE_MAX
+};
+
+// ITEM AMMO
+enum ITEM_AMMO_POSITION_TYPE
+{
+	ITEM_AMMO_TABLE,
+	ITEM_AMMO_MAX,
+};
+
+// ITEM HANDGUN
+enum ITEM_HANDGUN_POSITION_TYPE
+{
+	ITEM_HANDGUN_TABLE,
+	ITEM_HANDGUN_MAX,
+};
+
+// ITEM DECORATION
+enum ITEM_DECORATION_TYPE {
+	ITEM_DECORATION_TABLE00,
+
+	ITEM_DECORATION_TYPE_MAX,
 };
 //*****************************************************************************
 // 構造体定義

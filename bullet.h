@@ -52,4 +52,5 @@ BULLET *GetBullet(void);
 
 int GetCurMagazine();
 int GetSubMagazine();
-void AddSubMagazine(int num);
+void AddSubMagazine(int num, int type);
+void Reload(int type);

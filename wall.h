@@ -34,6 +34,7 @@ typedef struct _MESHWALL {
 }MESHWALL;
 
 typedef struct _MESHBOX {
+	XMFLOAT3		pos;			//	中心位置
 	XMFLOAT3		vPos[8];		//	頂点位置
 	BOOL			use;			//	使用されているかどうか	
 	char			itemNum;		//	番号

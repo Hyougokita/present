@@ -24,6 +24,8 @@
 
 #define	BULLET_SPEED		(5.0f)			// 弾の移動スピード
 
+#define	HANDGUN_CUR_MAX		(15)			//　ピストルの一つのマガジンの上限
+
 #define DEBUG
 //*****************************************************************************
 // 構造体定義
@@ -52,6 +54,25 @@ static char *g_TextureName[TEXTURE_MAX] =
 
 int g_CurMagazine = 0;	//　現在の弾の数
 int g_SubMagazine = 0;	//	後備の弾の数
+
+//　ピストルの現在と後備弾薬
+int g_HandGunCurMagazine = 0;
+int g_HandGunSubMagazine = 20;
+
+static int curMagazineList[WEAPON_MAX] = {
+	0,
+	g_HandGunCurMagazine,
+};
+
+static int subMagazineList[WEAPON_MAX] = {
+	0,
+	g_HandGunSubMagazine,
+};
+
+static int maxMagazineList[WEAPON_MAX] = {
+	0,
+	HANDGUN_CUR_MAX
+};
 
 //=============================================================================
 // 初期化処理
@@ -129,6 +150,12 @@ void UninitBullet(void)
 //=============================================================================
 void UpdateBullet(void)
 {
+	// プレーヤーが手にあるウェポンにより弾表示の切り替え
+	int weaponType = GetPlayer()->curWeapon;
+	g_CurMagazine = curMagazineList[weaponType];
+	g_SubMagazine = subMagazineList[weaponType];
+
+
 	CAMERA* camera = GetCamera();
 	for (int i = 0; i < MAX_BULLET; i++)
 	{
@@ -168,6 +195,7 @@ void UpdateBullet(void)
 	// デバッグ表示
 	PrintDebugProc("Bullet X:%f Y:%f Z:%f\n", g_Bullet[0].pos.x, g_Bullet[0].pos.y, g_Bullet[0].pos.z);
 	PrintDebugProc("Bullet CameraAT Y:%f CameraPos Y:%f\n", GetCamera()->at.y,GetCamera()->pos.y);
+	PrintDebugProc("Cur:%d,Sub:%d\n", g_CurMagazine, g_SubMagazine);
 
 #endif
 
@@ -295,6 +323,11 @@ HRESULT MakeVertexBullet(void)
 //=============================================================================
 int SetBullet(XMFLOAT3 pos, XMFLOAT3 rot)
 {
+	if (curMagazineList[GetPlayer()->curWeapon] <= 0)
+		return -1;
+
+	curMagazineList[GetPlayer()->curWeapon] -= 1;
+
 	int nIdxBullet = -1;
 
 	for (int nCntBullet = 0; nCntBullet < MAX_BULLET; nCntBullet++)
@@ -356,6 +389,29 @@ int GetSubMagazine() {
 }
 
 //	後備の弾の数を増やす
-void AddSubMagazine(int num) {
-	g_SubMagazine += num;
+void AddSubMagazine(int num, int type) {
+	if(type != WEAPON_NONE)
+	subMagazineList[type] += num;
+}
+
+//　リロード
+void Reload(int type) {
+	if (type != WEAPON_NONE) {
+		//　リロード必要の弾数を計算する
+		int need = maxMagazineList[type] - curMagazineList[type];
+		subMagazineList[type] -= need;
+
+		//	後備弾薬の数が足りない場合
+		if (subMagazineList[type] <= 0) {
+			//　残る後備弾薬を全部ロードする
+			curMagazineList[type] = subMagazineList[type] + maxMagazineList[type];
+			subMagazineList[type] = 0;
+		}
+		//　後備弾薬が足りる場合
+		else
+		{
+			//　ロードする
+			curMagazineList[type] = maxMagazineList[type];
+		}
+	}
 }

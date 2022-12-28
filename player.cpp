@@ -236,6 +236,9 @@ HRESULT InitPlayer(void)
 	g_Player.use = TRUE;			// true:生きてる
 	g_Player.size = PLAYER_SIZE;	// 当たり判定の大きさ
 
+	// ウェポン用
+	g_Player.curWeapon = 0;
+
 	// 射撃用
 	g_Player.shootY = XM_PI;
 
@@ -450,12 +453,12 @@ void UpdatePlayer(void)
 	}
 
 #ifdef _DEBUG
-	if (GetKeyboardPress(DIK_R))
-	{
-		g_Player.pos.z = g_Player.pos.x = 0.0f;
-		g_Player.spd = 0.0f;
-		roty = 0.0f;
-	}
+	//if (GetKeyboardPress(DIK_R))
+	//{
+	//	g_Player.pos.z = g_Player.pos.x = 0.0f;
+	//	g_Player.spd = 0.0f;
+	//	roty = 0.0f;
+	//}
 #endif
 
 
@@ -475,13 +478,23 @@ void UpdatePlayer(void)
 		}
 	}
 
+	// ウェポンの切り替え
+	if (GetKeyboardPress(DIK_2) && g_Player.haveHandgun) {
+		g_Player.curWeapon = WEAPON_HANDGUN;
+	}
 
+	// 弾のリロード
+	if (GetKeyboardTrigger(DIK_R)) {
+		Reload(g_Player.curWeapon);
+	}
 
 
 
 	// 弾発射処理
 	if (IsMouseLeftTriggered())
 	{
+		
+
 		XMFLOAT3 rot;
 		rot = g_Player.front;
 		rot.y = GetCamera()->rot.y + XM_PI;
@@ -615,7 +628,8 @@ void UpdatePlayer(void)
 	//PrintDebugProc("Mouse Pos: X:%f,Y:%f", g_MousePos.x, g_MousePos.y);
 	PrintDebugProc("DisplaySize:%d\n", GetSystemMetrics(SM_CXSCREEN));
 	PrintDebugProc("Player Jump Flag:%d\n", g_Player.jumpType);
-	PrintDebugProc("Player Item Check:%d", g_checkItem);
+	PrintDebugProc("Player Item Check:%d\n", g_checkItem);
+	PrintDebugProc("Player Cur Weapon:%d\n", g_Player.curWeapon);
 
 	//PrintDebugProc("rot:X:%f,Y:%f,Z:%f,\n", rot.x, rot.y, rot.z);
 	//PrintDebugProc("Player front:X:%f,Y:%f,Z:%f,\n", g_Player.front.x, g_Player.front.y, g_Player.front.z);
@@ -899,6 +913,14 @@ int CheckItemHitBox(void) {
 	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
 	for (int i = 0; i < MESHBOX_MAX; i++) {
 		if (meshbox[i].use) {
+			//	計算量の減少(プレーヤーから一定の距離離れると計算しない)
+			float vx, vz;
+			vx = g_Player.pos.x - meshbox[i].pos.x;
+			vz = g_Player.pos.z - meshbox[i].pos.z;
+			float distance = pow(pow(vx, 2) + pow(vz, 2), 0.5f);
+			if (distance > 1.5f * DISTANCE_ITEM_CHECK_RAY)
+				continue;
+			
 			//裏
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[2], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {

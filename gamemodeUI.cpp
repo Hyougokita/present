@@ -33,6 +33,12 @@
 #define UI_GET_HEIGHT				(207.0f*UI_GET_SCALE)
 #define UI_GET_POSITION				(XMFLOAT3(SCREEN_CENTER_X + 1.0f * UI_GET_WIDTH,SCREEN_CENTER_Y,0.0f))
 
+//  ÉsÉXÉgÉã
+#define UI_HANDGUN_SCALE			(0.3f)
+#define UI_HANDGUN_WIDTH			(258.0f*UI_GET_SCALE)
+#define UI_HANDGUN_HEIGHT			(188.0f*UI_GET_SCALE)
+#define UI_HANDGUN_POSITION			(XMFLOAT3(SCREEN_WIDTH - 0.5f * UI_HANDGUN_WIDTH,SCREEN_HEIGHT - 50.0f,0.0f))
+
 //*****************************************************************************
 // ÉvÉçÉgÉ^ÉCÉvêÈåæ
 //*****************************************************************************
@@ -47,6 +53,7 @@ static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// ÉeÉNÉXÉ`É
 static char *g_TexturName[TEXTURE_MAX] = {
 		"data/TEXTURE/gamemodeUI/cross.png",
 		"data/TEXTURE/gamemodeUI/get.png",
+		"data/TEXTURE/gamemodeUI/handgun.png",
 };
 
 
@@ -55,16 +62,19 @@ static GMUI g_GMUI[UI_MAX];
 static float uiTextureWidthList[UI_MAX] = {
 	UI_CROSS_WIDTH,
 	UI_GET_WIDTH,
+	UI_HANDGUN_WIDTH,
 };
 
 static float uiTextureHeightList[UI_MAX] = {
 	UI_CROSS_HEIGHT,
 	UI_GET_HEIGHT,
+	UI_HANDGUN_HEIGHT,
 };
 
 static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
 	UI_CROSS_POSITION,
-	UI_GET_POSITION
+	UI_GET_POSITION,
+	UI_HANDGUN_POSITION,
 };
 
 
@@ -109,6 +119,7 @@ HRESULT InitGMUI(void)
 	}
 	
 	g_GMUI[UI_CROSS].diff = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+	g_GMUI[UI_HANDGUN].diff = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f);
 
 
 	g_Load = TRUE;

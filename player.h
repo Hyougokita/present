@@ -27,6 +27,13 @@ enum PLAYER_JUMP_TYPE {
 	JUMP_NONE,				//	ジャンプしていない
 };
 
+enum PLAYER_WEAPON_TYPE
+{
+	WEAPON_NONE,
+	WEAPON_HANDGUN,
+	WEAPON_MAX,
+};
+
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -38,6 +45,10 @@ struct PLAYER
 	XMFLOAT3			prePos;				// 移動する前の位置を記録する
 	XMFLOAT3			rot;				// モデルの向き(回転)
 	XMFLOAT3			scl;				// モデルの大きさ(スケール)
+
+	//	ウェポンの状態
+	int					curWeapon;			// 現在手にあるウェポン
+	bool				haveHandgun;		// ピストルを持っているかどうか
 
 	//　射撃	
 	float			    shootY;				//　射撃用方向管理	

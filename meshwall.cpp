@@ -14,7 +14,7 @@
 //*****************************************************************************
 #define TEXTURE_MAX			(1)						// テクスチャの数
 
-#define	MAX_MESH_WALL		(20)					// 壁の総数
+#define	MAX_MESH_WALL		(40)					// 壁の総数
 #define	VALUE_MOVE_WALL		(5.0f)					// 移動速度
 #define	VALUE_ROTATE_WALL	(D3DX_PI * 0.001f)		// 回転速度
 

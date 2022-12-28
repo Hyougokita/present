@@ -375,6 +375,8 @@ int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float hei
 			//　HITBOXが対応しているアイテムを記録する
 			g_MeshBox[i].itemNum = itemNum;
 			g_MeshBox[i].itemType = itemType;
+			// 位置を記録する
+			g_MeshBox[i].pos = pos;
 			return i;
 		}
 	}

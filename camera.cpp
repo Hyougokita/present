@@ -227,11 +227,11 @@ void UpdateCamera(void)
 
 #ifdef _DEBUG
 	// ƒJƒƒ‰‚ğ‰Šú‚É–ß‚·
-	if (GetKeyboardPress(DIK_R))
-	{
-		UninitCamera();
-		InitCamera();
-	}
+	//if (GetKeyboardPress(DIK_R))
+	//{
+	//	UninitCamera();
+	//	InitCamera();
+	//}
 #endif
 
 
