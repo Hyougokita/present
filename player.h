@@ -20,7 +20,7 @@
 //　プレイヤージャンプ関連
 #define	JUMP_POWER				(8.0f)					//	ジャンプの大きさ
 #define G						(5.0f)					//　重力
-#define PLAYER_JUMP_COUNT_MAX	(30)					//	ジャンプ時間の上限
+#define PLAYER_JUMP_COUNT_MAX	(25)					//	ジャンプ時間の上限
 enum PLAYER_JUMP_TYPE {
 	JUMP_NORMAL,		//	普通のジャンプ
 	JUMP_OVER_THE_WALL,	//	壁を越えるのジャンプ
@@ -75,8 +75,10 @@ struct PLAYER
 
 	// 階層アニメーション用のメンバー変数
 	float				time;		// 線形補間用
-	int					tblNo;		// 行動データのテーブル番号
+	INTERPOLATION_DATA* tblAdr;		// 行動データのテーブル番号
 	int					tblMax;		// そのテーブルのデータ数
+
+	float				rotX;		// 銃を持っている右手姿勢制御用X方向rot
 
 	// 親は、NULL、子供は親のアドレスを入れる
 	PLAYER				*parent;			// 自分が親ならNULL、自分が子供なら親のplayerアドレス
@@ -91,7 +93,8 @@ enum PARTS_NAME {
 	LEFT_HAND,
 	HEAD,
 	LEFT_LEG,
-	RIGHT_LEG
+	RIGHT_LEG,
+	HAND_GUN
 };
 
 

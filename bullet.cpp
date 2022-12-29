@@ -164,8 +164,9 @@ void UpdateBullet(void)
 			// íeÇÃà⁄ìÆèàóù
 			g_Bullet[i].pos.x += sinf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
 			g_Bullet[i].pos.z -= cosf(g_Bullet[i].rot.y) * g_Bullet[i].spd;
-			//g_Bullet[i].pos.y += cosf(XM_PI / 4) * g_Bullet[i].spd;
 			g_Bullet[i].pos.y += sinf(g_Bullet[i].angleY) * g_Bullet[i].spd;
+			//g_Bullet[i].pos.y += cosf(XM_PI / 4) * g_Bullet[i].spd;
+
 
 			// âeÇÃà íuê›íË
 			SetPositionShadow(g_Bullet[i].shadowIdx, XMFLOAT3(g_Bullet[i].pos.x, 0.1f, g_Bullet[i].pos.z));
@@ -338,6 +339,11 @@ int SetBullet(XMFLOAT3 pos, XMFLOAT3 rot)
 			g_Bullet[nCntBullet].rot = rot;
 			g_Bullet[nCntBullet].scl = { 1.0f, 1.0f, 1.0f };
 			g_Bullet[nCntBullet].angleY = AngleY();
+
+			g_Bullet[nCntBullet].pos.x += sinf(g_Bullet[nCntBullet].rot.y) *  g_Bullet[nCntBullet].spd * 5;
+			g_Bullet[nCntBullet].pos.z -= cosf(g_Bullet[nCntBullet].rot.y) *  g_Bullet[nCntBullet].spd * 5;
+			g_Bullet[nCntBullet].pos.y += sinf(g_Bullet[nCntBullet].angleY) * g_Bullet[nCntBullet].spd * 5;
+
 			g_Bullet[nCntBullet].use = true;
 
 			// âeÇÃê›íË

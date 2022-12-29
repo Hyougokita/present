@@ -305,13 +305,13 @@ void DrawGame(void)
 
 	// プレイヤー視点
 	pos = GetPlayer()->pos;
-	pos.y +=  GetCamera()->upDown + PLAYER_HEAD_HEIGHT;			// カメラ酔いを防ぐためにクリアしている
+	pos.y +=  GetCamera()->upDown + PLAYER_HEAD_HEIGHT;
 								//	頭の高さ
 	
 
 
-	pos.x -= sinf(GetPlayer()->rot.y + GetCamera()->rot.y) * 50.0f;
-	pos.z += cosf(GetPlayer()->rot.y + GetCamera()->rot.y) * 50.0f;
+	pos.x -= sinf(GetPlayer()->rot.y + GetCamera()->rot.y) * GetCamera()->len;
+	pos.z += cosf(GetPlayer()->rot.y + GetCamera()->rot.y) * GetCamera()->len;
 	SetCameraAT(pos);
 	SetCamera();
 
@@ -328,9 +328,9 @@ void DrawGame(void)
 		DrawGame0();
 
 		// エネミー視点
-		pos = GetEnemy()->pos;
+		pos = GetPlayer()->pos;
 		pos.y = 0.0f;
-		SetCameraAT(pos);
+		SetCameraAT2(pos);
 		SetCamera();
 		SetViewPort(TYPE_RIGHT_HALF_SCREEN);
 		DrawGame0();

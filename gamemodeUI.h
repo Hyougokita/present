@@ -11,6 +11,7 @@ enum UITexture
 	UI_CROSS,	//	è∆èÄ
 	UI_GET,		//	ì¸éË	
 	UI_HANDGUN,	//	ÉsÉXÉgÉã
+	UI_WEAPON_NONE,
 	UI_MAX,
 };
 
@@ -38,4 +39,5 @@ void UninitGMUI(void);
 void UpdateGMUI(void);
 void DrawGMUI(void);
 void TurnOnOffUI(int num, bool onoff);
+void ChangeUIDiff(int num, XMFLOAT4 diff);
 

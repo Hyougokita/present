@@ -23,11 +23,11 @@
 
 #define	VIEW_ANGLE		(XMConvertToRadians(45.0f))						// ビュー平面の視野角
 #define	VIEW_ASPECT		((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT)	// ビュー平面のアスペクト比	
-#define	VIEW_NEAR_Z		(10.0f)											// ビュー平面のNearZ値
+#define	VIEW_NEAR_Z		(0.1f)											// ビュー平面のNearZ値
 #define	VIEW_FAR_Z		(10000.0f)										// ビュー平面のFarZ値
 
 #define	VALUE_MOVE_CAMERA	(2.0f)										// カメラの移動量
-#define	VALUE_ROTATE_CAMERA	(XM_PI * 0.01f)								// カメラの回転量
+#define	VALUE_ROTATE_CAMERA	(XM_PI * 0.005f)								// カメラの回転量
 
 bool g_LockMouse = true;
 //*****************************************************************************
@@ -98,7 +98,7 @@ void UpdateCamera(void)
 		g_MousePos.x = (float)lpPoint.x;
 		g_MousePos.y = (float)lpPoint.y;
 
-		if ((int)GetMouseX() + 10.0f< SCREEN_CENTER_X)
+		if ((int)GetMouseX() + 8.0f< SCREEN_CENTER_X)
 		{// 視点旋回「左」
 			g_Camera.rot.y += VALUE_ROTATE_CAMERA;
 			if (g_Camera.rot.y > XM_PI)
@@ -110,8 +110,8 @@ void UpdateCamera(void)
 			g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * g_Camera.len;
 		}
 
-		if ((int)GetMouseX() - 10.0f > SCREEN_CENTER_X)
-		{// 視点旋回「右」
+		if ((int)GetMouseX() - 8.0f > SCREEN_CENTER_X)
+		{// 視点旋回「上」
 			g_Camera.rot.y -= VALUE_ROTATE_CAMERA;
 			if (g_Camera.rot.y < -XM_PI)
 			{
@@ -122,18 +122,18 @@ void UpdateCamera(void)
 			g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * g_Camera.len;
 		}
 
-		if ((int)GetMouseY() + 10.0f < 240.0f)
-		{// 視点旋回「右」
-			g_Camera.upDown += 2.0f;
+		if ((int)GetMouseY() + 5.0f < 240.0f)
+		{// 視点旋回「下」
+			g_Camera.upDown += 1.0f;
 
 			if (g_Camera.upDown >= 50.0f) {
 				g_Camera.upDown = 50.0f;
 			}
 		}
 
-		if ((int)GetMouseY() - 10.0f > 240.0f)
+		if ((int)GetMouseY() - 5.0f > 240.0f)
 		{// 視点旋回「右」
-			g_Camera.upDown -= 2.0f;
+			g_Camera.upDown -= 1.0f;
 
 			if (g_Camera.upDown <= -50.0f) {
 				g_Camera.upDown = -50.0f;
@@ -368,5 +368,17 @@ void SetCameraAT(XMFLOAT3 pos)
 	g_Camera.pos.z = GetPlayer()->pos.z;
 	g_Camera.pos.y = GetPlayer()->pos.y + PLAYER_HEAD_HEIGHT;
 										//↑頭の高さ
+}
+
+void SetCameraAT2(XMFLOAT3 pos)
+{
+	// カメラの注視点をプレイヤーの座標にしてみる
+	g_Camera.at = pos;
+
+	// カメラの視点をカメラのY軸回転に対応させている
+	g_Camera.pos.x = g_Camera.at.x - sinf(g_Camera.rot.y) * g_Camera.len;
+	g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * g_Camera.len;
+
+
 }
 

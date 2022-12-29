@@ -16,14 +16,15 @@
 #include "meshwall.h"
 #include "wall.h"
 #include "bullet.h"
+#include "gamemodeUI.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define	MODEL_ITEM_AMMO							"data/MODEL/ammo.obj"					// 読み込むモデル名
-#define	MODEL_ITEM_HANDGUN						"data/MODEL/handgun_table.obj"			// 読み込むモデル名
-#define	MODEL_ITEM_TABLE00						"data/MODEL/table00.obj"				// 読み込むモデル名
-#define	MODEL_ITEM_TABLE_AMMO					"data/MODEL/table01.obj"				// 読み込むモデル名
-#define	MODEL_ITEM_TABLE_HANDGUN				"data/MODEL/table02.obj"				// 読み込むモデル名
+#define	MODEL_ITEM_AMMO							"data/MODEL/item/ammo.obj"					// 読み込むモデル名
+#define	MODEL_ITEM_HANDGUN						"data/MODEL/item/handgun_table.obj"			// 読み込むモデル名
+#define	MODEL_ITEM_TABLE00						"data/MODEL/item/table00.obj"				// 読み込むモデル名
+#define	MODEL_ITEM_TABLE_AMMO					"data/MODEL/item/table01.obj"				// 読み込むモデル名
+#define	MODEL_ITEM_TABLE_HANDGUN				"data/MODEL/item/table02.obj"				// 読み込むモデル名
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -192,6 +193,8 @@ void DestoryItem(int num, char itemType) {
 	if (itemType == ITEM_HAND_GUN) {
 		g_ItemHandgun[num].use = false;
 		GetPlayer()->haveHandgun = true;
+		TurnOnOffUI(UI_HANDGUN, true);
+
 	}
 }
 

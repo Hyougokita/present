@@ -35,7 +35,7 @@
 #define MODE_BEAR_LEFT_LEG		"data/MODEL/bear_leftleg.obj"
 
 //	武器のモデル名
-#define MODE_HAND_GUN			"data/MODEL/handgun.obj"
+#define MODE_HAND_GUN			"data/MODEL/handgun2.obj"
 
 char* playerModelPath[5] =
 { MODE_BERA_RIGHT_HAND,
@@ -156,6 +156,13 @@ enum PLAYER_HOKAN_TYPE
 
 	};
 
+	static INTERPOLATION_DATA right_hand_gun_tbl_right[] = {	// pos, rot, scl, frame
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 2, 0.0f, 0.0f), norScl2, 15 },
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 2, 0.0f, 0.0f), norScl2, 15 },
+	{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(XM_PI / 2, 0.0f, 0.0f), norScl2, 15 },
+
+	};
+
 	static INTERPOLATION_DATA move_tbl_right_leg[] = {	// pos, rot, scl, frame
 		{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), norScl2, 15 },
 		{ XMFLOAT3(0.0f, -0.0f, 0.0f), XMFLOAT3(-XM_PI / 8, 0.0f, 0.0f), norScl2, 15 },
@@ -203,6 +210,17 @@ enum PLAYER_HOKAN_TYPE
 		move_tbl_left_leg,
 		move_tbl_right_leg,
 		move_tbl_right
+
+	};
+
+	static INTERPOLATION_DATA* g_MoveWithGunTblAdr[] =
+	{
+		right_hand_gun_tbl_right,
+		move_tbl_left,
+		move_tbl_head,
+		move_tbl_left_leg,
+		move_tbl_right_leg,
+		right_hand_gun_tbl_right
 
 	};
 
@@ -311,7 +329,7 @@ HRESULT InitPlayer(void)
 
 			// 階層アニメーション用のメンバー変数の初期化
 			g_Parts[i].time = 0.0f;			// 線形補間用のタイマーをクリア
-			g_Parts[i].tblNo = i;			// 再生する行動データテーブルNoをセット
+			g_Parts[i].tblAdr = g_MoveTblAdr[i];			// 再生する行動データテーブルNoをセット
 			g_Parts[i].tblMax = 3;			// 再生する行動データテーブルのレコード数をセット
 
 			// パーツの読み込みはまだしていない
@@ -383,16 +401,6 @@ void UpdatePlayer(void)
 		TurnOnOffUI(UI_GET, false);
 	}
 
-
-	if (g_FirstMouseLoad == false) {
-		//GetCursorPos(&lpPoint);
-		//g_MousePos.x = (float)lpPoint.x;
-		//g_MousePos.y = (float)lpPoint.y;
-		//g_FirstMouseLoad = true;
-
-	}
-
-
 	CAMERA *cam = GetCamera();
 	g_isMove = false;
 	g_Player.spd = 0.0f;
@@ -453,12 +461,7 @@ void UpdatePlayer(void)
 	}
 
 #ifdef _DEBUG
-	//if (GetKeyboardPress(DIK_R))
-	//{
-	//	g_Player.pos.z = g_Player.pos.x = 0.0f;
-	//	g_Player.spd = 0.0f;
-	//	roty = 0.0f;
-	//}
+
 #endif
 
 
@@ -479,9 +482,32 @@ void UpdatePlayer(void)
 	}
 
 	// ウェポンの切り替え
-	if (GetKeyboardPress(DIK_2) && g_Player.haveHandgun) {
-		g_Player.curWeapon = WEAPON_HANDGUN;
+	if ((GetKeyboardTrigger(DIK_1) || GetKeyboardTrigger(DIK_2))) {
+		if (g_Player.haveHandgun && GetKeyboardTrigger(DIK_1)) {
+			g_Player.curWeapon = WEAPON_NONE;
+			ChangeUIDiff(UI_WEAPON_NONE, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.9f));
+			ChangeUIDiff(UI_HANDGUN, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
+
+		if (g_Player.haveHandgun && GetKeyboardTrigger(DIK_2)) {
+			g_Player.curWeapon = WEAPON_HANDGUN;
+			ChangeUIDiff(UI_HANDGUN, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.9f));
+			ChangeUIDiff(UI_WEAPON_NONE, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
+
+		if (g_Player.curWeapon != WEAPON_NONE) {
+			for (int i = 0; i < PLAYER_PARTS_MAX; i++) {
+				g_Parts[i].tblAdr = g_MoveWithGunTblAdr[i];
+			}
+		}
+		else {
+			for (int i = 0; i < PLAYER_PARTS_MAX; i++) {
+				g_Parts[i].tblAdr = g_MoveTblAdr[i];
+			}
+		}
 	}
+
+
 
 	// 弾のリロード
 	if (GetKeyboardTrigger(DIK_R)) {
@@ -630,6 +656,7 @@ void UpdatePlayer(void)
 	PrintDebugProc("Player Jump Flag:%d\n", g_Player.jumpType);
 	PrintDebugProc("Player Item Check:%d\n", g_checkItem);
 	PrintDebugProc("Player Cur Weapon:%d\n", g_Player.curWeapon);
+	PrintDebugProc("AngleY:%f", AngleY());
 
 	//PrintDebugProc("rot:X:%f,Y:%f,Z:%f,\n", rot.x, rot.y, rot.z);
 	//PrintDebugProc("Player front:X:%f,Y:%f,Z:%f,\n", g_Player.front.x, g_Player.front.y, g_Player.front.z);
@@ -642,6 +669,8 @@ void UpdatePlayer(void)
 //=============================================================================
 void DrawPlayer(void)
 {
+	
+
 	XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld, quatMatrix;
 
 	// カリング無効
@@ -655,7 +684,7 @@ void DrawPlayer(void)
 	mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
 
 	// 回転を反映
-	mtxRot = XMMatrixRotationRollPitchYaw(g_Player.rot.x, g_Player.rot.y + XM_PI, g_Player.rot.z);
+	mtxRot = XMMatrixRotationRollPitchYaw(g_Player.rot.x, -GetCamera()->rot.y + XM_PI, g_Player.rot.z);
 	mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
 
 	// クォータニオンを反映
@@ -678,15 +707,20 @@ void DrawPlayer(void)
 	// モデル描画
 	DrawModel(&g_Player.model);
 
+	
 
 
+	g_Parts[RIGHT_HAND].rot.x += AngleY();
+	g_Parts[HAND_GUN].rot.x += AngleY();
+	PrintDebugProc("Part HandGun Rot X:%f\n",g_Parts[HAND_GUN].rot.x);
 	// パーツの階層アニメーション
 	for (int i = 0; i < PLAYER_PARTS_MAX; i++)
 	{
 		DrawPlayerSingle(&g_Parts[i]);
 
 	}
-
+	g_Parts[RIGHT_HAND].rot.x -= AngleY();
+	g_Parts[HAND_GUN].rot.x -= AngleY();
 	//SetFuchi(0);
 
 	// カリング設定を戻す
@@ -791,7 +825,7 @@ void SenkeihokanPlayer(PLAYER* player, int type) {
 		int nowNo = (int)player->time;			// 整数分であるテーブル番号を取り出している
 		int maxNo = player->tblMax;				// 登録テーブル数を数えている
 		int nextNo = (nowNo + 1) % maxNo;			// 移動先テーブルの番号を求めている
-		INTERPOLATION_DATA* tbl = g_MoveTblAdr[player->tblNo];	// 行動テーブルのアドレスを取得
+		INTERPOLATION_DATA* tbl = player->tblAdr;	// 行動テーブルのアドレスを取得
 
 		XMVECTOR nowPos = XMLoadFloat3(&tbl[nowNo].pos);	// XMVECTORへ変換
 		XMVECTOR nowRot = XMLoadFloat3(&tbl[nowNo].rot);	// XMVECTORへ変換

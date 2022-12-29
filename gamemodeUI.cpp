@@ -37,7 +37,12 @@
 #define UI_HANDGUN_SCALE			(0.3f)
 #define UI_HANDGUN_WIDTH			(258.0f*UI_GET_SCALE)
 #define UI_HANDGUN_HEIGHT			(188.0f*UI_GET_SCALE)
-#define UI_HANDGUN_POSITION			(XMFLOAT3(SCREEN_WIDTH - 0.5f * UI_HANDGUN_WIDTH,SCREEN_HEIGHT - 50.0f,0.0f))
+#define UI_HANDGUN_POSITION			(XMFLOAT3(SCREEN_WIDTH - 0.5f * UI_HANDGUN_WIDTH,SCREEN_HEIGHT - UI_HANDGUN_HEIGHT- 100.0f,0.0f))
+
+//　ウェポンなし
+#define UI_WEAPON_NONE_POSITION		(XMFLOAT3(SCREEN_WIDTH - 0.5f * UI_HANDGUN_WIDTH,SCREEN_HEIGHT - 100.0f ,0.0f))
+
+
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -54,6 +59,7 @@ static char *g_TexturName[TEXTURE_MAX] = {
 		"data/TEXTURE/gamemodeUI/cross.png",
 		"data/TEXTURE/gamemodeUI/get.png",
 		"data/TEXTURE/gamemodeUI/handgun.png",
+		"data/TEXTURE/gamemodeUI/weaponNone.png",
 };
 
 
@@ -63,11 +69,13 @@ static float uiTextureWidthList[UI_MAX] = {
 	UI_CROSS_WIDTH,
 	UI_GET_WIDTH,
 	UI_HANDGUN_WIDTH,
+	UI_HANDGUN_WIDTH,
 };
 
 static float uiTextureHeightList[UI_MAX] = {
 	UI_CROSS_HEIGHT,
 	UI_GET_HEIGHT,
+	UI_HANDGUN_HEIGHT,
 	UI_HANDGUN_HEIGHT,
 };
 
@@ -75,6 +83,7 @@ static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
 	UI_CROSS_POSITION,
 	UI_GET_POSITION,
 	UI_HANDGUN_POSITION,
+	UI_WEAPON_NONE_POSITION,
 };
 
 
@@ -120,6 +129,8 @@ HRESULT InitGMUI(void)
 	
 	g_GMUI[UI_CROSS].diff = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	g_GMUI[UI_HANDGUN].diff = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f);
+	g_GMUI[UI_HANDGUN].use = false;
+	g_GMUI[UI_WEAPON_NONE].diff = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.9f);
 
 
 	g_Load = TRUE;
@@ -217,4 +228,8 @@ void DrawGMUI(void)
 //　指定されたUIの表示のON/OFF
 void TurnOnOffUI(int num,bool onoff) {
 	g_GMUI[num].use = onoff;
+}
+
+void ChangeUIDiff(int num, XMFLOAT4 diff) {
+	g_GMUI[num].diff = diff;
 }
