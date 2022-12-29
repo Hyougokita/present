@@ -42,7 +42,12 @@
 //　ウェポンなし
 #define UI_WEAPON_NONE_POSITION		(XMFLOAT3(SCREEN_WIDTH - 0.5f * UI_HANDGUN_WIDTH,SCREEN_HEIGHT - 100.0f ,0.0f))
 
-
+//  Reload
+#define UI_RELOAD_SCALE				(0.5f)
+#define UI_RELOAD_WIDTH				(333.0f * UI_RELOAD_SCALE)
+#define UI_RELOAD_HEIGHT			(49.0f * UI_RELOAD_SCALE)
+#define UI_RELOAD_BG_POSITION		(XMFLOAT3(SCREEN_CENTER_X,SCREEN_CENTER_Y + UI_RELOAD_HEIGHT + 20.0f,0.0f))
+#define UI_RELOAD_TEXT_POSITION		(XMFLOAT3(SCREEN_CENTER_X,SCREEN_CENTER_Y + UI_RELOAD_HEIGHT * 2 + 20.0f,0.0f))
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -53,13 +58,16 @@
 // グローバル変数
 //*****************************************************************************
 static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11ShaderResourceView	*g_Texture[UI_MAX] = { NULL };	// テクスチャ情報
 
-static char *g_TexturName[TEXTURE_MAX] = {
+static char *g_TexturName[UI_MAX] = {
 		"data/TEXTURE/gamemodeUI/cross.png",
 		"data/TEXTURE/gamemodeUI/get.png",
 		"data/TEXTURE/gamemodeUI/handgun.png",
 		"data/TEXTURE/gamemodeUI/weaponNone.png",
+		"data/TEXTURE/gamemodeUI/loading_background.png",
+		"data/TEXTURE/gamemodeUI/loading_fill.png",
+		"data/TEXTURE/gamemodeUI/loading_text.png",
 };
 
 
@@ -70,6 +78,9 @@ static float uiTextureWidthList[UI_MAX] = {
 	UI_GET_WIDTH,
 	UI_HANDGUN_WIDTH,
 	UI_HANDGUN_WIDTH,
+	UI_RELOAD_WIDTH,
+	UI_RELOAD_WIDTH,
+	UI_RELOAD_WIDTH,
 };
 
 static float uiTextureHeightList[UI_MAX] = {
@@ -77,6 +88,9 @@ static float uiTextureHeightList[UI_MAX] = {
 	UI_GET_HEIGHT,
 	UI_HANDGUN_HEIGHT,
 	UI_HANDGUN_HEIGHT,
+	UI_RELOAD_HEIGHT,
+	UI_RELOAD_HEIGHT,
+	UI_RELOAD_HEIGHT,
 };
 
 static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
@@ -84,6 +98,9 @@ static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
 	UI_GET_POSITION,
 	UI_HANDGUN_POSITION,
 	UI_WEAPON_NONE_POSITION,
+	UI_RELOAD_BG_POSITION,
+	UI_RELOAD_BG_POSITION,
+	UI_RELOAD_TEXT_POSITION,
 };
 
 
@@ -125,12 +142,19 @@ HRESULT InitGMUI(void)
 		g_GMUI[i].width = uiTextureWidthList[i];
 		g_GMUI[i].height = uiTextureHeightList[i];
 		g_GMUI[i].diff = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
 	}
 	
 	g_GMUI[UI_CROSS].diff = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	g_GMUI[UI_HANDGUN].diff = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f);
 	g_GMUI[UI_HANDGUN].use = false;
 	g_GMUI[UI_WEAPON_NONE].diff = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.9f);
+
+	g_GMUI[UI_RELOAD_BG].use = false;
+	g_GMUI[UI_RELOAD_FILL].use = false;
+	g_GMUI[UI_RELOAD_TEXT].use = false;
+
+
 
 
 	g_Load = TRUE;
@@ -208,7 +232,17 @@ void DrawGMUI(void)
 				GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[i]);
 
 				// １枚のポリゴンの頂点とテクスチャ座標を設定
-				SetSpriteColor(g_VertexBuffer, g_GMUI[i].pos.x, g_GMUI[i].pos.y, g_GMUI[i].width, g_GMUI[i].height, 0.0f, 0.0f, 1.0f, 1.0f, g_GMUI[i].diff);
+				// UI_FILL の場合
+				if (i == UI_RELOAD_FILL) {
+					SetSpriteLeftTopColor(g_VertexBuffer, 
+						g_GMUI[i].pos.x - uiTextureWidthList[i] * 0.5f,
+						g_GMUI[i].pos.y - uiTextureHeightList[i] * 0.5f,
+						g_GMUI[i].width, g_GMUI[i].height, 0.0f, 0.0f, 1.0f, 1.0f, g_GMUI[i].diff);
+				}
+				//	その他の場合
+				else {
+					SetSpriteColor(g_VertexBuffer, g_GMUI[i].pos.x, g_GMUI[i].pos.y, g_GMUI[i].width, g_GMUI[i].height, 0.0f, 0.0f, 1.0f, 1.0f, g_GMUI[i].diff);
+				}
 
 				// ポリゴン描画
 				GetDeviceContext()->Draw(4, 0);
@@ -230,6 +264,29 @@ void TurnOnOffUI(int num,bool onoff) {
 	g_GMUI[num].use = onoff;
 }
 
+// UIのアルファ値を変更する関数
 void ChangeUIDiff(int num, XMFLOAT4 diff) {
 	g_GMUI[num].diff = diff;
+}
+
+// UIのwidth値を変更する関数
+void ChangeUIWidth(int num, float scl) {
+	g_GMUI[num].width = uiTextureWidthList[num] * scl;
+}
+
+// 指定されたUIのdiff値を得る
+XMFLOAT4 GetUIDiff(int num) {
+	return g_GMUI[num].diff;
+}
+
+// リロードのUIのON/OFF
+void TurnReloadUIOnOff(bool status) {
+	g_GMUI[UI_RELOAD_BG].use = status;
+	g_GMUI[UI_RELOAD_FILL].use = status;
+	g_GMUI[UI_RELOAD_TEXT].use = status;
+
+	g_GMUI[UI_RELOAD_BG].diff.w = 1.0f;
+	g_GMUI[UI_RELOAD_FILL].diff.w = 1.0f;
+	g_GMUI[UI_RELOAD_TEXT].diff.w = 1.0f;
+
 }

@@ -21,6 +21,9 @@
 #define	JUMP_POWER				(8.0f)					//	ジャンプの大きさ
 #define G						(5.0f)					//　重力
 #define PLAYER_JUMP_COUNT_MAX	(25)					//	ジャンプ時間の上限
+
+
+
 enum PLAYER_JUMP_TYPE {
 	JUMP_NORMAL,		//	普通のジャンプ
 	JUMP_OVER_THE_WALL,	//	壁を越えるのジャンプ
@@ -47,8 +50,13 @@ struct PLAYER
 	XMFLOAT3			scl;				// モデルの大きさ(スケール)
 
 	//	ウェポンの状態
+	int					preWeapon;			// 切り替え前のウェポンを記録する
 	int					curWeapon;			// 現在手にあるウェポン
 	bool				haveHandgun;		// ピストルを持っているかどうか
+
+	//	リロード
+	bool				isReloading;		//　リロードしているかどうか
+	int					reloadCount;		//	リロード用カウント
 
 	//　射撃	
 	float			    shootY;				//　射撃用方向管理	

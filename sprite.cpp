@@ -207,3 +207,32 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 
 }
 
+void SetSpriteLeftTopColor(ID3D11Buffer* buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH,XMFLOAT4 diff)
+{
+	D3D11_MAPPED_SUBRESOURCE msr;
+	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+
+	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
+
+	// ¶ã‚ðŒ´“_‚Æ‚µ‚ÄÝ’è‚·‚éƒvƒƒOƒ‰ƒ€
+	vertex[0].Position = XMFLOAT3(X, Y, 0.0f);
+	vertex[0].Diffuse = diff;
+	vertex[0].TexCoord = XMFLOAT2(U, V);
+
+	vertex[1].Position = XMFLOAT3(X + Width, Y, 0.0f);
+	vertex[1].Diffuse = diff;
+	vertex[1].TexCoord = XMFLOAT2(U + UW, V);
+
+	vertex[2].Position = XMFLOAT3(X, Y + Height, 0.0f);
+	vertex[2].Diffuse = diff;
+	vertex[2].TexCoord = XMFLOAT2(U, V + VH);
+
+	vertex[3].Position = XMFLOAT3(X + Width, Y + Height, 0.0f);
+	vertex[3].Diffuse = diff;
+	vertex[3].TexCoord = XMFLOAT2(U + UW, V + VH);
+
+
+
+	GetDeviceContext()->Unmap(buf, 0);
+
+}

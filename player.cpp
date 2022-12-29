@@ -82,6 +82,14 @@ bool g_FirstMouseLoad = false;
 // アイテムを確認するための射線の長さ
 #define DISTANCE_ITEM_CHECK_RAY	(100.0f)
 
+// Reload time
+#define PISTOL_RELOAD_TIME		(400)
+
+static int reloadTimeList[WEAPON_MAX] = {
+	0,
+	PISTOL_RELOAD_TIME,
+};
+
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -91,6 +99,7 @@ BOOL CheckTestWall(void);
 void SenkeihokanPlayer(PLAYER* player, int type);		//	線形補間計算
 void DrawPlayerSingle(PLAYER* player);					//	プレーヤー単体の描画
 int CheckItemHitBox(void);
+void SetReloadBarFlash(int period);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -256,6 +265,8 @@ HRESULT InitPlayer(void)
 
 	// ウェポン用
 	g_Player.curWeapon = 0;
+	g_Player.preWeapon = 0;
+	g_Player.haveHandgun = false;
 
 	// 射撃用
 	g_Player.shootY = XM_PI;
@@ -483,35 +494,74 @@ void UpdatePlayer(void)
 
 	// ウェポンの切り替え
 	if ((GetKeyboardTrigger(DIK_1) || GetKeyboardTrigger(DIK_2))) {
+		// 切り替え前のウェポンを記録する
+		g_Player.preWeapon = g_Player.curWeapon;
+
+		// 押したキーにより　ウェポンを切り替える　UIのアルファ値を変更する
+		// ウェポンなし
 		if (g_Player.haveHandgun && GetKeyboardTrigger(DIK_1)) {
 			g_Player.curWeapon = WEAPON_NONE;
 			ChangeUIDiff(UI_WEAPON_NONE, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.9f));
 			ChangeUIDiff(UI_HANDGUN, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f));
 		}
-
+		//　ピストル
 		if (g_Player.haveHandgun && GetKeyboardTrigger(DIK_2)) {
 			g_Player.curWeapon = WEAPON_HANDGUN;
 			ChangeUIDiff(UI_HANDGUN, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.9f));
 			ChangeUIDiff(UI_WEAPON_NONE, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f));
 		}
 
+		// ウェポンを持っているかどうかにより　プレーヤーの姿勢制御
+		// ウェポン持っていない場合
 		if (g_Player.curWeapon != WEAPON_NONE) {
 			for (int i = 0; i < PLAYER_PARTS_MAX; i++) {
 				g_Parts[i].tblAdr = g_MoveWithGunTblAdr[i];
 			}
 		}
+		//　ウェポンを持っている場合
 		else {
 			for (int i = 0; i < PLAYER_PARTS_MAX; i++) {
 				g_Parts[i].tblAdr = g_MoveTblAdr[i];
 			}
 		}
+
+		// 切り替え後の比較　リロード状態でウェポンを切り替えなら　リロードを中断する
+		if (g_Player.isReloading && (g_Player.preWeapon != g_Player.curWeapon)) {
+			g_Player.isReloading = false;
+			TurnReloadUIOnOff(false);
+		}
 	}
 
 
 
-	// 弾のリロード
-	if (GetKeyboardTrigger(DIK_R)) {
-		Reload(g_Player.curWeapon);
+	// 弾のリロード(リロードするとき射撃できない)
+	if (GetKeyboardTrigger(DIK_R) && g_Player.isReloading == false) {
+		//　リロード中ならリロードしない	かつ　ウェポンを持っている場合
+		if (g_Player.isReloading == false && g_Player.curWeapon != WEAPON_NONE) {
+			g_Player.reloadCount = 0;		// リロードカウントの初期化
+			g_Player.isReloading = true;	// リロード状態になる
+			// リロードのUIをONにする
+			TurnReloadUIOnOff(true);
+		}
+
+	}
+
+	//　リロード状態中なら
+	if (g_Player.isReloading) {
+		SetReloadBarFlash(20);
+		// リロードの進捗によりUIのWidth値を調整する
+		float scl = (float)g_Player.reloadCount / (float)reloadTimeList[g_Player.curWeapon];
+		ChangeUIWidth(UI_RELOAD_FILL, scl);
+
+
+		g_Player.reloadCount++;
+		if (g_Player.reloadCount > reloadTimeList[g_Player.curWeapon]) {
+			// リロード状態終了
+			g_Player.isReloading = false;
+			TurnReloadUIOnOff(false);
+			// 現在と後備弾薬を計算する
+			Reload(g_Player.curWeapon);
+		}
 	}
 
 
@@ -1014,3 +1064,14 @@ int CheckItemHitBox(void) {
 	return -1;
 }
 
+// リロードのバーを点滅させる
+void SetReloadBarFlash(int period) {
+	int result = (g_Player.reloadCount % (period * 2)) / period;
+	float result2 = ((float)(g_Player.reloadCount % period) / period);
+	float diffW = 1.0f - (result2 * pow(-1,result));
+	PrintDebugProc("result 1:%d\n", result);
+	PrintDebugProc("result 2:%f\n", result2);
+	PrintDebugProc("result 1:%f\n", diffW);
+	ChangeUIDiff(UI_RELOAD_TEXT, XMFLOAT4(1.0f, 1.0f, 1.0f, diffW));
+	ChangeUIDiff(UI_RELOAD_FILL, XMFLOAT4(1.0f, 1.0f, 1.0f, diffW));
+}
