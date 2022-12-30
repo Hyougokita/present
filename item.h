@@ -18,6 +18,7 @@
 enum ITEM_TYPE {
 	ITEM_AMMO_BOX,
 	ITEM_HAND_GUN,
+	ITEM_TYPE_BOX,
 	ITEM_TYPE_MAX
 };
 
@@ -35,10 +36,15 @@ enum ITEM_HANDGUN_POSITION_TYPE
 	ITEM_HANDGUN_MAX,
 };
 
+// ITEM BOX
+enum ITEM_BOX_POSITION_TYPE {
+	ITEM_BOX_TEST,
+	ITEM_BOX_MAX,
+};
+
 // ITEM DECORATION
 enum ITEM_DECORATION_TYPE {
 	ITEM_DECORATION_TABLE00,
-
 	ITEM_DECORATION_TYPE_MAX,
 };
 //*****************************************************************************
@@ -75,4 +81,5 @@ void UpdateItem(void);
 void DrawItem(void);
 
 ITEM *GetItemBullet(void);
+ITEM* GetItemBox();
 void DestoryItem(int num, char itemType);

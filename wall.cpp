@@ -370,6 +370,11 @@ int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float hei
 
 			// back
 			InitMeshWall(backPos, backrot, diff, 1, 1, width, height);
+
+			// up
+			XMFLOAT3 upPos = pos;
+			pos.y += 0.5f * height;
+			//InitMeshField(upPos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1, 1, width, depth);
 #endif // DEBUG
 			g_MeshBox[i].use = true;
 			//　HITBOXが対応しているアイテムを記録する

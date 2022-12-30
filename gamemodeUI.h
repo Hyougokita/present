@@ -8,13 +8,14 @@
 
 enum UITexture
 {
-	UI_CROSS,	//	照準
-	UI_GET,		//	入手	
-	UI_HANDGUN,	//	ピストル
-	UI_WEAPON_NONE,
-	UI_RELOAD_BG,
-	UI_RELOAD_FILL,
-	UI_RELOAD_TEXT,
+	UI_CROSS,			//	照準
+	UI_GET,				//	入手	
+	UI_MOVE,			//  箱を移動させる
+	UI_HANDGUN,			//	ピストル
+	UI_WEAPON_NONE,		//	武器なしのアイコン
+	UI_RELOAD_BG,		//　リロードのBG
+	UI_RELOAD_FILL,		//　リロードの真ん中の部分
+	UI_RELOAD_TEXT,		//  リロードのテキスト
 	UI_MAX,
 };
 

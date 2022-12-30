@@ -20,11 +20,10 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define	MODEL_ITEM_AMMO							"data/MODEL/item/ammo.obj"					// 読み込むモデル名
-#define	MODEL_ITEM_HANDGUN						"data/MODEL/item/handgun_table.obj"			// 読み込むモデル名
-#define	MODEL_ITEM_TABLE00						"data/MODEL/item/table00.obj"				// 読み込むモデル名
-#define	MODEL_ITEM_TABLE_AMMO					"data/MODEL/item/table01.obj"				// 読み込むモデル名
-#define	MODEL_ITEM_TABLE_HANDGUN				"data/MODEL/item/table02.obj"				// 読み込むモデル名
+#define	MODEL_ITEM_AMMO							"data/MODEL/item/ammo.obj"					// 弾薬ボックス
+#define	MODEL_ITEM_HANDGUN						"data/MODEL/item/handgun_table.obj"			// 机上のピストル
+#define	MODEL_ITEM_TABLE00						"data/MODEL/item/table00.obj"				// 机
+#define	MODEL_ITEM_BOX							"data/MODEL/box.obj"					// 箱（移動させる　乗せる）
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -48,6 +47,7 @@ void InitItemSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOA
 static ITEM			g_ItemBullet[ITEM_AMMO_MAX];				// AMMO
 static ITEM			g_ItemDecoration[ITEM_DECORATION_TYPE_MAX];	// 飾り用アイテム
 static ITEM			g_ItemHandgun[ITEM_HANDGUN_MAX];			// ピストル
+static ITEM			g_ItemBox[ITEM_BOX_MAX];					// ボックス
 
 static BOOL			g_Load = FALSE;
 
@@ -102,6 +102,13 @@ HRESULT InitItem(void)
 			pos.y += 14.0f;
 		}
 		InitItemWithHitBoxSingle(&g_ItemHandgun[i], MODEL_ITEM_HANDGUN, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.2f, ITEM_SIZE, true, 60.0f, 16.0f, 56.0f, i, ITEM_HAND_GUN);
+	}
+
+	// ボックスの初期化
+	for (int i = 0; i < ITEM_BOX_MAX; i++)
+	{
+		XMFLOAT3 pos = XMFLOAT3(-50.0f, 5.0f, 0.0f);
+		InitItemWithHitBoxSingle(&g_ItemBox[i], MODEL_ITEM_BOX, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_BOX);
 	}
 
 	//g_ItemBullet[ITEM_AMMO_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
@@ -164,6 +171,13 @@ void DrawItem(void)
 		DrawItemSingle(&g_ItemHandgun[i]);
 	}
 
+	// ボックスの描画
+	for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
+	{
+		if (g_ItemBox[i].use == false) continue;
+		DrawItemSingle(&g_ItemBox[i]);
+	}
+
 	//　飾り用アイテムの描画
 	for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
 		if (g_ItemDecoration[i].use == false) continue;
@@ -182,6 +196,10 @@ void DrawItem(void)
 ITEM *GetItemBullet()
 {
 	return &g_ItemBullet[0];
+}
+
+ITEM* GetItemBox() {
+	return &g_ItemBox[0];
 }
 
 //　指定されたアイテムを無効化する

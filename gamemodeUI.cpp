@@ -63,11 +63,13 @@ static ID3D11ShaderResourceView	*g_Texture[UI_MAX] = { NULL };	// テクスチャ情報
 static char *g_TexturName[UI_MAX] = {
 		"data/TEXTURE/gamemodeUI/cross.png",
 		"data/TEXTURE/gamemodeUI/get.png",
+		"data/TEXTURE/gamemodeUI/move.png",
 		"data/TEXTURE/gamemodeUI/handgun.png",
 		"data/TEXTURE/gamemodeUI/weaponNone.png",
 		"data/TEXTURE/gamemodeUI/loading_background.png",
 		"data/TEXTURE/gamemodeUI/loading_fill.png",
 		"data/TEXTURE/gamemodeUI/loading_text.png",
+
 };
 
 
@@ -75,6 +77,7 @@ static GMUI g_GMUI[UI_MAX];
 
 static float uiTextureWidthList[UI_MAX] = {
 	UI_CROSS_WIDTH,
+	UI_GET_WIDTH,
 	UI_GET_WIDTH,
 	UI_HANDGUN_WIDTH,
 	UI_HANDGUN_WIDTH,
@@ -86,6 +89,7 @@ static float uiTextureWidthList[UI_MAX] = {
 static float uiTextureHeightList[UI_MAX] = {
 	UI_CROSS_HEIGHT,
 	UI_GET_HEIGHT,
+	UI_GET_HEIGHT,
 	UI_HANDGUN_HEIGHT,
 	UI_HANDGUN_HEIGHT,
 	UI_RELOAD_HEIGHT,
@@ -95,6 +99,7 @@ static float uiTextureHeightList[UI_MAX] = {
 
 static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
 	UI_CROSS_POSITION,
+	UI_GET_POSITION,
 	UI_GET_POSITION,
 	UI_HANDGUN_POSITION,
 	UI_WEAPON_NONE_POSITION,
