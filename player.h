@@ -21,13 +21,13 @@
 #define	JUMP_POWER				(8.0f)					//	ジャンプの大きさ
 #define G						(5.0f)					//　重力
 #define PLAYER_JUMP_COUNT_MAX	(25)					//	ジャンプ時間の上限
-
-
+#define PLAYER_OFFSET_Y			(17.0f)					// プレイヤーの足元をあわせる
 
 enum PLAYER_JUMP_TYPE {
 	JUMP_NORMAL,		//	普通のジャンプ
 	JUMP_OVER_THE_WALL,	//	壁を越えるのジャンプ
-	JUMP_NONE,				//	ジャンプしていない
+	JUMP_OVER_THE_BOX,	//	箱に乗る
+	JUMP_NONE,			//	ジャンプしていない
 };
 
 enum PLAYER_WEAPON_TYPE
@@ -116,4 +116,4 @@ void UpdatePlayer(void);
 void DrawPlayer(void);
 
 PLAYER *GetPlayer(void);
-
+bool CheckDistance(XMFLOAT3 pos1, XMFLOAT3 pos2, float distance);

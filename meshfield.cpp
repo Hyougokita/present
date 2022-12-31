@@ -9,6 +9,7 @@
 #include "meshfield.h"
 #include "renderer.h"
 #include "collision.h"
+#include "player.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -365,7 +366,7 @@ bool RayHitField(XMFLOAT3 pos, XMFLOAT3 *HitPosition, XMFLOAT3 *Normal)
 
 	// 少し上から、ズドーンと下へレイを飛ばす
 	start.y += 100.0f;
-	end.y -= 1000.0f;
+	end.y -= (PLAYER_OFFSET_Y);
 
 	// 処理を高速化する為に全検索ではなくて、座標からポリゴンを割り出している
 	float fz = (g_nNumBlockXField / 2.0f) * g_fBlockSizeXField;

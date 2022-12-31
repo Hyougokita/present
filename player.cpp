@@ -67,7 +67,7 @@ enum PLAYER_PART_NAME
 #define	VALUE_ROTATE		(XM_PI * 0.02f)					// 回転量
 
 #define PLAYER_SHADOW_SIZE	(1.0f)							// 影の大きさ
-#define PLAYER_OFFSET_Y		(17.0f)							// プレイヤーの足元をあわせる
+
 
 #define PLAYER_PARTS_MAX	(6)								// プレイヤーのパーツの数
 #define PLAYER_WEAPONS_MAX	(1)								// プレイヤーのパーツの数
@@ -102,6 +102,8 @@ void DrawPlayerSingle(PLAYER* player);					//	プレーヤー単体の描画
 int CheckItemHitBox(void);
 void SetReloadBarFlash(int period);
 bool CheckItemBoxHitBox(void);
+void PlayerCheckMeshField(void);
+void PlayerCheckBoxUp(void);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -118,6 +120,7 @@ static LIGHT		g_Light;
 bool g_isMove = false;
 
 int g_checkItem = 0;
+bool g_isCheckField = true;
 
 
 enum PLAYER_HOKAN_TYPE
@@ -444,6 +447,13 @@ void UpdatePlayer(void)
 
 			}
 			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[0].x, meshbox[g_checkItem].vPos[0].y, meshbox[g_checkItem].vPos[0].z);
+			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[1].x, meshbox[g_checkItem].vPos[1].y, meshbox[g_checkItem].vPos[1].z);
+			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[2].x, meshbox[g_checkItem].vPos[2].y, meshbox[g_checkItem].vPos[2].z);
+			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[3].x, meshbox[g_checkItem].vPos[3].y, meshbox[g_checkItem].vPos[3].z);
+			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[4].x, meshbox[g_checkItem].vPos[4].y, meshbox[g_checkItem].vPos[4].z);
+			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[5].x, meshbox[g_checkItem].vPos[5].y, meshbox[g_checkItem].vPos[5].z);
+			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[6].x, meshbox[g_checkItem].vPos[6].y, meshbox[g_checkItem].vPos[6].z);
+			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[7].x, meshbox[g_checkItem].vPos[7].y, meshbox[g_checkItem].vPos[7].z);
 		}
 		//　アイテムを得る場合
 		else {
@@ -607,67 +617,81 @@ void UpdatePlayer(void)
 	// 弾発射処理
 	if (IsMouseLeftTriggered())
 	{
-		
-
+		// プレーヤーの向き
 		XMFLOAT3 rot;
 		rot = g_Player.front;
 		rot.y = GetCamera()->rot.y + XM_PI;
 
+		//　弾発射の始点
 		XMFLOAT3 pos;
 		pos = g_Player.pos;
 		pos.y += PLAYER_HEAD_HEIGHT;
-#ifdef _DEBUG
 
-#endif // _DEBUG
-
+		// 弾を設置する
 		SetBullet(pos, rot);
 	}
 
-	// 加速の処理
+	// 加速の処理(ダッシュ)
 	if (GetKeyboardPress(DIK_LSHIFT)) {
 		g_Player.spdValue = VALUE_MOVE * 2;
 	}
 
 	// ジャンプ処理
-	if(GetKeyboardPress(DIK_SPACE)){
+	if(GetKeyboardTrigger(DIK_SPACE)){
 		// ジャンプしていない場合
 		if (g_Player.jumpType == JUMP_NONE) {
 			//　普通のジャンプ
 			g_Player.jumpType = JUMP_NORMAL;
-		}
-	}
 
+			//	目の前に箱がある場合
+			if (meshbox[g_checkItem].itemType == ITEM_TYPE_BOX) {
+				g_Player.jumpType = JUMP_OVER_THE_BOX;
+			}
+		}
+
+	}
+	g_isCheckField = true;
 	// 普通のジャンプの場合
 	if (g_Player.jumpType == JUMP_NORMAL) {
 		g_Player.jumpCnt++;
-		g_Player.pos.y += (JUMP_POWER - g_Player.jumpCnt * 0.3f);
-		//g_Player.pos.y += 20.0f;
+		float jumpPower = (JUMP_POWER - g_Player.jumpCnt * 0.3f);
+		if (jumpPower > G) {
+			g_isCheckField = false;
+		}
+		g_Player.pos.y += jumpPower;
 		if (g_Player.jumpCnt >= PLAYER_JUMP_COUNT_MAX) {
 			g_Player.jumpCnt = 0;
 			g_Player.jumpType = JUMP_NONE;
 		}
 	}
 
+	//	箱に乗る場合
+	if (g_Player.jumpType == JUMP_OVER_THE_BOX) {
+		//g_Player.pos.x = (meshbox[g_checkItem].vPos[1].x - meshbox[g_checkItem].vPos[0].x) + meshbox[g_checkItem].vPos[0].x;
+		g_Player.pos.y = (meshbox[g_checkItem].vPos[0].y + PLAYER_OFFSET_Y);
+		//g_Player.pos.z = (meshbox[g_checkItem].vPos[4].z - meshbox[g_checkItem].vPos[0].z) + meshbox[g_checkItem].vPos[0].z;
+		g_Player.pos.z = meshbox[g_checkItem].vPos[0].z + 10.0f;
+		g_Player.jumpType = JUMP_NONE;
+	}
+
 	//　重力より落下する
 	g_Player.pos.y -= G;
 
 	if (g_Player.pos.y <= PLAYER_OFFSET_Y) {
-		g_Player.pos.y = PLAYER_OFFSET_Y;
+		//g_Player.pos.y = PLAYER_OFFSET_Y;
 	}
 
-	// レイキャストして足元の高さを求める
-	XMFLOAT3 HitPosition;		// 交点
-	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
-	bool ans = RayHitField(g_Player.pos, &HitPosition, &Normal);
-	if (ans)
-	{
-		//g_Player.pos.y = HitPosition.y + PLAYER_OFFSET_Y;
+	PlayerCheckBoxUp();
+
+	if (g_isCheckField) {
+		PlayerCheckMeshField();
 	}
-	else
-	{
-		//g_Player.pos.y = PLAYER_OFFSET_Y;
-		Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	}
+
+
+
+	
+
+	
 
 
 	// 影もプレイヤーの位置に合わせる
@@ -710,19 +734,16 @@ void UpdatePlayer(void)
 	float len, angle;
 
 
-	g_Player.UpVector = Normal;
+	//g_Player.UpVector = Normal;
 	up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	vx = XMVector3Cross(up, XMLoadFloat3(&g_Player.UpVector));
 
 	nvx = XMVector3Length(vx);
 	XMStoreFloat(&len, nvx);
 	nvx = XMVector3Normalize(vx);
-	//nvx = vx / len;
+
 	angle = asinf(len);
 
-	//quat = XMQuaternionIdentity();
-
-//	quat = XMQuaternionRotationAxis(nvx, angle);
 	quat = XMQuaternionRotationNormal(nvx, angle);
 
 
@@ -734,7 +755,7 @@ void UpdatePlayer(void)
 
 #ifdef _DEBUG
 	// デバッグ表示
-	PrintDebugProc("Player X:%f Y:%f Z:% N:%f\n", g_Player.pos.x, g_Player.pos.y, g_Player.pos.z, Normal.y);
+	//PrintDebugProc("Player X:%f Y:%f Z:% N:%f\n", g_Player.pos.x, g_Player.pos.y, g_Player.pos.z, Normal.y);
 	PrintDebugProc("isHitWall: %d\n", isHitWall);
 	PrintDebugProc("bCheckHitWall: %d\n", bCheckHitWall);
 	PrintDebugProc("font.y:%f\n",g_Player.front.y);
@@ -744,7 +765,6 @@ void UpdatePlayer(void)
 	PrintDebugProc("Player Item Check:%d\n", g_checkItem);
 	PrintDebugProc("Player Cur Weapon:%d\n", g_Player.curWeapon);
 	PrintDebugProc("AngleY:%f", AngleY());
-
 	//PrintDebugProc("rot:X:%f,Y:%f,Z:%f,\n", rot.x, rot.y, rot.z);
 	//PrintDebugProc("Player front:X:%f,Y:%f,Z:%f,\n", g_Player.front.x, g_Player.front.y, g_Player.front.z);
 #endif
@@ -756,8 +776,6 @@ void UpdatePlayer(void)
 //=============================================================================
 void DrawPlayer(void)
 {
-	
-
 	XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld, quatMatrix;
 
 	// カリング無効
@@ -793,19 +811,20 @@ void DrawPlayer(void)
 
 	// モデル描画
 	DrawModel(&g_Player.model);
-
 	
-
-
+	// ピストルとピストルを持っている手を視点により回転させる
 	g_Parts[RIGHT_HAND].rot.x += AngleY();
 	g_Parts[HAND_GUN].rot.x += AngleY();
-	PrintDebugProc("Part HandGun Rot X:%f\n",g_Parts[HAND_GUN].rot.x);
+#ifdef _DEBUG
+	PrintDebugProc("Part HandGun Rot X:%f\n", g_Parts[HAND_GUN].rot.x);
+#endif // _DEBUG
 	// パーツの階層アニメーション
 	for (int i = 0; i < PLAYER_PARTS_MAX; i++)
 	{
 		DrawPlayerSingle(&g_Parts[i]);
 
 	}
+	// 線形補間計算するため　元に戻す
 	g_Parts[RIGHT_HAND].rot.x -= AngleY();
 	g_Parts[HAND_GUN].rot.x -= AngleY();
 	//SetFuchi(0);
@@ -823,13 +842,7 @@ PLAYER *GetPlayer(void)
 	return &g_Player;
 }
 
-//　プレイヤーと壁の当たり判定
-BOOL CheckHitWall() {
-	//　プレイヤーの移動方向へ射線を作る
-
-	return false;
-}
-
+//　レイキャスト（テスト用）
 BOOL CheckTest() {
 	BOOL isHit;
 	XMFLOAT3 HitPosition;		// 交点
@@ -860,6 +873,7 @@ BOOL CheckTest() {
 	return FALSE;
 }
 
+// プレーヤーと壁の判定（テスト用）
 BOOL CheckTestWall() {
 	MESHWALL* meshwall = GetMeshWall();
 	BOOL isHit;
@@ -890,7 +904,7 @@ BOOL CheckTestWall() {
 	return FALSE;
 }
 
-
+// プレーヤーの階層アニメーション用線形補間
 void SenkeihokanPlayer(PLAYER* player, int type) {
 	// 使われているなら処理する
 	if ((player->use == true) && (player->tblMax > 0))
@@ -946,6 +960,7 @@ void SenkeihokanPlayer(PLAYER* player, int type) {
 	}
 }
 
+//	プレーヤーの一つのパーツを描く関数
 void DrawPlayerSingle(PLAYER* player) {
 	XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
 
@@ -1110,6 +1125,9 @@ bool CheckItemBoxHitBox(void) {
 	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
 	for (int i = 0; i < MESHBOX_MAX; i++) {
 		if (meshbox[i].use) {
+			// 箱しか判定しない
+			if (meshbox[i].itemType != ITEM_TYPE_BOX)
+				continue;
 			//	計算量の減少(プレーヤーから一定の距離離れると計算しない)
 			float vx, vz;
 			vx = g_Player.pos.x - meshbox[i].pos.x;
@@ -1137,20 +1155,20 @@ bool CheckItemBoxHitBox(void) {
 				return true;
 			}
 			//左
-			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[3], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[3], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return true;
 			}
-			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[5], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[4], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return true;
 			}
 			//右
-			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[2], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[2], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return true;
 			}
-			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[4], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[5], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return true;
 			}
@@ -1159,7 +1177,7 @@ bool CheckItemBoxHitBox(void) {
 			if (isHit) {
 				return true;
 			}
-			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return true;
 			}
@@ -1168,7 +1186,7 @@ bool CheckItemBoxHitBox(void) {
 			if (isHit) {
 				return true;
 			}
-			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return true;
 			}
@@ -1177,7 +1195,7 @@ bool CheckItemBoxHitBox(void) {
 	return false;
 }
 
-// リロードのバーを点滅させる
+//	リロードのバーを点滅させる
 void SetReloadBarFlash(int period) {
 	int result = (g_Player.reloadCount % (period * 2)) / period;
 	float result2 = ((float)(g_Player.reloadCount % period) / period);
@@ -1187,4 +1205,70 @@ void SetReloadBarFlash(int period) {
 	PrintDebugProc("result 1:%f\n", diffW);
 	ChangeUIDiff(UI_RELOAD_TEXT, XMFLOAT4(1.0f, 1.0f, 1.0f, diffW));
 	ChangeUIDiff(UI_RELOAD_FILL, XMFLOAT4(1.0f, 1.0f, 1.0f, diffW));
+}
+
+//	プレーヤーと地面の判定
+void PlayerCheckMeshField(void) {
+	// レイキャストして足元の高さを求める
+	XMFLOAT3 HitPosition;		// 交点
+	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
+	bool ans = RayHitField(g_Player.pos, &HitPosition, &Normal);
+#ifdef _DEBUG
+	PrintDebugProc("ANS:%d\n", ans);
+#endif // _DEBUG
+
+	if (ans)
+	{
+		g_Player.pos.y = HitPosition.y + PLAYER_OFFSET_Y;
+	}
+	else
+	{
+		//g_Player.pos.y = PLAYER_OFFSET_Y;
+		Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	}
+	//	プレーヤーのクオータニオン用
+	g_Player.UpVector = Normal;
+}
+
+// プレーヤーと箱の上面の判定
+void PlayerCheckBoxUp(void) {
+	MESHBOX* meshbox = GetMeshBox();
+	BOOL isHit;
+	XMFLOAT3 HitPosition;		// 交点
+	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
+	for (int i = 0; i < MESHBOX_MAX; i++) {
+		if (meshbox[i].itemType != ITEM_TYPE_BOX) {
+			continue;
+		}
+		//　boxとプレーヤー距離を計算する 一定の距離と離れると判定しない
+		if (CheckDistance(g_Player.pos, meshbox[i].pos, 200.0f)) {
+			//　射線はplayerの位置から足のところまで
+			XMFLOAT3 startPos = g_Player.pos;
+			XMFLOAT3 endPos = g_Player.pos;
+			endPos.y -= PLAYER_OFFSET_Y;
+
+			//	判定があればplayerを箱に乗せる
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				g_Player.pos.y = meshbox[i].vPos[0].y + PLAYER_OFFSET_Y;
+				return;
+			}
+			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				g_Player.pos.y = meshbox[i].vPos[0].y + PLAYER_OFFSET_Y;
+				return;
+			}
+		}
+	}
+}
+
+// 二つのobjの間の距離と指定した距離の比較　小さいならTrue
+bool CheckDistance(XMFLOAT3 pos1, XMFLOAT3 pos2, float distance) {
+	float vx, vz;
+	vx = pos1.x -pos2.x;
+	vz = pos1.z -pos2.z;
+	float p1p2distance = pow(pow(vx, 2) + pow(vz, 2), 0.5f);
+	if (p1p2distance > distance)
+		return false;
+	return true;
 }

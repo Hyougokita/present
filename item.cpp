@@ -23,7 +23,10 @@
 #define	MODEL_ITEM_AMMO							"data/MODEL/item/ammo.obj"					// 弾薬ボックス
 #define	MODEL_ITEM_HANDGUN						"data/MODEL/item/handgun_table.obj"			// 机上のピストル
 #define	MODEL_ITEM_TABLE00						"data/MODEL/item/table00.obj"				// 机
-#define	MODEL_ITEM_BOX							"data/MODEL/box.obj"					// 箱（移動させる　乗せる）
+#define	MODEL_ITEM_BOX							"data/MODEL/box.obj"						// 箱（移動させる　乗せる）
+#define MODEL_ITEM_DOOR							"data/MODEL/door.obj"
+#define MODEL_ITEM_HOUSE						"data/MODEL/house.obj"
+#define MODEL_ITEM_WINDOW						"data/MODEL/window.obj"
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -48,17 +51,30 @@ static ITEM			g_ItemBullet[ITEM_AMMO_MAX];				// AMMO
 static ITEM			g_ItemDecoration[ITEM_DECORATION_TYPE_MAX];	// 飾り用アイテム
 static ITEM			g_ItemHandgun[ITEM_HANDGUN_MAX];			// ピストル
 static ITEM			g_ItemBox[ITEM_BOX_MAX];					// ボックス
+static ITEM			g_ItemWindow[ITEM_WINDOW_MAX];
 
 static BOOL			g_Load = FALSE;
 
 
+
+// 飾り用アイテム関連
+// アイテムのモデルデータ
 static char* itemDecorationList[ITEM_DECORATION_TYPE_MAX] = {
 	MODEL_ITEM_TABLE00,
+	MODEL_ITEM_DOOR,
+	MODEL_ITEM_HOUSE,
 };
-
-
+//　アイテムの位置
 static XMFLOAT3 itemDecorationPositionList[ITEM_DECORATION_TYPE_MAX] = {
 	XMFLOAT3(0.0f,0.0f,0.0f),
+	XMFLOAT3(50.0f,0.0f,0.0f),
+	XMFLOAT3(50.0f,0.0f,0.0f),
+};
+//	アイテムのスカラー
+static float itemDecorationScaleList[ITEM_DECORATION_TYPE_MAX] = {
+	 0.5f,
+	 3.0f,
+	 3.0f,
 };
 
 
@@ -73,8 +89,10 @@ HRESULT InitItem(void)
 	//	飾り用アイテムの初期化
 	for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
 		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		InitItemSingle(&g_ItemDecoration[i], itemDecorationList[i], true, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), 0.5f, 4.0f, true);
+		InitItemSingle(&g_ItemDecoration[i], itemDecorationList[i], true, itemDecorationPositionList[i], XMFLOAT3(0.0f, 0.0f, 0.0f), itemDecorationScaleList[i], 4.0f, true);
 	}
+	g_ItemDecoration[ITEM_DECORATION_HOUSETEST].use = false;
+	g_ItemDecoration[ITEM_DECORATION_DOORTEST].use = false;
 
 
 
@@ -107,9 +125,17 @@ HRESULT InitItem(void)
 	// ボックスの初期化
 	for (int i = 0; i < ITEM_BOX_MAX; i++)
 	{
-		XMFLOAT3 pos = XMFLOAT3(-50.0f, 5.0f, 0.0f);
+		XMFLOAT3 pos = XMFLOAT3(-50.0f, 0.0f, 0.0f);
 		InitItemWithHitBoxSingle(&g_ItemBox[i], MODEL_ITEM_BOX, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_BOX);
 	}
+
+	// 窓の初期化
+	for (int i = 0; i < ITEM_WINDOW_MAX; i++)
+	{
+		XMFLOAT3 pos = XMFLOAT3(-100.0f, 0.0f, 0.0f);
+		InitItemWithHitBoxSingle(&g_ItemWindow[i], MODEL_ITEM_WINDOW, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_WINDOW);
+	}
+	g_ItemWindow[ITEM_WINDOW_TEST].use = false;
 
 	//g_ItemBullet[ITEM_AMMO_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
 	//g_ItemHandgun[ITEM_HANDGUN_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
@@ -142,7 +168,10 @@ void UninitItem(void)
 //=============================================================================
 void UpdateItem(void)
 {
-	
+#ifdef _DEBUG
+	g_ItemDecoration[ITEM_DECORATION_DOORTEST].rot.y += 0.01f;
+#endif // _DEBUG
+
 }
 
 
@@ -176,6 +205,13 @@ void DrawItem(void)
 	{
 		if (g_ItemBox[i].use == false) continue;
 		DrawItemSingle(&g_ItemBox[i]);
+	}
+
+	// 窓の描画
+	for (int i = 0; i < ITEM_WINDOW_MAX; i++)
+	{
+		if (g_ItemWindow[i].use == false) continue;
+		DrawItemSingle(&g_ItemWindow[i]);
 	}
 
 	//　飾り用アイテムの描画
