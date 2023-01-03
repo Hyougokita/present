@@ -32,8 +32,22 @@ static MESHBOX g_MeshBox[MESHBOX_MAX];
 
 // 頂点データの読み込み
 #define FILE_NAME "data/hitbox.csv"
-static float vPosList[1][24];
-static char  name[1][40];
+
+
+enum DATA_NAME
+{
+	DATA_AMMO_TEST,
+	DATA_WALL_DOOR_RIGHT,
+	DATA_WALL_WINDOW_DOWN,
+	DATA_WALL_WINDOW_LEFT,
+	DATA_WALL_WINDOW_RIGHT,
+	DATA_WALL_WINDOW_UP,
+	DATA_MAX
+};
+
+
+static float vPosList[DATA_MAX][24];
+static char  name[DATA_MAX][40];
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -504,10 +518,12 @@ int SetMeshBoxFromData(XMFLOAT3 pos, XMFLOAT3 rot, float scl,int itemNum, int it
 			XMFLOAT3 frontPos = pos;
 			frontPos.z -= depth * 0.5f;
 			InitMeshWall(frontPos, rot, XMFLOAT4(1.0f,1.0f,1.0f,0.5f), 1, 1, width, height);
+
+			g_MeshBox[i].use = true;
+			g_MeshBox[i].itemNum = itemNum;
+			g_MeshBox[i].itemType = itemType;
+			return i;
 		}
-		g_MeshBox[i].use = true;
-		g_MeshBox[i].itemNum = itemNum;
-		g_MeshBox[i].itemType = itemType;
-		return i;
+
 	}
 }

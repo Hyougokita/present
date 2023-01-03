@@ -27,6 +27,11 @@
 #define MODEL_ITEM_DOOR							"data/MODEL/door.obj"
 #define MODEL_ITEM_HOUSE						"data/MODEL/house.obj"
 #define MODEL_ITEM_WINDOW						"data/MODEL/window.obj"
+#define MODEL_ITEM_WALLDOORRIGHT				"data/MODEL/walldoorright.obj"
+#define MODEL_ITEM_WALLWINDOWDOWN				"data/MODEL/wallwindowdown.obj"
+#define MODEL_ITEM_WALLWINDOWLEFT				"data/MODEL/wallwindowleft.obj"
+#define MODEL_ITEM_WALLWINDOWRIGHT				"data/MODEL/wallwindowright.obj"
+#define MODEL_ITEM_WALLWINDOWUP					"data/MODEL/wallwindowup.obj"
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -53,6 +58,7 @@ static ITEM			g_ItemDecoration[ITEM_DECORATION_TYPE_MAX];	// 飾り用アイテム
 static ITEM			g_ItemHandgun[ITEM_HANDGUN_MAX];			// ピストル
 static ITEM			g_ItemBox[ITEM_BOX_MAX];					// ボックス
 static ITEM			g_ItemWindow[ITEM_WINDOW_MAX];
+static ITEM			g_ItemHouseWall[ITEM_WALL_MAX];				// 家の壁
 #ifdef _DEBUG
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
 #endif // _DEBUG
@@ -69,6 +75,7 @@ static char* itemDecorationList[ITEM_DECORATION_TYPE_MAX] = {
 	MODEL_ITEM_DOOR,
 	MODEL_ITEM_HOUSE,
 };
+
 //　アイテムの位置
 static XMFLOAT3 itemDecorationPositionList[ITEM_DECORATION_TYPE_MAX] = {
 	XMFLOAT3(0.0f,0.0f,0.0f),
@@ -82,6 +89,15 @@ static float itemDecorationScaleList[ITEM_DECORATION_TYPE_MAX] = {
 	 3.0f,
 };
 
+
+// hitbox自動生成
+static char* itemHouseWallModelList[ITEM_WALL_MAX] = {
+	MODEL_ITEM_WALLDOORRIGHT,
+	MODEL_ITEM_WALLWINDOWDOWN,
+	MODEL_ITEM_WALLWINDOWLEFT,
+	MODEL_ITEM_WALLWINDOWRIGHT,
+	MODEL_ITEM_WALLWINDOWUP,
+};
 
 
 //=============================================================================
@@ -97,7 +113,11 @@ HRESULT InitItem(void)
 
 	}
 #endif // _DEBUG
-
+	// 家の壁の初期化
+	for (int i = 0; i < ITEM_WALL_MAX; i++) {
+		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 100.0f);
+		InitItemWithHitBoxFromCsvSingle(&g_ItemHouseWall[i], itemHouseWallModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 4.0f, true, 1 + i, i, ITEM_TYPE_WALL);
+	}
 
 	//	飾り用アイテムの初期化
 	for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
@@ -194,6 +214,11 @@ void UpdateItem(void)
 //=============================================================================
 void DrawItem(void)
 {
+
+
+
+	// カリング無効
+	SetCullingMode(CULL_MODE_NONE);
 #ifdef _DEBUG
 	for (int i = 0; i < ITEM_TEST_AMMO_MAX; i++) {
 		if (g_ItemTestAmmo[i].use == false)	continue;
@@ -201,9 +226,12 @@ void DrawItem(void)
 	}
 #endif // _DEBUG
 
+	// 家の壁の描画
+	for (int i = 0; i < ITEM_WALL_MAX; i++) {
+		if (g_ItemHouseWall[i].use == false) continue;
+		DrawItemSingle(&g_ItemHouseWall[i]);
+	}
 
-	// カリング無効
-	SetCullingMode(CULL_MODE_NONE);
 
 	// 弾ボックスの描画
 	for (int i = 0; i < ITEM_AMMO_MAX; i++)

@@ -1126,7 +1126,7 @@ bool CheckItemBoxHitBox(void) {
 	for (int i = 0; i < MESHBOX_MAX; i++) {
 		if (meshbox[i].use) {
 			// 箱しか判定しない
-			if (meshbox[i].itemType != ITEM_TYPE_BOX)
+			if (meshbox[i].itemType != ITEM_TYPE_BOX && meshbox[i].itemType != ITEM_TYPE_WALL)
 				continue;
 			//	計算量の減少(プレーヤーから一定の距離離れると計算しない)
 			float vx, vz;
