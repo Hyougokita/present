@@ -41,6 +41,11 @@ typedef struct _MESHBOX {
 	char			itemType;		//	É^ÉCÉv
 }MESHBOX;
 
+typedef struct _MESHTEST{
+
+	XMFLOAT3		pos;
+	XMFLOAT3		vPos[8];
+}MESHTEST;
 
 struct WALL
 {
@@ -74,3 +79,4 @@ MESHBOX* GetMeshBox(void);
 void SetMeshWall(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height);
 int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float height, float depth, char itemNum, char itemType);
 void DestoryMeshBox(int num);
+int SetMeshBoxFromData(XMFLOAT3 pos, XMFLOAT3 rot, float scl, int itemNum, int itemType, int dataNum);

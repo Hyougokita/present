@@ -433,7 +433,7 @@ void UpdatePlayer(void)
 		// ƒAƒCƒeƒ€‚ğˆÚ“®‚³‚¹‚éê‡
 		if (meshbox[g_checkItem].itemType == ITEM_TYPE_BOX) {
 			g_Player.spdValue = 0.5f;
-			// ‘Î‰‚µ‚Ä‚¢‚éobi‚ğ’T‚·
+			// ‘Î‰‚µ‚Ä‚¢‚éobj‚ğ’T‚·
 			ITEM* box = GetItemBox();
 			XMFLOAT3 moveDistance = XMFLOAT3(g_Player.pos.x - g_Player.prePos.x, g_Player.pos.y - g_Player.prePos.y, g_Player.pos.z - g_Player.prePos.z);
 			box[meshbox[g_checkItem].itemNum].pos.x += moveDistance.x;

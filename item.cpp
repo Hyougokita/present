@@ -44,6 +44,7 @@ XMFLOAT3 MakeUnitVector(XMFLOAT3 start, XMFLOAT3 end);
 void DrawItemSingle(ITEM* item);
 void InitItemWithHitBoxSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOAT3 rot, float scl, float size, bool use, float hitboxW, float hitboxH, float hitboxD, int num, int type);
 void InitItemSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOAT3 rot, float scl, float size, bool use);
+void InitItemWithHitBoxFromCsvSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOAT3 rot, float scl, float size, bool use, int dateNum, int num, int type);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -52,6 +53,10 @@ static ITEM			g_ItemDecoration[ITEM_DECORATION_TYPE_MAX];	// 飾り用アイテム
 static ITEM			g_ItemHandgun[ITEM_HANDGUN_MAX];			// ピストル
 static ITEM			g_ItemBox[ITEM_BOX_MAX];					// ボックス
 static ITEM			g_ItemWindow[ITEM_WINDOW_MAX];
+#ifdef _DEBUG
+static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
+#endif // _DEBUG
+
 
 static BOOL			g_Load = FALSE;
 
@@ -84,6 +89,14 @@ static float itemDecorationScaleList[ITEM_DECORATION_TYPE_MAX] = {
 //=============================================================================
 HRESULT InitItem(void)
 {
+#ifdef _DEBUG
+	//CSV AMMO TEST
+	for (int i = 0; i < ITEM_TEST_AMMO_MAX; i++) {
+		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 40.0f);
+		InitItemWithHitBoxFromCsvSingle(&g_ItemTestAmmo[i], MODEL_ITEM_AMMO, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, 4.0f, true,0,i,ITEM_TYPE_TEST_AMMO);
+
+	}
+#endif // _DEBUG
 
 
 	//	飾り用アイテムの初期化
@@ -181,6 +194,12 @@ void UpdateItem(void)
 //=============================================================================
 void DrawItem(void)
 {
+#ifdef _DEBUG
+	for (int i = 0; i < ITEM_TEST_AMMO_MAX; i++) {
+		if (g_ItemTestAmmo[i].use == false)	continue;
+		DrawItemSingle(&g_ItemTestAmmo[i]);
+	}
+#endif // _DEBUG
 
 
 	// カリング無効
@@ -248,8 +267,15 @@ void DestoryItem(int num, char itemType) {
 		g_ItemHandgun[num].use = false;
 		GetPlayer()->haveHandgun = true;
 		TurnOnOffUI(UI_HANDGUN, true);
-
 	}
+#ifdef _DEBUG
+	if (itemType == ITEM_TYPE_TEST_AMMO) {
+		g_ItemTestAmmo[num].use = false;
+		//GetPlayer()->haveHandgun = true;
+		//TurnOnOffUI(UI_HANDGUN, true);
+	}
+#endif // _DEBUG
+
 }
 
 void DrawItemSingle(ITEM* item) {
@@ -291,6 +317,21 @@ void InitItemWithHitBoxSingle(ITEM* item, char* ModelName,bool load, XMFLOAT3 po
 	item->size = size;	// 当たり判定の大きさ
 	item->use = use;
 	item->hitBoxIndex = SetMeshBox(pos, rot, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.3f), hitboxW * scl, hitboxH * scl, hitboxD * scl, num, type);
+
+	// モデルのディフューズを保存しておく。色変え対応の為。
+	GetModelDiffuse(&item->model, &item->diffuse[0]);
+}
+
+void InitItemWithHitBoxFromCsvSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOAT3 rot, float scl, float size, bool use, int dateNum, int num, int type) {
+	LoadModel(ModelName, &item->model);
+	item->load = load;
+	item->pos = pos;
+	item->rot = rot;
+	item->scl = XMFLOAT3(scl, scl, scl);
+
+	item->size = size;	// 当たり判定の大きさ
+	item->use = use;
+	item->hitBoxIndex = SetMeshBoxFromData(pos, rot, scl, num, type, dateNum);
 
 	// モデルのディフューズを保存しておく。色変え対応の為。
 	GetModelDiffuse(&item->model, &item->diffuse[0]);

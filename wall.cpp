@@ -14,6 +14,8 @@
 #include "meshfield.h"
 #include "meshwall.h"
 #include "item.h"
+// openfileのwarningの防止
+#pragma warning(disable : 4996)
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -27,10 +29,15 @@
 
 static MESHWALL g_MeshWall[MESHWALL_MAX];
 static MESHBOX g_MeshBox[MESHBOX_MAX];
+
+// 頂点データの読み込み
+#define FILE_NAME "data/hitbox.csv"
+static float vPosList[1][24];
+static char  name[1][40];
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-
+void LoadVPos(void);
 
 //*****************************************************************************
 // グローバル変数
@@ -48,6 +55,7 @@ static BOOL			g_Load = FALSE;
 //=============================================================================
 HRESULT InitWall(void)
 {
+	LoadVPos();
 	for (int i = 0; i < MAX_WALL; i++)
 	{
 		LoadModel(MODEL_WALL, &g_Wall[i].model);
@@ -387,6 +395,7 @@ int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float hei
 	}
 }
 
+
 MESHBOX* GetMeshBox(void) {
 	return &g_MeshBox[0];
 }
@@ -395,4 +404,110 @@ MESHBOX* GetMeshBox(void) {
 void DestoryMeshBox(int num) {
 	g_MeshBox[num].use = false;
 	DestoryItem(g_MeshBox[num].itemNum,g_MeshBox[num].itemType);
+}
+
+// CSVファイルから頂点データをロードする
+void LoadVPos(void) {
+	//行数のカウント
+	int namecount = 0;
+	//一行のデータ数のカウント
+	int count = 0;
+	
+	FILE* fp;
+	fp = fopen(FILE_NAME, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "failed\n");
+	}
+
+	//一行のbuffer
+	char row[300];
+	char* token;
+	while (fgets(row, 300, fp) != NULL) {
+		// 名前の取得
+		token = strtok(row, ",");
+		strcpy(&name[namecount][0], token);
+
+		while (token != NULL) {
+			token = strtok(NULL, ",");
+			if (token == NULL) {
+				count = 0;
+				break;
+			}
+			// 頂点データの取得
+			vPosList[namecount][count] = atof(token);
+			count++;
+		}
+		//改行
+		namecount++;
+	}
+	fclose(fp);
+}
+
+float selfabs(float number) {
+	return number < 0 ? -number : number;
+}
+
+int SetMeshBoxFromData(XMFLOAT3 pos, XMFLOAT3 rot, float scl,int itemNum, int itemType,int dataNum) {
+	for (int i = 0; i < MESHBOX_MAX; i++) {
+		if (g_MeshBox[i].use == false) {
+			// 頂点データをlistから登録する
+			for (int m = 0; m < 8; m++) {
+				g_MeshBox[i].vPos[m].x = vPosList[dataNum][m * 3] * 10.0f;
+				g_MeshBox[i].vPos[m].y = vPosList[dataNum][m * 3 + 1] * 10.0f;
+				g_MeshBox[i].vPos[m].z = vPosList[dataNum][m * 3 + 2] * 10.0f;
+			}
+
+			//	拡大縮小　回転　移動の変換の反映
+			XMMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
+			// ワールドマトリックスの初期化
+			mtxWorld = XMMatrixIdentity();
+
+			// スケールを反映
+			mtxScl = XMMatrixScaling(scl, scl, scl);
+			mtxWorld = XMMatrixMultiply(mtxWorld, mtxScl);
+
+			// 回転を反映
+			mtxRot = XMMatrixRotationRollPitchYaw(rot.x, rot.y + XM_PI, rot.z);
+			mtxWorld = XMMatrixMultiply(mtxWorld, mtxRot);
+
+			// 移動を反映
+			mtxTranslate = XMMatrixTranslation(pos.x, pos.y, pos.z);
+			mtxWorld = XMMatrixMultiply(mtxWorld, mtxTranslate);
+
+			// 頂点ごと変換させる
+			for (int j = 0; j < 8; j++) {
+				//　位置を行列に保存する
+				XMMATRIX vPos;
+				for (int m = 0; m < 4; m++) {
+					for (int n = 0; n < 4; n++) {
+						vPos.r[m].m128_f32[n] = 0;
+					}
+				}
+				vPos.r[0].m128_f32[0] = g_MeshBox[i].vPos[j].x;
+				vPos.r[0].m128_f32[1] = g_MeshBox[i].vPos[j].y;
+				vPos.r[0].m128_f32[2] = g_MeshBox[i].vPos[j].z;
+				vPos.r[0].m128_f32[3] = 1.0f;
+
+				// 変換後の座標を計算する
+				XMMATRIX result = XMMatrixMultiply(vPos, mtxWorld);
+
+				// 変換したあとの座標を保存する
+				g_MeshBox[i].vPos[j].x = result.r[0].m128_f32[0];
+				g_MeshBox[i].vPos[j].y = result.r[0].m128_f32[1];
+				g_MeshBox[i].vPos[j].z = result.r[0].m128_f32[2];
+			}
+			//可視化部分
+			// front
+			float width = selfabs(g_MeshBox[i].vPos[0].x - g_MeshBox[i].vPos[1].x);
+			float height = selfabs(g_MeshBox[i].vPos[0].y - g_MeshBox[i].vPos[2].y);
+			float depth = selfabs(g_MeshBox[i].vPos[0].z - g_MeshBox[i].vPos[5].z);
+			XMFLOAT3 frontPos = pos;
+			frontPos.z -= depth * 0.5f;
+			InitMeshWall(frontPos, rot, XMFLOAT4(1.0f,1.0f,1.0f,0.5f), 1, 1, width, height);
+		}
+		g_MeshBox[i].use = true;
+		g_MeshBox[i].itemNum = itemNum;
+		g_MeshBox[i].itemType = itemType;
+		return i;
+	}
 }
