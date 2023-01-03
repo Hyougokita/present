@@ -32,6 +32,11 @@
 #define MODEL_ITEM_WALLWINDOWLEFT				"data/MODEL/wallwindowleft.obj"
 #define MODEL_ITEM_WALLWINDOWRIGHT				"data/MODEL/wallwindowright.obj"
 #define MODEL_ITEM_WALLWINDOWUP					"data/MODEL/wallwindowup.obj"
+#define MODEL_ITEM_WALLWINDOWUP					"data/MODEL/wallwindowup.obj"
+#define MODEL_ITEM_WALLDOORLEFT					"data/MODEL/walldoorleft.obj"
+#define MODEL_ITEM_WALLBACK						"data/MODEL/wallback.obj"
+#define MODEL_ITEM_WALLLEFT						"data/MODEL/wallleft.obj"
+#define MODEL_ITEM_WALLLDOORUP					"data/MODEL/walldoorup.obj"
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -40,7 +45,7 @@
 #define ITEM_OFFSET_Y		(17.0f)						// エネミーの足元をあわせる
 
 #define	AMMO_BOX_ADD_NUM	(20)						// 弾ボックスが増加する弾の数
-
+#define HOUSE_POS			(XMFLOAT3(0.0f,0.0f,100.0f))
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -97,6 +102,10 @@ static char* itemHouseWallModelList[ITEM_WALL_MAX] = {
 	MODEL_ITEM_WALLWINDOWLEFT,
 	MODEL_ITEM_WALLWINDOWRIGHT,
 	MODEL_ITEM_WALLWINDOWUP,
+	MODEL_ITEM_WALLDOORLEFT,
+	MODEL_ITEM_WALLBACK,
+	MODEL_ITEM_WALLLEFT,
+	MODEL_ITEM_WALLLDOORUP,
 };
 
 
@@ -109,14 +118,21 @@ HRESULT InitItem(void)
 	//CSV AMMO TEST
 	for (int i = 0; i < ITEM_TEST_AMMO_MAX; i++) {
 		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 40.0f);
-		InitItemWithHitBoxFromCsvSingle(&g_ItemTestAmmo[i], MODEL_ITEM_AMMO, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, 4.0f, true,0,i,ITEM_TYPE_TEST_AMMO);
+		InitItemWithHitBoxFromCsvSingle(&g_ItemTestAmmo[i], MODEL_ITEM_AMMO, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 4.0f, true,0,i,ITEM_TYPE_TEST_AMMO);
 
 	}
 #endif // _DEBUG
 	// 家の壁の初期化
 	for (int i = 0; i < ITEM_WALL_MAX; i++) {
-		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 100.0f);
-		InitItemWithHitBoxFromCsvSingle(&g_ItemHouseWall[i], itemHouseWallModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 4.0f, true, 1 + i, i, ITEM_TYPE_WALL);
+		XMFLOAT3 pos = HOUSE_POS;
+		InitItemWithHitBoxFromCsvSingle(&g_ItemHouseWall[i], itemHouseWallModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 4.0f, true, 2 + i, i, ITEM_TYPE_WALL);
+	}
+
+	// 窓の初期化
+	for (int i = 0; i < ITEM_WINDOW_MAX; i++)
+	{
+		XMFLOAT3 pos = HOUSE_POS;
+		InitItemWithHitBoxFromCsvSingle(&g_ItemWindow[i], MODEL_ITEM_WINDOW, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 2.0f, ITEM_SIZE, true, 1, i, ITEM_TYPE_WINDOW);
 	}
 
 	//	飾り用アイテムの初期化
@@ -162,13 +178,8 @@ HRESULT InitItem(void)
 		InitItemWithHitBoxSingle(&g_ItemBox[i], MODEL_ITEM_BOX, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_BOX);
 	}
 
-	// 窓の初期化
-	for (int i = 0; i < ITEM_WINDOW_MAX; i++)
-	{
-		XMFLOAT3 pos = XMFLOAT3(-100.0f, 0.0f, 0.0f);
-		InitItemWithHitBoxSingle(&g_ItemWindow[i], MODEL_ITEM_WINDOW, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_WINDOW);
-	}
-	g_ItemWindow[ITEM_WINDOW_TEST].use = false;
+
+
 
 	//g_ItemBullet[ITEM_AMMO_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
 	//g_ItemHandgun[ITEM_HANDGUN_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;

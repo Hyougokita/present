@@ -439,6 +439,10 @@ void UpdatePlayer(void)
 			box[meshbox[g_checkItem].itemNum].pos.x += moveDistance.x;
 			box[meshbox[g_checkItem].itemNum].pos.y += moveDistance.y;
 			box[meshbox[g_checkItem].itemNum].pos.z += moveDistance.z;
+			
+			meshbox[g_checkItem].pos.x += moveDistance.x;
+			meshbox[g_checkItem].pos.y += moveDistance.y;
+			meshbox[g_checkItem].pos.z += moveDistance.z;
 
 			for (int i = 0; i < 8; i++) {
 				meshbox[g_checkItem].vPos[i].x += moveDistance.x;
@@ -1062,20 +1066,20 @@ int CheckItemHitBox(void) {
 				return i;
 			}
 			//左
-			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[3], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[3], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return i;
 			}
-			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[5], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[4], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return i;
 			}
 			//右
-			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[2], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[2], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return i;
 			}
-			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[4], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[5], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return i;
 			}
@@ -1084,7 +1088,7 @@ int CheckItemHitBox(void) {
 			if (isHit) {
 				return i;
 			}
-			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return i;
 			}
@@ -1093,7 +1097,7 @@ int CheckItemHitBox(void) {
 			if (isHit) {
 				return i;
 			}
-			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				return i;
 			}
@@ -1271,4 +1275,44 @@ bool CheckDistance(XMFLOAT3 pos1, XMFLOAT3 pos2, float distance) {
 	if (p1p2distance > distance)
 		return false;
 	return true;
+}
+
+//　プレーヤーの位置から一定の距離の上に窓があるかどうかを確認する
+bool CheckWindow() {
+	MESHBOX* meshbox = GetMeshBox();
+	//目の前に壁があるかどうかを確認する
+
+	//何もない場合
+	if (g_checkItem == -1) {
+		return false;
+	}
+
+	//壁じゃない場合
+	if (meshbox[g_checkItem].itemType != ITEM_TYPE_WALL) {
+		return false;
+	}
+
+	//壁である場合
+	if (meshbox[g_checkItem].itemType == ITEM_TYPE_WALL) {
+		XMFLOAT3 startPos;			//	始点
+		XMFLOAT3 endPos;			//	終点
+		XMFLOAT3 HitPosition;		//	交点
+		XMFLOAT3 Normal;			//	ぶつかったポリゴンの法線ベクトル（向き）
+
+		startPos = g_Player.pos;
+
+		// プレーヤーが向いている方向へ射線を放す
+		endPos = startPos;
+		endPos.x = startPos.x + sinf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
+		endPos.z = startPos.z - cosf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
+
+		for (int i = 0; i < MESHBOX_MAX; i++) {
+			if (meshbox[i].itemType != ITEM_TYPE_WALL) continue;
+
+			bool isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+
+			}
+		}
+	}
 }
