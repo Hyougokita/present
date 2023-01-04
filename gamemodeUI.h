@@ -11,6 +11,7 @@ enum UITexture
 	UI_CROSS,			//	照準
 	UI_GET,				//	入手	
 	UI_MOVE,			//  箱を移動させる
+	UI_OPEN,			//	ドアなど開く
 	UI_HANDGUN,			//	ピストル
 	UI_WEAPON_NONE,		//	武器なしのアイコン
 	UI_RELOAD_BG,		//　リロードのBG

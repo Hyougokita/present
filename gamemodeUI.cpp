@@ -64,6 +64,7 @@ static char *g_TexturName[UI_MAX] = {
 		"data/TEXTURE/gamemodeUI/cross.png",
 		"data/TEXTURE/gamemodeUI/get.png",
 		"data/TEXTURE/gamemodeUI/move.png",
+		"data/TEXTURE/gamemodeUI/open.png",
 		"data/TEXTURE/gamemodeUI/handgun.png",
 		"data/TEXTURE/gamemodeUI/weaponNone.png",
 		"data/TEXTURE/gamemodeUI/loading_background.png",
@@ -79,6 +80,7 @@ static float uiTextureWidthList[UI_MAX] = {
 	UI_CROSS_WIDTH,
 	UI_GET_WIDTH,
 	UI_GET_WIDTH,
+	UI_GET_WIDTH,
 	UI_HANDGUN_WIDTH,
 	UI_HANDGUN_WIDTH,
 	UI_RELOAD_WIDTH,
@@ -90,6 +92,7 @@ static float uiTextureHeightList[UI_MAX] = {
 	UI_CROSS_HEIGHT,
 	UI_GET_HEIGHT,
 	UI_GET_HEIGHT,
+	UI_GET_HEIGHT,
 	UI_HANDGUN_HEIGHT,
 	UI_HANDGUN_HEIGHT,
 	UI_RELOAD_HEIGHT,
@@ -99,6 +102,7 @@ static float uiTextureHeightList[UI_MAX] = {
 
 static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
 	UI_CROSS_POSITION,
+	UI_GET_POSITION,
 	UI_GET_POSITION,
 	UI_GET_POSITION,
 	UI_HANDGUN_POSITION,

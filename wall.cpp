@@ -34,20 +34,7 @@ static MESHBOX g_MeshBox[MESHBOX_MAX];
 #define FILE_NAME "data/hitbox.csv"
 
 
-enum DATA_NAME
-{
-	DATA_AMMO_TEST,
-	DATA_WALL_WINDOW,
-	DATA_WALL_DOOR_RIGHT,
-	DATA_WALL_WINDOW_DOWN,
-	DATA_WALL_WINDOW_LEFT,
-	DATA_WALL_WINDOW_RIGHT,
-	DATA_WALL_WINDOW_UP,
-	DATA_WALL_DOOR_LEFT,
-	DATA_WALL_BACK,
-	DATA_WALL_LEFT,
-	DATA_MAX
-};
+
 
 
 static float vPosList[DATA_MAX][24];
@@ -514,19 +501,19 @@ int SetMeshBoxFromData(XMFLOAT3 pos, XMFLOAT3 rot, float scl,int itemNum, int it
 				g_MeshBox[i].vPos[j].y = result.r[0].m128_f32[1];
 				g_MeshBox[i].vPos[j].z = result.r[0].m128_f32[2];
 			}
-			//‰ÂŽ‹‰»•”•ª
-			//front
 			float width = selfabs(g_MeshBox[i].vPos[0].x - g_MeshBox[i].vPos[1].x);
 			float height = selfabs(g_MeshBox[i].vPos[0].y - g_MeshBox[i].vPos[2].y);
 			float depth = selfabs(g_MeshBox[i].vPos[0].z - g_MeshBox[i].vPos[5].z);
-			XMFLOAT3 frontPos = pos;
-			frontPos.z =g_MeshBox[i].vPos[4].z;
-			InitMeshWall(frontPos, rot, XMFLOAT4(1.0f,1.0f,1.0f,0.5f), 1, 1, width, height);
-			XMFLOAT3 rightPos = pos;
-			rightPos.x = g_MeshBox[i].vPos[4].x;
-			rightPos.z = g_MeshBox[i].vPos[4].z + selfabs(g_MeshBox[i].vPos[4].z - g_MeshBox[i].vPos[1].z) * 0.5f;
-			//right 
-			InitMeshWall(rightPos, XMFLOAT3(0.0f,-XM_PI / 2,0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 1, 1, depth, height);
+			//‰ÂŽ‹‰»•”•ª
+			//front
+			//XMFLOAT3 frontPos = pos;
+			//frontPos.z =g_MeshBox[i].vPos[4].z;
+			//InitMeshWall(frontPos, rot, XMFLOAT4(1.0f,1.0f,1.0f,0.5f), 1, 1, width, height);
+			//XMFLOAT3 rightPos = pos;
+			//rightPos.x = g_MeshBox[i].vPos[4].x;
+			//rightPos.z = g_MeshBox[i].vPos[4].z + selfabs(g_MeshBox[i].vPos[4].z - g_MeshBox[i].vPos[1].z) * 0.5f;
+			////right 
+			//InitMeshWall(rightPos, XMFLOAT3(0.0f,-XM_PI / 2,0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f), 1, 1, depth, height);
 
 			g_MeshBox[i].pos.x = g_MeshBox[i].vPos[0].x + width * 0.5f;
 			g_MeshBox[i].pos.y = g_MeshBox[i].vPos[0].y - height * 0.5f;

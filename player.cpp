@@ -299,7 +299,7 @@ HRESULT InitPlayer(void)
 		LoadModel(MODE_BERA_BODY, &g_Player.model);
 		g_Player.load = true;
 
-		g_Player.pos = { 0.0f, PLAYER_OFFSET_Y, 0.0f };
+		g_Player.pos = { 0.0f, PLAYER_OFFSET_Y, -50.0f };
 		g_Player.rot = { 0.0f, 0.0f, 0.0f };
 		g_Player.scl = XMFLOAT3(0.2f, 0.2f, 0.2f);
 
@@ -311,7 +311,7 @@ HRESULT InitPlayer(void)
 		// ここでプレイヤー用の影を作成している
 		XMFLOAT3 pos = g_Player.pos;
 		pos.y -= (PLAYER_OFFSET_Y - 0.1f);
-		g_Player.shadowIdx = CreateShadow(pos, PLAYER_SHADOW_SIZE, PLAYER_SHADOW_SIZE);
+		//g_Player.shadowIdx = CreateShadow(pos, PLAYER_SHADOW_SIZE, PLAYER_SHADOW_SIZE);
 		//          ↑
 		//        このメンバー変数が生成した影のIndex番号
 
@@ -418,13 +418,16 @@ void UpdatePlayer(void)
 		if (meshbox[g_checkItem].itemType == ITEM_TYPE_BOX)
 			TurnOnOffUI(UI_MOVE, true);
 		//　アイテムを得る場合
-		else
+		else if (meshbox[g_checkItem].itemType == ITEM_AMMO_BOX || meshbox[g_checkItem].itemType == ITEM_HAND_GUN)
 			TurnOnOffUI(UI_GET, true);
+		else if(meshbox[g_checkItem].itemType == ITEM_TYPE_DOOR)
+			TurnOnOffUI(UI_OPEN, true);
 	}
 	// UIの表示をOFFにする
 	else {
 		TurnOnOffUI(UI_GET, false);
 		TurnOnOffUI(UI_MOVE, false);
+		TurnOnOffUI(UI_OPEN, false);
 	}
 
 	
@@ -1106,18 +1109,20 @@ int CheckItemHitBox(void) {
 	return -1;
 }
 
-//  アイテム拾い用当たり判定ボックス
+//  壁などの当たり判定
 bool CheckItemBoxHitBox(void) {
 	//プレーヤーが見ている方向へ射線を射出
 
 	//	発射の始点
 	XMFLOAT3 startPos;
 	startPos = g_Player.pos;
+	startPos.y -= PLAYER_OFFSET_Y * 0.5f;
 
 	// 終了位置
 	XMFLOAT3 endPos = startPos;
 	endPos.x = startPos.x + sinf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
 	endPos.z = startPos.z - cosf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
+	endPos.y -= PLAYER_OFFSET_Y * 0.5f;
 
 
 	// Meshbox取得
@@ -1130,7 +1135,7 @@ bool CheckItemBoxHitBox(void) {
 	for (int i = 0; i < MESHBOX_MAX; i++) {
 		if (meshbox[i].use) {
 			// 箱しか判定しない
-			if (meshbox[i].itemType != ITEM_TYPE_BOX && meshbox[i].itemType != ITEM_TYPE_WALL)
+			if (meshbox[i].itemType != ITEM_TYPE_BOX && meshbox[i].itemType != ITEM_TYPE_WALL && meshbox[i].itemType != ITEM_TYPE_TABLE && meshbox[i].itemType != ITEM_TYPE_DOOR)
 				continue;
 			//	計算量の減少(プレーヤーから一定の距離離れると計算しない)
 			float vx, vz;

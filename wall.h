@@ -21,6 +21,26 @@
 // 構造体定義
 //*****************************************************************************
 
+enum DATA_NAME
+{
+	DATA_AMMO_TEST,
+	DATA_WALL_WINDOW,
+	DATA_WALL_DOOR_RIGHT,
+	DATA_WALL_WINDOW_DOWN,
+	DATA_WALL_WINDOW_LEFT,
+	DATA_WALL_WINDOW_RIGHT,
+	DATA_WALL_WINDOW_UP,
+	DATA_WALL_DOOR_LEFT,
+	DATA_WALL_BACK,
+	DATA_WALL_LEFT,
+	DATA_WALL_DOOR_UP,
+	DATA_DOOR,
+	DATA_TABLE,
+	DATA_DOOR_OPENED,
+	DATA_MAX
+};
+
+
 //　長方形の構造体
 typedef struct _HITBOX {
 	XMFLOAT3 vPos[8];
