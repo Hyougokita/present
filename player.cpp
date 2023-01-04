@@ -453,6 +453,22 @@ void UpdatePlayer(void)
 				meshbox[g_checkItem].vPos[i].z += moveDistance.z;
 
 			}
+			if (BoxCheckWall()) {
+				box[meshbox[g_checkItem].itemNum].pos.x -= moveDistance.x;
+				box[meshbox[g_checkItem].itemNum].pos.y -= moveDistance.y;
+				box[meshbox[g_checkItem].itemNum].pos.z -= moveDistance.z;
+
+				meshbox[g_checkItem].pos.x -= moveDistance.x;
+				meshbox[g_checkItem].pos.y -= moveDistance.y;
+				meshbox[g_checkItem].pos.z -= moveDistance.z;
+
+				for (int i = 0; i < 8; i++) {
+					meshbox[g_checkItem].vPos[i].x -= moveDistance.x;
+					meshbox[g_checkItem].vPos[i].y -= moveDistance.y;
+					meshbox[g_checkItem].vPos[i].z -= moveDistance.z;
+
+				}
+			}
 			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[0].x, meshbox[g_checkItem].vPos[0].y, meshbox[g_checkItem].vPos[0].z);
 			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[1].x, meshbox[g_checkItem].vPos[1].y, meshbox[g_checkItem].vPos[1].z);
 			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[2].x, meshbox[g_checkItem].vPos[2].y, meshbox[g_checkItem].vPos[2].z);
@@ -461,6 +477,10 @@ void UpdatePlayer(void)
 			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[5].x, meshbox[g_checkItem].vPos[5].y, meshbox[g_checkItem].vPos[5].z);
 			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[6].x, meshbox[g_checkItem].vPos[6].y, meshbox[g_checkItem].vPos[6].z);
 			PrintDebugProc("meshbox x:%f,y:%f,z:%f\n", meshbox[g_checkItem].vPos[7].x, meshbox[g_checkItem].vPos[7].y, meshbox[g_checkItem].vPos[7].z);
+		}
+		//　ドアの操作
+		else if(meshbox[g_checkItem].itemType == ITEM_TYPE_DOOR){
+			OpenCloseDoor();
 		}
 		//　アイテムを得る場合
 		else {
@@ -678,6 +698,7 @@ void UpdatePlayer(void)
 		g_Player.pos.y = (meshbox[g_checkItem].vPos[0].y + PLAYER_OFFSET_Y);
 		//g_Player.pos.z = (meshbox[g_checkItem].vPos[4].z - meshbox[g_checkItem].vPos[0].z) + meshbox[g_checkItem].vPos[0].z;
 		g_Player.pos.z = meshbox[g_checkItem].vPos[0].z + 10.0f;
+		g_Player.pos.x = meshbox[g_checkItem].vPos[1].x + 10.0f;
 		g_Player.jumpType = JUMP_NONE;
 	}
 

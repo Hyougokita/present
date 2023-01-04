@@ -57,6 +57,30 @@ BOOL CollisionBB(XMFLOAT3 mpos, float mw, float mh,
 	return ans;
 }
 
+BOOL CollisionBBXZ(XMFLOAT3 mpos, float mw, float mh,
+	XMFLOAT3 ypos, float yw, float yh)
+{
+	BOOL ans = FALSE;	// 外れをセットしておく
+
+	// 座標が中心点なので計算しやすく半分にしている
+	mw /= 2;
+	mh /= 2;
+	yw /= 2;
+	yh /= 2;
+
+	// バウンディングボックス(BB)の処理
+	if ((mpos.x + mw > ypos.x - yw) &&
+		(mpos.x - mw < ypos.x + yw) &&
+		(mpos.z + mh > ypos.z - yh) &&
+		(mpos.z - mh < ypos.z + yh))
+	{
+		// 当たった時の処理
+		ans = TRUE;
+	}
+
+	return ans;
+}
+
 //=============================================================================
 // BCによる当たり判定処理
 // サイズは半径

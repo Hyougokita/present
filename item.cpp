@@ -17,6 +17,8 @@
 #include "wall.h"
 #include "bullet.h"
 #include "gamemodeUI.h"
+#include "collision.h"
+#include "debugproc.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -128,6 +130,8 @@ static char* itemHouseWallModelList[ITEM_WALL_MAX] = {
 	MODEL_ITEM_WALLLDOORUP,
 };
 
+bool g_boxHit = false;
+
 
 //=============================================================================
 // 初期化処理
@@ -162,7 +166,7 @@ HRESULT InitItem(void)
 		pos.z -= 8.5f;
 		InitItemWithHitBoxFromCsvSingle(&g_ItemDoor[i], itemDoorModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, doorDataList[i], i, ITEM_TYPE_DOOR);
 	}
-	g_ItemDoor[ITEM_HOUSE_DOOR_OPENED].use = false;
+	
 
 	//	飾り用アイテムの初期化
 	for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
@@ -221,6 +225,9 @@ HRESULT InitItem(void)
 
 	//g_ItemBullet[ITEM_AMMO_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
 	//g_ItemHandgun[ITEM_HANDGUN_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
+
+	// ドア最初は閉じる状態
+	ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], false);
 	g_Load = TRUE;
 	return S_OK;
 }
@@ -284,6 +291,10 @@ void UpdateItem(void)
 #ifdef _DEBUG
 	// ドアを回転させる
 	g_ItemDecoration[ITEM_DECORATION_DOORTEST].rot.y += 0.01f;
+#endif // _DEBUG
+	
+#ifdef _DEBUG
+	PrintDebugProc("boxHit:%d\n", g_boxHit);
 #endif // _DEBUG
 
 }
@@ -476,4 +487,47 @@ void UninitItemSingle(ITEM* item) {
 		UnloadModel(&item->model);
 		item->load = false;
 	}
+}
+
+//　アイテムのアクティブ状態をコントロールする
+void ChangeItemUse(ITEM* item, bool use) {
+	MESHBOX* meshbox = GetMeshBox();
+	item->use = use;
+	meshbox[item->hitBoxIndex].use = use;
+}
+
+// ドアの操作
+void OpenCloseDoor() {
+	// 現在　ドアは空いている
+	if (g_ItemDoor[ITEM_HOUSE_DOOR].use) {
+		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR], false);
+		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], true);
+	}
+	else {
+		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR], false);
+		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], true);
+	}
+}
+
+bool BoxCheckWall(void) {
+	MESHBOX* meshbox = GetMeshBox();
+	// ボックスと壁の当たり判定
+	XMFLOAT3 housePos = HOUSE_POS;
+	//XMFLOAT3 preBoxPos = g_ItemBox[ITEM_BOX_TEST].pos;
+	//XMFLOAT3 preVPos[8];
+	//for (int i = 0; i < 8; i++) {
+	//	preVPos[i] = meshbox[g_ItemBox[ITEM_BOX_TEST].hitBoxIndex].vPos[i];
+	//}
+	housePos.x -= 20.0f;
+	g_boxHit = false;
+	if (CollisionBBXZ(g_ItemBox[ITEM_BOX_TEST].pos, 15.0f, 15.0f, housePos, 170.0f, 170.0f)) {
+		return true;
+		g_boxHit = true;
+		//g_ItemBox[ITEM_BOX_TEST].pos = preBoxPos;
+		//meshbox[g_ItemBox[ITEM_BOX_TEST].hitBoxIndex].pos = preBoxPos;
+		//for (int i = 0; i < 8; i++) {
+		//	meshbox[g_ItemBox[ITEM_BOX_TEST].hitBoxIndex].vPos[i] = preVPos[i];
+		//}
+	}
+	return false;
 }

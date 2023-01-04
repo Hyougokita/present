@@ -143,4 +143,7 @@ void DrawItem(void);
 
 ITEM *GetItemBullet(void);
 ITEM* GetItemBox();
+void ChangeItemUse(ITEM* item, bool use);
 void DestoryItem(int num, char itemType);
+void OpenCloseDoor();
+bool BoxCheckWall(void);
