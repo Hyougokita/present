@@ -17,17 +17,19 @@ enum UITexture
 	UI_RELOAD_BG,		//　リロードのBG
 	UI_RELOAD_FILL,		//　リロードの真ん中の部分
 	UI_RELOAD_TEXT,		//  リロードのテキスト
+	UI_DOOR_LOCK_TEXT,	//	ドアがロックされているテキスト
 	UI_MAX,
 };
 
 
 typedef struct _GMUI {
-	bool			use;
-	XMFLOAT3		pos;
-	float			width;
-	float			height;
-	XMFLOAT4        diff;
-	float			uw;
+	bool			use;		// 使用されているかどうか
+	XMFLOAT3		pos;		//　表示されている位置
+	float			width;		//	幅
+	float			height;		//  高さ
+	XMFLOAT4        diff;		//	RBGA
+	float			uw;			//	
+	int				count;		//	update用カウント
 }GMUI;
 
 //*****************************************************************************

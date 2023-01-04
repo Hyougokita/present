@@ -147,3 +147,5 @@ void ChangeItemUse(ITEM* item, bool use);
 void DestoryItem(int num, char itemType);
 void OpenCloseDoor();
 bool BoxCheckWall(void);
+bool CheckPlayerInHouse(void);
+XMFLOAT3 GetHousePos(void);

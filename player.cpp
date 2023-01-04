@@ -91,6 +91,16 @@ static int reloadTimeList[WEAPON_MAX] = {
 	PISTOL_RELOAD_TIME,
 };
 
+// ドア操作できるかどうかの判定
+bool g_DoorIsLock = true;
+bool g_PlayerInHouse = false;
+
+// 窓の判定
+bool g_HasWindow = false;
+
+// ボックスに乗せているかどうか
+bool g_PlayerOnBox = false;
+
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -104,6 +114,7 @@ void SetReloadBarFlash(int period);
 bool CheckItemBoxHitBox(void);
 void PlayerCheckMeshField(void);
 void PlayerCheckBoxUp(void);
+bool CheckWindow(void);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -121,6 +132,7 @@ bool g_isMove = false;
 
 int g_checkItem = 0;
 bool g_isCheckField = true;
+int g_CheckItemBoxHitBox = -1;
 
 
 enum PLAYER_HOKAN_TYPE
@@ -408,7 +420,18 @@ void UninitPlayer(void)
 //=============================================================================
 void UpdatePlayer(void)
 {
+#ifdef _DEBUG
+#endif // _DEBUG
+
+
 	g_Player.spdValue = VALUE_MOVE;
+	// プレーヤーが家の中にいるかどうかを判断する
+	g_PlayerInHouse = CheckPlayerInHouse();
+
+	g_PlayerOnBox = false;
+
+	// プレーヤーが向いている方向に窓があるかどうか
+	g_HasWindow = false;
 	MESHBOX* meshbox = GetMeshBox();
 
 	//	アイテムとの当たり
@@ -480,13 +503,22 @@ void UpdatePlayer(void)
 		}
 		//　ドアの操作
 		else if(meshbox[g_checkItem].itemType == ITEM_TYPE_DOOR){
-			OpenCloseDoor();
+
+			if (g_PlayerInHouse || g_DoorIsLock == false) {
+				OpenCloseDoor();
+			}
+			else {
+				TurnOnOffUI(UI_DOOR_LOCK_TEXT, true);
+			}
+
 		}
 		//　アイテムを得る場合
-		else {
+		else if(meshbox[g_checkItem].itemType == ITEM_AMMO_BOX || meshbox[g_checkItem].itemType == ITEM_HANDGUN_MAX){
 			DestoryMeshBox(g_checkItem);
 		}
 	}
+
+	
 
 
 
@@ -663,6 +695,7 @@ void UpdatePlayer(void)
 		g_Player.spdValue = VALUE_MOVE * 2;
 	}
 
+	PlayerCheckBoxUp();
 	// ジャンプ処理
 	if(GetKeyboardTrigger(DIK_SPACE)){
 		// ジャンプしていない場合
@@ -673,6 +706,11 @@ void UpdatePlayer(void)
 			//	目の前に箱がある場合
 			if (meshbox[g_checkItem].itemType == ITEM_TYPE_BOX) {
 				g_Player.jumpType = JUMP_OVER_THE_BOX;
+			}
+
+			if (g_PlayerOnBox) {
+				g_Player.jumpType = JUMP_OVER_THE_WALL;
+				
 			}
 		}
 
@@ -702,6 +740,8 @@ void UpdatePlayer(void)
 		g_Player.jumpType = JUMP_NONE;
 	}
 
+
+
 	//　重力より落下する
 	g_Player.pos.y -= G;
 
@@ -709,7 +749,14 @@ void UpdatePlayer(void)
 		//g_Player.pos.y = PLAYER_OFFSET_Y;
 	}
 
-	PlayerCheckBoxUp();
+
+	if (g_Player.jumpType == JUMP_OVER_THE_WALL) {
+		// 窓を越える場合
+		if (g_PlayerOnBox && meshbox[g_checkItem].itemType == ITEM_TYPE_WINDOW) {
+			g_Player.pos = GetHousePos();
+			g_Player.jumpType = JUMP_NONE;
+		}
+	}
 
 	if (g_isCheckField) {
 		PlayerCheckMeshField();
@@ -792,7 +839,11 @@ void UpdatePlayer(void)
 	PrintDebugProc("Player Jump Flag:%d\n", g_Player.jumpType);
 	PrintDebugProc("Player Item Check:%d\n", g_checkItem);
 	PrintDebugProc("Player Cur Weapon:%d\n", g_Player.curWeapon);
-	PrintDebugProc("AngleY:%f", AngleY());
+	PrintDebugProc("AngleY:%f\n", AngleY());
+	PrintDebugProc("Player in house:%d\n", g_PlayerInHouse);
+	PrintDebugProc("Player has window:%d\n", g_HasWindow);
+	PrintDebugProc("g_CheckItemBoxHitBox:%d\n", g_CheckItemBoxHitBox);
+	PrintDebugProc("PLAYER ON BOX:%d\n", g_PlayerOnBox);
 	//PrintDebugProc("rot:X:%f,Y:%f,Z:%f,\n", rot.x, rot.y, rot.z);
 	//PrintDebugProc("Player front:X:%f,Y:%f,Z:%f,\n", g_Player.front.x, g_Player.front.y, g_Player.front.z);
 #endif
@@ -1169,55 +1220,67 @@ bool CheckItemBoxHitBox(void) {
 			//裏
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[2], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[2], meshbox[i].vPos[3], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			//前
 			isHit = RayCast(meshbox[i].vPos[4], meshbox[i].vPos[5], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			isHit = RayCast(meshbox[i].vPos[5], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			//左
 			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[3], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[4], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			//右
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[2], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[5], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			//上
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			//底
 			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[3], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+				g_CheckItemBoxHitBox = i;
 				return true;
 			}
 		}
@@ -1281,11 +1344,13 @@ void PlayerCheckBoxUp(void) {
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				g_Player.pos.y = meshbox[i].vPos[0].y + PLAYER_OFFSET_Y;
+				g_PlayerOnBox = true;
 				return;
 			}
 			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
 				g_Player.pos.y = meshbox[i].vPos[0].y + PLAYER_OFFSET_Y;
+				g_PlayerOnBox = true;
 				return;
 			}
 		}
@@ -1304,41 +1369,97 @@ bool CheckDistance(XMFLOAT3 pos1, XMFLOAT3 pos2, float distance) {
 }
 
 //　プレーヤーの位置から一定の距離の上に窓があるかどうかを確認する
-bool CheckWindow() {
+bool CheckWindow(void) {
+	//プレーヤーが見ている方向へ射線を射出
+
+	//	発射の始点
+	XMFLOAT3 startPos;
+	startPos = g_Player.pos;
+	startPos.y += PLAYER_HEAD_HEIGHT;
+
+	// 終了位置
+	XMFLOAT3 endPos = startPos;
+	endPos.x = startPos.x + sinf(g_Player.front.y) * (DISTANCE_OF_RAYCAST_PLAYER * 3);
+	endPos.z = startPos.z - cosf(g_Player.front.y) * (DISTANCE_OF_RAYCAST_PLAYER * 3);
+	endPos.y += PLAYER_HEAD_HEIGHT;
+
+
+	// Meshbox取得
 	MESHBOX* meshbox = GetMeshBox();
-	//目の前に壁があるかどうかを確認する
 
-	//何もない場合
-	if (g_checkItem == -1) {
-		return false;
-	}
+	//  Meshboxとの当たり判定
+	BOOL isHit;
+	XMFLOAT3 HitPosition;		// 交点
+	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
+	for (int i = 0; i < MESHBOX_MAX; i++) {
+		if (meshbox[i].use) {
+			// 箱しか判定しない
+			if (meshbox[i].itemType != ITEM_TYPE_WINDOW)
+				continue;
+			//	計算量の減少(プレーヤーから一定の距離離れると計算しない)
+			float vx, vz;
+			vx = g_Player.pos.x - meshbox[i].pos.x;
+			vz = g_Player.pos.z - meshbox[i].pos.z;
+			float distance = pow(pow(vx, 2) + pow(vz, 2), 0.5f);
+			if (distance > 1.5f * DISTANCE_ITEM_CHECK_RAY)
+				continue;
 
-	//壁じゃない場合
-	if (meshbox[g_checkItem].itemType != ITEM_TYPE_WALL) {
-		return false;
-	}
-
-	//壁である場合
-	if (meshbox[g_checkItem].itemType == ITEM_TYPE_WALL) {
-		XMFLOAT3 startPos;			//	始点
-		XMFLOAT3 endPos;			//	終点
-		XMFLOAT3 HitPosition;		//	交点
-		XMFLOAT3 Normal;			//	ぶつかったポリゴンの法線ベクトル（向き）
-
-		startPos = g_Player.pos;
-
-		// プレーヤーが向いている方向へ射線を放す
-		endPos = startPos;
-		endPos.x = startPos.x + sinf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
-		endPos.z = startPos.z - cosf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
-
-		for (int i = 0; i < MESHBOX_MAX; i++) {
-			if (meshbox[i].itemType != ITEM_TYPE_WALL) continue;
-
-			bool isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			//裏
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[2], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
-
+				return true;
+			}
+			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[2], meshbox[i].vPos[3], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			//前
+			isHit = RayCast(meshbox[i].vPos[4], meshbox[i].vPos[5], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			isHit = RayCast(meshbox[i].vPos[5], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			//左
+			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[3], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[4], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			//右
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[2], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[5], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			//上
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			//底
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[3], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
+			}
+			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
+			if (isHit) {
+				return true;
 			}
 		}
 	}
+	return false;
 }
+

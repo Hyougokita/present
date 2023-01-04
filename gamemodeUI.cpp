@@ -49,6 +49,12 @@
 #define UI_RELOAD_BG_POSITION		(XMFLOAT3(SCREEN_CENTER_X,SCREEN_CENTER_Y + UI_RELOAD_HEIGHT + 20.0f,0.0f))
 #define UI_RELOAD_TEXT_POSITION		(XMFLOAT3(SCREEN_CENTER_X,SCREEN_CENTER_Y + UI_RELOAD_HEIGHT * 2 + 20.0f,0.0f))
 
+//	Lock
+#define UI_LOCK_SCALE				(0.1f)
+#define UI_LOCK_WIDTH				(5243.0f * UI_LOCK_SCALE)
+#define UI_LOCK_HEIGHT				(334.0f * UI_LOCK_SCALE)
+#define UI_LOCK_POSITION			(XMFLOAT3(SCREEN_CENTER_X,SCREEN_CENTER_Y - UI_CROSS_HEIGHT,0.0f))
+
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -70,6 +76,7 @@ static char *g_TexturName[UI_MAX] = {
 		"data/TEXTURE/gamemodeUI/loading_background.png",
 		"data/TEXTURE/gamemodeUI/loading_fill.png",
 		"data/TEXTURE/gamemodeUI/loading_text.png",
+		"data/TEXTURE/gamemodeUI/lock.png",
 
 };
 
@@ -86,6 +93,7 @@ static float uiTextureWidthList[UI_MAX] = {
 	UI_RELOAD_WIDTH,
 	UI_RELOAD_WIDTH,
 	UI_RELOAD_WIDTH,
+	UI_LOCK_WIDTH,
 };
 
 static float uiTextureHeightList[UI_MAX] = {
@@ -98,6 +106,7 @@ static float uiTextureHeightList[UI_MAX] = {
 	UI_RELOAD_HEIGHT,
 	UI_RELOAD_HEIGHT,
 	UI_RELOAD_HEIGHT,
+	UI_LOCK_HEIGHT,
 };
 
 static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
@@ -110,6 +119,7 @@ static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
 	UI_RELOAD_BG_POSITION,
 	UI_RELOAD_BG_POSITION,
 	UI_RELOAD_TEXT_POSITION,
+	UI_LOCK_POSITION,
 };
 
 
@@ -163,6 +173,8 @@ HRESULT InitGMUI(void)
 	g_GMUI[UI_RELOAD_FILL].use = false;
 	g_GMUI[UI_RELOAD_TEXT].use = false;
 
+	g_GMUI[UI_DOOR_LOCK_TEXT].use = false;
+
 
 
 
@@ -200,7 +212,14 @@ void UninitGMUI(void)
 //=============================================================================
 void UpdateGMUI(void)
 {
-
+	// メッセージが一定の時間に表示されたら　消える
+	if (g_GMUI[UI_DOOR_LOCK_TEXT].use) {
+		g_GMUI[UI_DOOR_LOCK_TEXT].count++;
+		if (g_GMUI[UI_DOOR_LOCK_TEXT].count >= 50) {
+			g_GMUI[UI_DOOR_LOCK_TEXT].count = 0;
+			g_GMUI[UI_DOOR_LOCK_TEXT].use = false;
+		}
+	}
 	
 
 #ifdef _DEBUG	// デバッグ情報を表示する

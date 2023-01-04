@@ -77,10 +77,14 @@ static ITEM			g_ItemTable[ITEM_TABLE_MAX];				// アイテムが置いてある机
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
 #endif // _DEBUG
 
+XMFLOAT3 g_HousePos = HOUSE_POS;
 
 static BOOL			g_Load = FALSE;
 
-
+//	ドア開閉繰り返しの防止
+bool g_CanOpenDoor = true;
+int  g_OpenDoorCount = 0;
+#define OPENDOOR_CD	(20)
 
 // 飾り用アイテム関連
 // アイテムのモデルデータ
@@ -297,6 +301,15 @@ void UpdateItem(void)
 	PrintDebugProc("boxHit:%d\n", g_boxHit);
 #endif // _DEBUG
 
+	// ドア開閉の繰り返し防止
+	if (g_CanOpenDoor == false) {
+		g_OpenDoorCount++;
+		if (g_OpenDoorCount > OPENDOOR_CD) {
+			g_OpenDoorCount = 0;
+			g_CanOpenDoor = true;
+		}
+	}
+
 }
 
 
@@ -499,18 +512,21 @@ void ChangeItemUse(ITEM* item, bool use) {
 // ドアの操作
 void OpenCloseDoor() {
 	// 現在　ドアは空いている
-	if (g_ItemDoor[ITEM_HOUSE_DOOR].use) {
-		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR], false);
-		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], true);
-	}
-	else {
-		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR], false);
-		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], true);
+	if (g_CanOpenDoor) {
+		if (g_ItemDoor[ITEM_HOUSE_DOOR].use) {
+			ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR], false);
+			ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], true);
+			g_CanOpenDoor = false;
+		}
+		else {
+			ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR], true);
+			ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], false);
+			g_CanOpenDoor = false;
+		}
 	}
 }
 
 bool BoxCheckWall(void) {
-	MESHBOX* meshbox = GetMeshBox();
 	// ボックスと壁の当たり判定
 	XMFLOAT3 housePos = HOUSE_POS;
 	//XMFLOAT3 preBoxPos = g_ItemBox[ITEM_BOX_TEST].pos;
@@ -530,4 +546,18 @@ bool BoxCheckWall(void) {
 		//}
 	}
 	return false;
+}
+
+bool CheckPlayerInHouse(void) {
+	PLAYER* player = GetPlayer();
+	XMFLOAT3 housePos = HOUSE_POS;
+	housePos.x -= 20.0f;
+	if (CollisionBBXZ(player->pos, 10.0f, 10.0f, housePos, 155.0f, 155.0f)) {
+		return true;
+	}
+	return false;
+}
+
+XMFLOAT3 GetHousePos(void){
+	return g_HousePos;
 }
