@@ -505,6 +505,7 @@ void UpdatePlayer(void)
 		else if(meshbox[g_checkItem].itemType == ITEM_TYPE_DOOR){
 
 			if (g_PlayerInHouse || g_DoorIsLock == false) {
+				g_DoorIsLock = false;
 				OpenCloseDoor();
 			}
 			else {
@@ -1206,8 +1207,8 @@ bool CheckItemBoxHitBox(void) {
 	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
 	for (int i = 0; i < MESHBOX_MAX; i++) {
 		if (meshbox[i].use) {
-			// 箱しか判定しない
-			if (meshbox[i].itemType != ITEM_TYPE_BOX && meshbox[i].itemType != ITEM_TYPE_WALL && meshbox[i].itemType != ITEM_TYPE_TABLE && meshbox[i].itemType != ITEM_TYPE_DOOR)
+			// 特定の物体しか判定しない
+			if (meshbox[i].itemType != ITEM_TYPE_BOX && meshbox[i].itemType != ITEM_TYPE_WALL && meshbox[i].itemType != ITEM_TYPE_TABLE && meshbox[i].itemType != ITEM_TYPE_DOOR && meshbox[i].itemType != ITEM_TYPE_CASTLE_WALL)
 				continue;
 			//	計算量の減少(プレーヤーから一定の距離離れると計算しない)
 			float vx, vz;

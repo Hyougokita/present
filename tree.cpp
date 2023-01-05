@@ -97,11 +97,11 @@ HRESULT InitTree(void)
 	g_bAlpaTest = true;
 
 	// ñÿÇÃê›íË
-	SetTree(XMFLOAT3(0.0f, 0.0f, 0.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	SetTree(XMFLOAT3(200.0f, 0.0f, 0.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	SetTree(XMFLOAT3(-200.0f, 0.0f, 0.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	SetTree(XMFLOAT3(0.0f, 0.0f, 200.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	SetTree(XMFLOAT3(0.0f, 0.0f, -200.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//SetTree(XMFLOAT3(0.0f, 0.0f, 0.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//SetTree(XMFLOAT3(200.0f, 0.0f, 0.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//SetTree(XMFLOAT3(-200.0f, 0.0f, 0.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//SetTree(XMFLOAT3(0.0f, 0.0f, 200.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//SetTree(XMFLOAT3(0.0f, 0.0f, -200.0f), 60.0f, 90.0f, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	return S_OK;
 }

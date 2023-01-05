@@ -43,6 +43,7 @@
 #define MODEL_ITEM_DOOR_OPENED					"data/MODEL/dooropened.obj"
 #define MODEL_ITEM_ROOF							"data/MODEL/roof.obj"
 #define MODEL_ITEM_DOORWAY						"data/MODEL/doorway.obj"
+#define MODEL_ITEM_CASTLEWALL					"data/MODEL/castlewall.obj"
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -52,6 +53,8 @@
 
 #define	AMMO_BOX_ADD_NUM	(20)						// 弾ボックスが増加する弾の数
 #define HOUSE_POS			(XMFLOAT3(-50.0f,0.0f,100.0f))
+
+#define CASTLE_WALL_NUMBER		(13)					//　壁の片辺の数
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -73,6 +76,7 @@ static ITEM			g_ItemWindow[ITEM_WINDOW_MAX];				// 家のウィンド
 static ITEM			g_ItemHouseWall[ITEM_WALL_MAX];				// 家の壁
 static ITEM			g_ItemDoor[ITEM_HOUSE_DOOR_MAX];			// 家のドア
 static ITEM			g_ItemTable[ITEM_TABLE_MAX];				// アイテムが置いてある机
+static ITEM			g_CastleWall[CASTLE_WALL_NUMBER * 4];
 #ifdef _DEBUG
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
 #endif // _DEBUG
@@ -224,6 +228,27 @@ HRESULT InitItem(void)
 		InitItemWithHitBoxSingle(&g_ItemBox[i], MODEL_ITEM_BOX, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_BOX);
 	}
 
+	// マップ周辺の壁の初期化
+	for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
+		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		if (0 <= i && i < CASTLE_WALL_NUMBER) {
+			pos = XMFLOAT3(MAP_TOP - 100.0f * i - 50.0f, 0.0f, MAP_RIGHT);
+			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+		}
+		else if (CASTLE_WALL_NUMBER <= i && i < CASTLE_WALL_NUMBER * 2) {
+			pos = XMFLOAT3(MAP_TOP - 100.0f * (i - CASTLE_WALL_NUMBER) - 50.0f, 0.0f, MAP_LEFT + 50.0f);
+			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+		}
+		else if (CASTLE_WALL_NUMBER * 2 <= i && i < CASTLE_WALL_NUMBER * 3) {
+			pos = XMFLOAT3(MAP_TOP , 0.0f, MAP_RIGHT - 100.0f * (i - CASTLE_WALL_NUMBER * 2));
+			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+		}
+		else if (CASTLE_WALL_NUMBER * 3 <= i && i < CASTLE_WALL_NUMBER * 4) {
+			pos = XMFLOAT3(MAP_DOWN, 0.0f, MAP_RIGHT - 100.0f * (i - CASTLE_WALL_NUMBER * 3));
+			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+		}
+
+	}
 
 
 
@@ -378,6 +403,12 @@ void DrawItem(void)
 	for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
 		if (g_ItemDecoration[i].use == false) continue;
 		DrawItemSingle(&g_ItemDecoration[i]);
+	}
+
+	// マップ周りの壁の描画
+	for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
+		if (g_CastleWall[i].use == false) continue;
+		DrawItemSingle(&g_CastleWall[i]);
 	}
 
 
