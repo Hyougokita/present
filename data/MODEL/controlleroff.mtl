@@ -1,0 +1,118 @@
+newmtl Roof_Straight_Side_Eave:Dark_Red_Roof
+illum 4
+Kd 0.42 0.18 0.12
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Roof_Straight_Side_Eave:Red_Roof
+illum 4
+Kd 0.58 0.27 0.19
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Roof_Straight_Side_Eave:Stucco
+illum 4
+Kd 0.94 0.89 0.82
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Stone_to_Stucco_Doorway_Wide_Tall_3:Stone_Bri_Gray_Lighter
+illum 4
+Kd 0.66 0.60 0.55
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Stone_to_Stucco_Doorway_Wide_Tall_3:Stone_Brit_Gray
+illum 4
+Kd 0.49 0.42 0.37
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Stone_to_Stucco_Doorway_Wide_Tall_3:Stone_Brit_Gray_Light
+illum 4
+Kd 0.57 0.49 0.43
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Stone_to_Stucco_Doorway_Wide_Tall_3:Stucco
+illum 4
+Kd 0.94 0.89 0.82
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Stone_to_Stucco_Doorway_Wide_Tall_3:Wood_Darker
+illum 4
+Kd 0.38 0.31 0.25
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Stucco_Window_Rounded_Narrow1:Stucco
+illum 4
+Kd 0.94 0.89 0.82
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Stucco_Window_Single_Wide_Tall:Wood_Darker
+illum 4
+Kd 0.38 0.31 0.25
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Wall_Prop_Door_Simple1:Iron_Grey
+illum 4
+Kd 0.43 0.42 0.39
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Wall_Prop_Door_Simple1:Iron_Grey___Dark
+illum 4
+Kd 0.30 0.29 0.27
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl Wall_Prop_Door_Simple1:Wood_Dark
+illum 4
+Kd 0.52 0.42 0.33
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 0.00
+newmtl table:lambert2SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd 24594238_s.jpg
+Ni 1.00
+newmtl table:lambert3SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd iron.png
+Ni 1.00

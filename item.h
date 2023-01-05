@@ -25,6 +25,7 @@ enum ITEM_TYPE {
 	ITEM_TYPE_DOOR,
 	ITEM_TYPE_TABLE,
 	ITEM_TYPE_CASTLE_WALL,
+	ITEM_TYPE_CONTROLLER,
 	ITEM_TYPE_MAX
 };
 
@@ -67,6 +68,13 @@ enum ITEM_HOUSE_DOOR_TYPE
 	ITEM_HOUSE_DOOR,
 	ITEM_HOUSE_DOOR_OPENED,
 	ITEM_HOUSE_DOOR_MAX
+};
+
+// ITEM CONTROLLER 
+enum ITEM_CONTROLLER_TYPE {
+	ITEM_CONTROLLER_OFF,
+	ITEM_CONTROLLER_ON,
+	ITEM_CONTROLLER_MAX
 };
 
 // ITEM TABLE
@@ -147,6 +155,10 @@ ITEM* GetItemBox();
 void ChangeItemUse(ITEM* item, bool use);
 void DestoryItem(int num, char itemType);
 void OpenCloseDoor();
+void OpenCloseController();
 bool BoxCheckWall(void);
 bool CheckPlayerInHouse(void);
 XMFLOAT3 GetHousePos(void);
+
+bool IsDoorOpened(void);
+bool IsControllerOpened(void);

@@ -18,6 +18,7 @@ enum UITexture
 	UI_RELOAD_FILL,		//　リロードの真ん中の部分
 	UI_RELOAD_TEXT,		//  リロードのテキスト
 	UI_DOOR_LOCK_TEXT,	//	ドアがロックされているテキスト
+	UI_CLOSE,			//	ドアなど閉じる
 	UI_MAX,
 };
 

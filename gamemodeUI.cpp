@@ -77,6 +77,7 @@ static char *g_TexturName[UI_MAX] = {
 		"data/TEXTURE/gamemodeUI/loading_fill.png",
 		"data/TEXTURE/gamemodeUI/loading_text.png",
 		"data/TEXTURE/gamemodeUI/lock.png",
+		"data/TEXTURE/gamemodeUI/close.png",
 
 };
 
@@ -94,6 +95,7 @@ static float uiTextureWidthList[UI_MAX] = {
 	UI_RELOAD_WIDTH,
 	UI_RELOAD_WIDTH,
 	UI_LOCK_WIDTH,
+	UI_GET_WIDTH,
 };
 
 static float uiTextureHeightList[UI_MAX] = {
@@ -107,6 +109,7 @@ static float uiTextureHeightList[UI_MAX] = {
 	UI_RELOAD_HEIGHT,
 	UI_RELOAD_HEIGHT,
 	UI_LOCK_HEIGHT,
+	UI_GET_HEIGHT,
 };
 
 static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
@@ -120,6 +123,7 @@ static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
 	UI_RELOAD_BG_POSITION,
 	UI_RELOAD_TEXT_POSITION,
 	UI_LOCK_POSITION,
+	UI_GET_POSITION,
 };
 
 

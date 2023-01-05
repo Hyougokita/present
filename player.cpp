@@ -443,14 +443,23 @@ void UpdatePlayer(void)
 		//　アイテムを得る場合
 		else if (meshbox[g_checkItem].itemType == ITEM_AMMO_BOX || meshbox[g_checkItem].itemType == ITEM_HAND_GUN)
 			TurnOnOffUI(UI_GET, true);
-		else if(meshbox[g_checkItem].itemType == ITEM_TYPE_DOOR)
-			TurnOnOffUI(UI_OPEN, true);
+		else if (meshbox[g_checkItem].itemType == ITEM_TYPE_DOOR || meshbox[g_checkItem].itemType == ITEM_TYPE_CONTROLLER) {
+			if (IsDoorOpened() == false || IsControllerOpened() == false) {
+				TurnOnOffUI(UI_OPEN, true);
+				TurnOnOffUI(UI_CLOSE, false);
+			}
+			else {
+				TurnOnOffUI(UI_OPEN, false);
+				TurnOnOffUI(UI_CLOSE, true);
+			}
+		}
 	}
 	// UIの表示をOFFにする
 	else {
 		TurnOnOffUI(UI_GET, false);
 		TurnOnOffUI(UI_MOVE, false);
 		TurnOnOffUI(UI_OPEN, false);
+		TurnOnOffUI(UI_CLOSE, false);
 	}
 
 	
@@ -503,6 +512,9 @@ void UpdatePlayer(void)
 		}
 		//　ドアの操作
 		else if(meshbox[g_checkItem].itemType == ITEM_TYPE_DOOR){
+#ifdef _DEBUG
+			g_DoorIsLock = false;
+#endif // _DEBUG
 
 			if (g_PlayerInHouse || g_DoorIsLock == false) {
 				g_DoorIsLock = false;
@@ -512,6 +524,9 @@ void UpdatePlayer(void)
 				TurnOnOffUI(UI_DOOR_LOCK_TEXT, true);
 			}
 
+		}
+		else if (meshbox[g_checkItem].itemType == ITEM_TYPE_CONTROLLER) {
+			OpenCloseController();
 		}
 		//　アイテムを得る場合
 		else if(meshbox[g_checkItem].itemType == ITEM_AMMO_BOX || meshbox[g_checkItem].itemType == ITEM_HANDGUN_MAX){
@@ -1112,6 +1127,8 @@ int CheckItemHitBox(void) {
 	//  Meshboxとの当たり判定
 	BOOL isHit;
 	XMFLOAT3 HitPosition;		// 交点
+
+
 	XMFLOAT3 Normal;			// ぶつかったポリゴンの法線ベクトル（向き）
 	for (int i = 0; i < MESHBOX_MAX; i++) {
 		if (meshbox[i].use) {
@@ -1126,55 +1143,91 @@ int CheckItemHitBox(void) {
 			//裏
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[2], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[2], meshbox[i].vPos[3], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			//前
 			isHit = RayCast(meshbox[i].vPos[4], meshbox[i].vPos[5], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			isHit = RayCast(meshbox[i].vPos[5], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			//左
 			isHit = RayCast(meshbox[i].vPos[1], meshbox[i].vPos[3], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			isHit = RayCast(meshbox[i].vPos[3], meshbox[i].vPos[4], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			//右
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[2], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[5], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			//上
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[1], meshbox[i].vPos[4], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			isHit = RayCast(meshbox[i].vPos[0], meshbox[i].vPos[4], meshbox[i].vPos[5], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			//底
 			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[3], meshbox[i].vPos[6], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 			isHit = RayCast(meshbox[i].vPos[2], meshbox[i].vPos[6], meshbox[i].vPos[7], startPos, endPos, &HitPosition, &Normal);
 			if (isHit) {
+#ifdef _DEBUG
+				PrintDebugProc("HITPOSITION:%f,%f,%f", HitPosition.x, HitPosition.y, HitPosition.z);
+#endif // _DEBUG
 				return i;
 			}
 		}

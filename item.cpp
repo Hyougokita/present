@@ -44,6 +44,9 @@
 #define MODEL_ITEM_ROOF							"data/MODEL/roof.obj"
 #define MODEL_ITEM_DOORWAY						"data/MODEL/doorway.obj"
 #define MODEL_ITEM_CASTLEWALL					"data/MODEL/castlewall.obj"
+#define MODEL_ITEM_GATE							"data/MODEL/gate.obj"
+#define MODEL_ITEM_CONTROLLER_OFF				"data/MODEL/controlleroff.obj"
+#define MODEL_ITEM_CONTROLLER_ON				"data/MODEL/controlleron.obj"
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -76,7 +79,8 @@ static ITEM			g_ItemWindow[ITEM_WINDOW_MAX];				// 家のウィンド
 static ITEM			g_ItemHouseWall[ITEM_WALL_MAX];				// 家の壁
 static ITEM			g_ItemDoor[ITEM_HOUSE_DOOR_MAX];			// 家のドア
 static ITEM			g_ItemTable[ITEM_TABLE_MAX];				// アイテムが置いてある机
-static ITEM			g_CastleWall[CASTLE_WALL_NUMBER * 4];
+static ITEM			g_CastleWall[CASTLE_WALL_NUMBER * 4];		// マップ周辺の壁
+static ITEM			g_ItemController[ITEM_CONTROLLER_MAX];		// ゲートをコントロールするコントローラー
 #ifdef _DEBUG
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
 #endif // _DEBUG
@@ -90,6 +94,11 @@ bool g_CanOpenDoor = true;
 int  g_OpenDoorCount = 0;
 #define OPENDOOR_CD	(20)
 
+// コントローラー
+bool g_CanOpenController = true;
+int  g_OpenControllerCount = 0;
+#define OPENCONTROLLER_CD	(15)
+
 // 飾り用アイテム関連
 // アイテムのモデルデータ
 static char* itemDecorationList[ITEM_DECORATION_TYPE_MAX] = {
@@ -97,16 +106,6 @@ static char* itemDecorationList[ITEM_DECORATION_TYPE_MAX] = {
 	MODEL_ITEM_HOUSE,
 	MODEL_ITEM_ROOF,
 	MODEL_ITEM_DOORWAY,
-};
-
-static char* itemDoorModelList[ITEM_HOUSE_DOOR_MAX] = {
-	MODEL_ITEM_DOOR,
-	MODEL_ITEM_DOOR_OPENED,
-};
-
-static int doorDataList[ITEM_HOUSE_DOOR_MAX] = {
-	DATA_DOOR,
-	DATA_DOOR_OPENED
 };
 
 //　アイテムの位置
@@ -123,6 +122,29 @@ static float itemDecorationScaleList[ITEM_DECORATION_TYPE_MAX] = {
 	 1.0f,
 	 1.0f,
 };
+
+//	家のドア関連
+static char* itemDoorModelList[ITEM_HOUSE_DOOR_MAX] = {
+	MODEL_ITEM_DOOR,
+	MODEL_ITEM_DOOR_OPENED,
+};
+
+static int doorDataList[ITEM_HOUSE_DOOR_MAX] = {
+	DATA_DOOR,
+	DATA_DOOR_OPENED
+};
+
+static char* itemControllerModelList[ITEM_CONTROLLER_MAX] = {
+	MODEL_ITEM_CONTROLLER_OFF,
+	MODEL_ITEM_CONTROLLER_ON,
+};
+
+static int controllerDataList[ITEM_CONTROLLER_MAX] = {
+	DATA_CONTROLLER_OFF,
+	DATA_CONTROLLER_ON,
+};
+
+
 
 
 // hitbox自動生成 wall
@@ -173,6 +195,12 @@ HRESULT InitItem(void)
 		pos.x -= 90.0f;
 		pos.z -= 8.5f;
 		InitItemWithHitBoxFromCsvSingle(&g_ItemDoor[i], itemDoorModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, doorDataList[i], i, ITEM_TYPE_DOOR);
+	}
+
+	// コントローラーの初期化
+	for (int i = 0; i < ITEM_CONTROLLER_MAX; i++) {
+		XMFLOAT3 pos = HOUSE_POS;
+		InitItemWithHitBoxFromCsvSingle(&g_ItemController[i], itemControllerModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, controllerDataList[i], i, ITEM_TYPE_CONTROLLER);
 	}
 	
 
@@ -252,11 +280,16 @@ HRESULT InitItem(void)
 
 
 
+
+
 	//g_ItemBullet[ITEM_AMMO_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
 	//g_ItemHandgun[ITEM_HANDGUN_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
 
 	// ドア最初は閉じる状態
 	ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], false);
+
+	// コントローラー最初はOFF状態
+	ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_ON], false);
 	g_Load = TRUE;
 	return S_OK;
 }
@@ -335,6 +368,15 @@ void UpdateItem(void)
 		}
 	}
 
+	// ドア開閉の繰り返し防止
+	if (g_CanOpenController == false) {
+		g_OpenControllerCount++;
+		if (g_OpenControllerCount > OPENCONTROLLER_CD) {
+			g_OpenControllerCount = 0;
+			g_CanOpenController = true;
+		}
+	}
+
 }
 
 
@@ -409,6 +451,12 @@ void DrawItem(void)
 	for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
 		if (g_CastleWall[i].use == false) continue;
 		DrawItemSingle(&g_CastleWall[i]);
+	}
+
+	// コントローラーの描画
+	for (int i = 0; i < ITEM_CONTROLLER_MAX; i++) {
+		if (g_ItemController[i].use == false) continue;
+		DrawItemSingle(&g_ItemController[i]);
 	}
 
 
@@ -557,6 +605,23 @@ void OpenCloseDoor() {
 	}
 }
 
+// ドアの操作
+void OpenCloseController() {
+	// 現在　ドアは空いている
+	if (g_CanOpenController) {
+		if (g_ItemController[ITEM_CONTROLLER_OFF].use) {
+			ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_OFF], false);
+			ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_ON], true);
+			g_CanOpenController = false;
+		}
+		else {
+			ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_OFF], true);
+			ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_ON], false);
+			g_CanOpenController = false;
+		}
+	}
+}
+
 bool BoxCheckWall(void) {
 	// ボックスと壁の当たり判定
 	XMFLOAT3 housePos = HOUSE_POS;
@@ -591,4 +656,12 @@ bool CheckPlayerInHouse(void) {
 
 XMFLOAT3 GetHousePos(void){
 	return g_HousePos;
+}
+
+bool IsDoorOpened(void) {
+	return g_ItemDoor[ITEM_HOUSE_DOOR_OPENED].use ? true : false;
+}
+
+bool IsControllerOpened(void) {
+	return g_ItemController[ITEM_CONTROLLER_ON].use ? true : false;
 }
