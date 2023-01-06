@@ -1242,13 +1242,13 @@ bool CheckItemBoxHitBox(void) {
 	//	発射の始点
 	XMFLOAT3 startPos;
 	startPos = g_Player.pos;
-	//startPos.y -= PLAYER_OFFSET_Y * 0.5f;
+	startPos.y -= PLAYER_OFFSET_Y * 0.2f;
 
 	// 終了位置
 	XMFLOAT3 endPos = startPos;
 	endPos.x = startPos.x + sinf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
 	endPos.z = startPos.z - cosf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
-	//endPos.y -= PLAYER_OFFSET_Y * 0.5f;
+	endPos.y -= PLAYER_OFFSET_Y * 0.2f;
 
 
 	// Meshbox取得
