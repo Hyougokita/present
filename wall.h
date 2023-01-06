@@ -16,7 +16,7 @@
 
 #define MESHWALL_MAX		(100)
 
-#define MESHBOX_MAX			(80)	// 当たり判定用の立方体の数
+#define MESHBOX_MAX			(100)	// 当たり判定用の立方体の数
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -40,6 +40,7 @@ enum DATA_NAME
 	DATA_CASTLE_WALL,
 	DATA_CONTROLLER_OFF,
 	DATA_CONTROLLER_ON,
+	DATA_GATE,
 	DATA_MAX
 };
 

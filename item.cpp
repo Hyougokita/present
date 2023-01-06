@@ -44,9 +44,9 @@
 #define MODEL_ITEM_ROOF							"data/MODEL/roof.obj"
 #define MODEL_ITEM_DOORWAY						"data/MODEL/doorway.obj"
 #define MODEL_ITEM_CASTLEWALL					"data/MODEL/castlewall.obj"
-#define MODEL_ITEM_GATE							"data/MODEL/gate.obj"
 #define MODEL_ITEM_CONTROLLER_OFF				"data/MODEL/controlleroff.obj"
 #define MODEL_ITEM_CONTROLLER_ON				"data/MODEL/controlleron.obj"
+#define MODEL_ITEM_GATE							"data/MODEL/gate.obj"
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -72,6 +72,7 @@ void InitItemWithHitBoxSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 p
 void InitItemSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOAT3 rot, float scl, float size, bool use);
 void InitItemWithHitBoxFromCsvSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOAT3 rot, float scl, float size, bool use, int dateNum, int num, int type);
 void UninitItemSingle(ITEM* item);
+void GateOpenClose(void);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
@@ -86,6 +87,7 @@ static ITEM			g_ItemTable[ITEM_TABLE_MAX];				// アイテムが置いてある机
 static ITEM			g_CastleWall[CASTLE_WALL_NUMBER * 4];		// マップ周辺の壁
 static ITEM			g_GateWall[GATE_WALL_NUMER * 2];			// ゲート両辺の壁
 static ITEM			g_ItemController[ITEM_CONTROLLER_MAX];		// ゲートをコントロールするコントローラー
+static ITEM			g_ItemGate[2];								// ゲート
 #ifdef _DEBUG
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
 #endif // _DEBUG
@@ -107,6 +109,13 @@ int  g_OpenDoorCount = 0;
 bool g_CanOpenController = true;
 int  g_OpenControllerCount = 0;
 #define OPENCONTROLLER_CD	(15)
+
+// ゲート開閉用
+bool g_GateStatus = false;	// 開閉状態
+int  g_GateCount = 0;		// 開閉のカウント
+int  g_GateCountMax = 20;	// 完全に開閉まで必要な時間
+float g_GateSpeed = (100.0f / (float)g_GateCountMax);
+
 
 // 飾り用アイテム関連
 // アイテムのモデルデータ
@@ -300,9 +309,17 @@ HRESULT InitItem(void)
 		}
 		else {
 			pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
-			pos.z -= 100.0f * (2 + i - GATE_WALL_NUMER) + 50.0f;
+			pos.z -= 100.0f * (1.5 + i - GATE_WALL_NUMER) + 50.0f;
 			InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
 		}
+	}
+
+	// ゲートの初期化
+	for (int i = 0; i < 2; i++) {
+		XMFLOAT3 pos = GATE_WALL_POS;
+		pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
+		pos.z -= 100.0f * (GATE_WALL_NUMER2 + i) + 50.0f;
+		InitItemWithHitBoxFromCsvSingle(&g_ItemGate[i], MODEL_ITEM_GATE, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
 	}
 
 
@@ -404,6 +421,9 @@ void UpdateItem(void)
 		}
 	}
 
+	// ゲートの開閉
+	GateOpenClose();
+
 }
 
 
@@ -490,6 +510,12 @@ void DrawItem(void)
 	for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2; i++) {
 		if (g_GateWall[i].use == false) continue;
 		DrawItemSingle(&g_GateWall[i]);
+	}
+
+	// ゲートの描画
+	for (int i = 0; i < 2; i++) {
+		if (g_ItemGate[i].use == false) continue;
+		DrawItemSingle(&g_ItemGate[i]);
 	}
 
 
@@ -675,6 +701,48 @@ bool BoxCheckWall(void) {
 		//	meshbox[g_ItemBox[ITEM_BOX_TEST].hitBoxIndex].vPos[i] = preVPos[i];
 		//}
 	}
+
+	// ボックスと周辺の壁の判定
+	for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
+		// 一定の距離から離れると判定しない
+		if (CheckDistance(g_ItemBox[ITEM_BOX_TEST].pos, g_CastleWall[i].pos, 200.0f)) {
+			if (0 <= i && i < CASTLE_WALL_NUMBER * 2) {
+				if (CollisionBBXZ(g_ItemBox[ITEM_BOX_TEST].pos, 15.0f, 15.0f, g_CastleWall[i].pos, 100.0f, 70.0f)) {
+					return true;
+					g_boxHit = true;
+				}
+			}
+			else if (2 * CASTLE_WALL_NUMBER <= i && i < CASTLE_WALL_NUMBER * 4) {
+				if (CollisionBBXZ(g_ItemBox[ITEM_BOX_TEST].pos, 15.0f, 15.0f, g_CastleWall[i].pos, 70.0f, 100.0f)) {
+					return true;
+					g_boxHit = true;
+				}
+			}
+		}
+	}
+
+	// ボックスとゲート周辺の壁の判定
+	for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2; i++) {
+		// 一定の距離から離れると判定しない
+		if (CheckDistance(g_ItemBox[ITEM_BOX_TEST].pos, g_GateWall[i].pos, 200.0f)) {
+			if (0 <= i && i < GATE_WALL_NUMER) {
+				if (CollisionBBXZ(g_ItemBox[ITEM_BOX_TEST].pos, 15.0f, 15.0f, g_GateWall[i].pos, 100.0f, 70.0f)) {
+					return true;
+					g_boxHit = true;
+				}
+			}
+			else if (GATE_WALL_NUMER <= i && i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2) {
+				if (CollisionBBXZ(g_ItemBox[ITEM_BOX_TEST].pos, 15.0f, 15.0f, g_GateWall[i].pos, 70.0f, 100.0f)) {
+					return true;
+					g_boxHit = true;
+				}
+			}
+		
+		}
+	
+	}
+
+
 	return false;
 }
 
@@ -688,14 +756,60 @@ bool CheckPlayerInHouse(void) {
 	return false;
 }
 
+// 家の位置を知る
 XMFLOAT3 GetHousePos(void){
 	return g_HousePos;
 }
 
+// ドアの開閉状態を知る
 bool IsDoorOpened(void) {
 	return g_ItemDoor[ITEM_HOUSE_DOOR_OPENED].use ? true : false;
 }
 
+//　コントローラーのON/OFF状態を知る
 bool IsControllerOpened(void) {
 	return g_ItemController[ITEM_CONTROLLER_ON].use ? true : false;
+}
+
+// アイテムと対応しているヒットボックスと共に移動する
+void MoveItemWithHitBox(ITEM *item, XMFLOAT3 moveDistance) {
+	item->pos.x += moveDistance.x;
+	item->pos.y += moveDistance.y;
+	item->pos.z += moveDistance.z;
+
+	MESHBOX *meshbox = GetMeshBox();
+	for (int i = 0; i < 8; i++) {
+		meshbox[item->hitBoxIndex].vPos[i].x += moveDistance.x;
+		meshbox[item->hitBoxIndex].vPos[i].y += moveDistance.y;
+		meshbox[item->hitBoxIndex].vPos[i].z += moveDistance.z;
+	}
+}
+
+void GateOpenClose(void) {
+	if (IsControllerOpened()) {
+		g_GateCount++;
+		if (g_GateCount >= g_GateCountMax) {
+			g_GateCount = g_GateCountMax;
+		}
+		else {
+			// 左のゲート左へ移動する
+			MoveItemWithHitBox(&g_ItemGate[0], XMFLOAT3(0.0f, 0.0f, g_GateSpeed));
+
+			// 右のゲート右へ移動する
+			MoveItemWithHitBox(&g_ItemGate[1], XMFLOAT3(0.0f, 0.0f, -g_GateSpeed));
+		}
+	}
+	else {
+		g_GateCount--;
+		if (g_GateCount <= 0) {
+			g_GateCount = 0;
+		}
+		else {
+			// 左のゲート左へ移動する
+			MoveItemWithHitBox(&g_ItemGate[0], XMFLOAT3(0.0f, 0.0f, -g_GateSpeed));
+
+			// 右のゲート右へ移動する
+			MoveItemWithHitBox(&g_ItemGate[1], XMFLOAT3(0.0f, 0.0f, +g_GateSpeed));
+		}
+	}
 }

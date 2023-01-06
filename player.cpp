@@ -311,7 +311,7 @@ HRESULT InitPlayer(void)
 		LoadModel(MODE_BERA_BODY, &g_Player.model);
 		g_Player.load = true;
 
-		g_Player.pos = { 0.0f, PLAYER_OFFSET_Y, -50.0f };
+		g_Player.pos = { 300.0f, PLAYER_OFFSET_Y, -200.0f };
 		g_Player.rot = { 0.0f, 0.0f, 0.0f };
 		g_Player.scl = XMFLOAT3(0.2f, 0.2f, 0.2f);
 
@@ -1242,13 +1242,13 @@ bool CheckItemBoxHitBox(void) {
 	//	発射の始点
 	XMFLOAT3 startPos;
 	startPos = g_Player.pos;
-	startPos.y -= PLAYER_OFFSET_Y * 0.5f;
+	//startPos.y -= PLAYER_OFFSET_Y * 0.5f;
 
 	// 終了位置
 	XMFLOAT3 endPos = startPos;
 	endPos.x = startPos.x + sinf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
 	endPos.z = startPos.z - cosf(g_Player.front.y) * DISTANCE_OF_RAYCAST_PLAYER;
-	endPos.y -= PLAYER_OFFSET_Y * 0.5f;
+	//endPos.y -= PLAYER_OFFSET_Y * 0.5f;
 
 
 	// Meshbox取得
