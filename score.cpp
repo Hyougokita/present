@@ -9,6 +9,7 @@
 #include "score.h"
 #include "sprite.h"
 #include "bullet.h"
+#include "gamemodeUI.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -141,65 +142,67 @@ void UpdateScore(void)
 //=============================================================================
 void DrawScore(void)
 {
-	// 頂点バッファ設定
-	UINT stride = sizeof(VERTEX_3D);
-	UINT offset = 0;
-	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
+	if (GetCanDrawUI()) {
+		// 頂点バッファ設定
+		UINT stride = sizeof(VERTEX_3D);
+		UINT offset = 0;
+		GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
-	// マトリクス設定
-	SetWorldViewProjection2D();
+		// マトリクス設定
+		SetWorldViewProjection2D();
 
-	// プリミティブトポロジ設定
-	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		// プリミティブトポロジ設定
+		GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// マテリアル設定
-	MATERIAL material;
-	ZeroMemory(&material, sizeof(material));
-	material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	SetMaterial(material);
+		// マテリアル設定
+		MATERIAL material;
+		ZeroMemory(&material, sizeof(material));
+		material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		SetMaterial(material);
 
-	// テクスチャ設定
-	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
-	for (int j = 0; j < SCORE_TYPE_MAX; j++) {
-		// 桁数分処理する
-		int number = g_Score[j].score;
-		for (int i = 0; i < g_Score[j].digit; i++)
-		{
-			// 今回表示する桁の数字
-			float x = (float)(number % 10);
+		// テクスチャ設定
+		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
+		for (int j = 0; j < SCORE_TYPE_MAX; j++) {
+			// 桁数分処理する
+			int number = g_Score[j].score;
+			for (int i = 0; i < g_Score[j].digit; i++)
+			{
+				// 今回表示する桁の数字
+				float x = (float)(number % 10);
 
-			// スコアの位置やテクスチャー座標を反映
-			float px = g_Score[j].pos.x - g_Score[j].width * i;	// スコアの表示位置X
-			float py = g_Score[j].pos.y;						// スコアの表示位置Y
-			float pw = g_Score[j].width;						// スコアの表示幅
-			float ph = g_Score[j].height;						// スコアの表示高さ
+				// スコアの位置やテクスチャー座標を反映
+				float px = g_Score[j].pos.x - g_Score[j].width * i;	// スコアの表示位置X
+				float py = g_Score[j].pos.y;						// スコアの表示位置Y
+				float pw = g_Score[j].width;						// スコアの表示幅
+				float ph = g_Score[j].height;						// スコアの表示高さ
 
-			float tw = 1.0f / 10;		// テクスチャの幅
-			float th = 1.0f / 1;		// テクスチャの高さ
-			float tx = x * tw;			// テクスチャの左上X座標
-			float ty = 0.0f;			// テクスチャの左上Y座標
+				float tw = 1.0f / 10;		// テクスチャの幅
+				float th = 1.0f / 1;		// テクスチャの高さ
+				float tx = x * tw;			// テクスチャの左上X座標
+				float ty = 0.0f;			// テクスチャの左上Y座標
 
-			// １枚のポリゴンの頂点とテクスチャ座標を設定
-			SetSpriteColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-				XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+				// １枚のポリゴンの頂点とテクスチャ座標を設定
+				SetSpriteColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+					XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
-			// ポリゴン描画
-			GetDeviceContext()->Draw(4, 0);
+				// ポリゴン描画
+				GetDeviceContext()->Draw(4, 0);
 
-			// 次の桁へ
-			number /= 10;
+				// 次の桁へ
+				number /= 10;
+			}
 		}
+
+		// スラッシュを描く
+		// テクスチャ設定
+		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
+		// １枚のポリゴンの頂点とテクスチャ座標を設定
+		SetSpriteColor(g_VertexBuffer, g_Score[SCORE_CUR_MAGAZINE].pos.x + 1.5f * TEXTURE_WIDTH, g_Score[SCORE_CUR_MAGAZINE].pos.y, g_Score[SCORE_CUR_MAGAZINE].width, g_Score[SCORE_CUR_MAGAZINE].height, 0.0f, 0.0f, 1.0f, 1.0f,
+			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+
+		// ポリゴン描画
+		GetDeviceContext()->Draw(4, 0);
 	}
-
-	// スラッシュを描く
-	// テクスチャ設定
-	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
-	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetSpriteColor(g_VertexBuffer, g_Score[SCORE_CUR_MAGAZINE].pos.x + 1.5f * TEXTURE_WIDTH, g_Score[SCORE_CUR_MAGAZINE].pos.y, g_Score[SCORE_CUR_MAGAZINE].width, g_Score[SCORE_CUR_MAGAZINE].height, 0.0f, 0.0f, 1.0f, 1.0f,
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-
-	// ポリゴン描画
-	GetDeviceContext()->Draw(4, 0);
 }
 
 

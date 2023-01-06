@@ -329,15 +329,16 @@ void DrawGame(void)
 
 	case TYPE_LEFT_HALF_SCREEN:
 	case TYPE_RIGHT_HALF_SCREEN:
-		SetViewPort(TYPE_LEFT_HALF_SCREEN);
-		DrawGame0();
+		//SetViewPort(TYPE_LEFT_HALF_SCREEN);
+		//DrawGame0();
 
 		// エネミー視点
-		pos = GetPlayer()->pos;
-		pos.y = 0.0f;
+		//pos = GetPlayer()->pos;
+		pos = XMFLOAT3(171.0f, 27.0f, -356.0f);
+		//pos.y = 0.0f;
 		SetCameraAT2(pos);
 		SetCamera();
-		SetViewPort(TYPE_RIGHT_HALF_SCREEN);
+		SetViewPort(TYPE_FULL_SCREEN);
 		DrawGame0();
 		break;
 
@@ -433,6 +434,10 @@ void CheckHit(void)
 		SetFade(FADE_OUT, MODE_RESULT);
 	}
 
+}
+
+void ChangeViewPort(int num) {
+	g_ViewPortType_Game = num;
 }
 
 

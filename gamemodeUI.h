@@ -52,3 +52,5 @@ void ChangeUIDiff(int num, XMFLOAT4 diff);
 void ChangeUIWidth(int num, float uw);
 XMFLOAT4 GetUIDiff(int num);
 void TurnReloadUIOnOff(bool status);
+void TurnOnOffUIAll(bool OnOff);
+bool GetCanDrawUI();

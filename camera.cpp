@@ -376,9 +376,11 @@ void SetCameraAT2(XMFLOAT3 pos)
 	g_Camera.at = pos;
 
 	// ƒJƒƒ‰‚Ì‹“_‚ğƒJƒƒ‰‚ÌY²‰ñ“]‚É‘Î‰‚³‚¹‚Ä‚¢‚é
-	g_Camera.pos.x = g_Camera.at.x - sinf(g_Camera.rot.y) * g_Camera.len;
-	g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * g_Camera.len;
+	//g_Camera.pos.x = g_Camera.at.x - sinf(g_Camera.rot.y) * g_Camera.len;
+	//g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * g_Camera.len;
 
-
+	//g_Camera.pos.x = g_Camera.at.x - sinf(g_Camera.rot.y) * 200.0f;
+	//g_Camera.pos.z = g_Camera.at.z - cosf(g_Camera.rot.y) * 200.0f;
+	g_Camera.pos = XMFLOAT3(316.0f, 100.0f, -211.0f);
 }
 

@@ -19,6 +19,7 @@
 #include "gamemodeUI.h"
 #include "collision.h"
 #include "debugproc.h"
+#include "game.h"
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -58,7 +59,7 @@
 #define HOUSE_POS			(XMFLOAT3(350.0f,0.0f,-400.0f))
 
 #define CASTLE_WALL_NUMBER		(13)					//　壁の片辺の数
-#define GATE_WALL_NUMER			(5)						//	ゲート両辺の片辺の壁の数
+#define GATE_WALL_NUMER			(6)						//	ゲート両辺の片辺の壁の数
 #define GATE_WALL_NUMER2		(2)
 #define GATE_WALL_POS			(XMFLOAT3(MAP_TOP- 50.0f, 0.0f, -100.0f))
 
@@ -105,18 +106,18 @@ bool g_CanOpenDoor = true;
 int  g_OpenDoorCount = 0;
 #define OPENDOOR_CD	(20)
 
-// コントローラー
-bool g_CanOpenController = true;
-int  g_OpenControllerCount = 0;
-#define OPENCONTROLLER_CD	(15)
+
 
 // ゲート開閉用
 bool g_GateStatus = false;	// 開閉状態
 int  g_GateCount = 0;		// 開閉のカウント
-int  g_GateCountMax = 20;	// 完全に開閉まで必要な時間
+int  g_GateCountMax = 100;	// 完全に開閉まで必要な時間
 float g_GateSpeed = (100.0f / (float)g_GateCountMax);
 
-
+// コントローラー
+bool g_CanOpenController = true;
+int  g_OpenControllerCount = 0;
+#define OPENCONTROLLER_CD	(g_GateCountMax + 5)
 // 飾り用アイテム関連
 // アイテムのモデルデータ
 static char* itemDecorationList[ITEM_DECORATION_TYPE_MAX] = {
@@ -414,10 +415,14 @@ void UpdateItem(void)
 
 	// ドア開閉の繰り返し防止
 	if (g_CanOpenController == false) {
+		TurnOnOffUIAll(false);
+		ChangeViewPort(TYPE_LEFT_HALF_SCREEN);
 		g_OpenControllerCount++;
 		if (g_OpenControllerCount > OPENCONTROLLER_CD) {
 			g_OpenControllerCount = 0;
 			g_CanOpenController = true;
+			TurnOnOffUIAll(true);
+			ChangeViewPort(TYPE_FULL_SCREEN);
 		}
 	}
 

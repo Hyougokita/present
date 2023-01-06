@@ -126,6 +126,7 @@ static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
 	UI_GET_POSITION,
 };
 
+static bool g_CanDrawUI = true;
 
 bool g_Load = false;
 
@@ -238,51 +239,52 @@ void UpdateGMUI(void)
 //=============================================================================
 void DrawGMUI(void)
 {
-	// 頂点バッファ設定
-	UINT stride = sizeof(VERTEX_3D);
-	UINT offset = 0;
-	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
+	if (g_CanDrawUI) {
+		// 頂点バッファ設定
+		UINT stride = sizeof(VERTEX_3D);
+		UINT offset = 0;
+		GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
-	// マトリクス設定
-	SetWorldViewProjection2D();
+		// マトリクス設定
+		SetWorldViewProjection2D();
 
-	// プリミティブトポロジ設定
-	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		// プリミティブトポロジ設定
+		GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// マテリアル設定
-	MATERIAL material;
-	ZeroMemory(&material, sizeof(material));
-	material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	SetMaterial(material);
+		// マテリアル設定
+		MATERIAL material;
+		ZeroMemory(&material, sizeof(material));
+		material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		SetMaterial(material);
 
-	for (int i = 0; i < UI_MAX; i++) {
+		for (int i = 0; i < UI_MAX; i++) {
 
-		// 照準の描画
-		{
-			if (g_GMUI[i].use) {
-				// テクスチャ設定
-				GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[i]);
+			// 照準の描画
+			{
+				if (g_GMUI[i].use) {
+					// テクスチャ設定
+					GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[i]);
 
-				// １枚のポリゴンの頂点とテクスチャ座標を設定
-				// UI_FILL の場合
-				if (i == UI_RELOAD_FILL) {
-					SetSpriteLeftTopColor(g_VertexBuffer, 
-						g_GMUI[i].pos.x - uiTextureWidthList[i] * 0.5f,
-						g_GMUI[i].pos.y - uiTextureHeightList[i] * 0.5f,
-						g_GMUI[i].width, g_GMUI[i].height, 0.0f, 0.0f, 1.0f, 1.0f, g_GMUI[i].diff);
+					// １枚のポリゴンの頂点とテクスチャ座標を設定
+					// UI_FILL の場合
+					if (i == UI_RELOAD_FILL) {
+						SetSpriteLeftTopColor(g_VertexBuffer,
+							g_GMUI[i].pos.x - uiTextureWidthList[i] * 0.5f,
+							g_GMUI[i].pos.y - uiTextureHeightList[i] * 0.5f,
+							g_GMUI[i].width, g_GMUI[i].height, 0.0f, 0.0f, 1.0f, 1.0f, g_GMUI[i].diff);
+					}
+					//	その他の場合
+					else {
+						SetSpriteColor(g_VertexBuffer, g_GMUI[i].pos.x, g_GMUI[i].pos.y, g_GMUI[i].width, g_GMUI[i].height, 0.0f, 0.0f, 1.0f, 1.0f, g_GMUI[i].diff);
+					}
+
+					// ポリゴン描画
+					GetDeviceContext()->Draw(4, 0);
 				}
-				//	その他の場合
-				else {
-					SetSpriteColor(g_VertexBuffer, g_GMUI[i].pos.x, g_GMUI[i].pos.y, g_GMUI[i].width, g_GMUI[i].height, 0.0f, 0.0f, 1.0f, 1.0f, g_GMUI[i].diff);
-				}
-
-				// ポリゴン描画
-				GetDeviceContext()->Draw(4, 0);
 			}
 		}
+
 	}
-
-
 	
 
 
@@ -321,4 +323,12 @@ void TurnReloadUIOnOff(bool status) {
 	g_GMUI[UI_RELOAD_FILL].diff.w = 1.0f;
 	g_GMUI[UI_RELOAD_TEXT].diff.w = 1.0f;
 
+}
+
+void TurnOnOffUIAll(bool OnOff) {
+	g_CanDrawUI = OnOff;
+}
+
+bool GetCanDrawUI() {
+	return g_CanDrawUI;
 }
