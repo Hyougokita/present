@@ -55,9 +55,13 @@
 #define ITEM_OFFSET_Y		(17.0f)						// エネミーの足元をあわせる
 
 #define	AMMO_BOX_ADD_NUM	(20)						// 弾ボックスが増加する弾の数
-#define HOUSE_POS			(XMFLOAT3(-50.0f,0.0f,100.0f))
+#define HOUSE_POS			(XMFLOAT3(350.0f,0.0f,-400.0f))
 
 #define CASTLE_WALL_NUMBER		(13)					//　壁の片辺の数
+#define GATE_WALL_NUMER			(5)						//	ゲート両辺の片辺の壁の数
+#define GATE_WALL_NUMER2		(2)
+#define GATE_WALL_POS			(XMFLOAT3(MAP_TOP- 50.0f, 0.0f, -100.0f))
+
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -80,12 +84,17 @@ static ITEM			g_ItemHouseWall[ITEM_WALL_MAX];				// 家の壁
 static ITEM			g_ItemDoor[ITEM_HOUSE_DOOR_MAX];			// 家のドア
 static ITEM			g_ItemTable[ITEM_TABLE_MAX];				// アイテムが置いてある机
 static ITEM			g_CastleWall[CASTLE_WALL_NUMBER * 4];		// マップ周辺の壁
+static ITEM			g_GateWall[GATE_WALL_NUMER * 2];			// ゲート両辺の壁
 static ITEM			g_ItemController[ITEM_CONTROLLER_MAX];		// ゲートをコントロールするコントローラー
 #ifdef _DEBUG
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
 #endif // _DEBUG
 
+//  家の位置
 XMFLOAT3 g_HousePos = HOUSE_POS;
+
+//  ボックスの位置
+XMFLOAT3 g_BoxPos = XMFLOAT3(g_HousePos.x + 90.0f, 0.0f, g_HousePos.z - 20.0f);
 
 static BOOL			g_Load = FALSE;
 
@@ -202,7 +211,7 @@ HRESULT InitItem(void)
 		XMFLOAT3 pos = HOUSE_POS;
 		InitItemWithHitBoxFromCsvSingle(&g_ItemController[i], itemControllerModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, controllerDataList[i], i, ITEM_TYPE_CONTROLLER);
 	}
-	
+
 
 	//	飾り用アイテムの初期化
 	for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
@@ -212,7 +221,6 @@ HRESULT InitItem(void)
 	g_ItemDecoration[ITEM_DECORATION_HOUSETEST].use = false;
 	g_ItemDecoration[ITEM_DECORATION_DOORTEST].use = false;
 	//g_ItemDecoration[ITEM_DECORATION_DOORTEST].pos = HOUSE_POS;
-
 
 
 	// 机の初期化
@@ -252,7 +260,7 @@ HRESULT InitItem(void)
 	// ボックスの初期化
 	for (int i = 0; i < ITEM_BOX_MAX; i++)
 	{
-		XMFLOAT3 pos = XMFLOAT3(-50.0f, 0.0f, 0.0f);
+		XMFLOAT3 pos = g_BoxPos;
 		InitItemWithHitBoxSingle(&g_ItemBox[i], MODEL_ITEM_BOX, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_BOX);
 	}
 
@@ -276,6 +284,25 @@ HRESULT InitItem(void)
 			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
 		}
 
+	}
+
+	// ゲート両辺の壁の初期化
+	for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2; i++) {
+		XMFLOAT3 pos = GATE_WALL_POS;
+		if (0 <= i && i < GATE_WALL_NUMER) {
+			pos.x -= 100.0f * i;
+			InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+		}
+		else if (GATE_WALL_NUMER <= i && i < GATE_WALL_NUMER + GATE_WALL_NUMER2) {
+			pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
+			pos.z -= 100.0f * (i - GATE_WALL_NUMER) + 50.0f;
+			InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+		}
+		else {
+			pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
+			pos.z -= 100.0f * (2 + i - GATE_WALL_NUMER) + 50.0f;
+			InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+		}
 	}
 
 
@@ -459,6 +486,11 @@ void DrawItem(void)
 		DrawItemSingle(&g_ItemController[i]);
 	}
 
+	// ゲート両辺の壁の描画
+	for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2; i++) {
+		if (g_GateWall[i].use == false) continue;
+		DrawItemSingle(&g_GateWall[i]);
+	}
 
 
 	// カリング設定を戻す
@@ -590,8 +622,9 @@ void ChangeItemUse(ITEM* item, bool use) {
 
 // ドアの操作
 void OpenCloseDoor() {
-	// 現在　ドアは空いている
+	// 現在　ドアは操作できる状態
 	if (g_CanOpenDoor) {
+		// 今ドアが閉めている状態なら　開ける
 		if (g_ItemDoor[ITEM_HOUSE_DOOR].use) {
 			ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR], false);
 			ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], true);
@@ -607,8 +640,9 @@ void OpenCloseDoor() {
 
 // ドアの操作
 void OpenCloseController() {
-	// 現在　ドアは空いている
+	// 現在　コントローラーは操作できる状態
 	if (g_CanOpenController) {
+		// コントローラー今はOFF状態なら　ONにする
 		if (g_ItemController[ITEM_CONTROLLER_OFF].use) {
 			ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_OFF], false);
 			ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_ON], true);
