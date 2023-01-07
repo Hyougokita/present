@@ -180,6 +180,11 @@ HRESULT InitGMUI(void)
 
 	g_GMUI[UI_DOOR_LOCK_TEXT].use = false;
 
+	g_GMUI[UI_GET].use = false;
+	g_GMUI[UI_OPEN].use = false;
+	g_GMUI[UI_MOVE].use = false;
+	g_GMUI[UI_CLOSE].use = false;
+
 
 
 

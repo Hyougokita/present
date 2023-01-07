@@ -48,6 +48,7 @@
 #define MODEL_ITEM_CONTROLLER_OFF				"data/MODEL/controlleroff.obj"
 #define MODEL_ITEM_CONTROLLER_ON				"data/MODEL/controlleron.obj"
 #define MODEL_ITEM_GATE							"data/MODEL/gate.obj"
+#define MODEL_ITEM_TARGETPOS					"data/MODEL/targetpos.obj"
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -125,6 +126,7 @@ static char* itemDecorationList[ITEM_DECORATION_TYPE_MAX] = {
 	MODEL_ITEM_HOUSE,
 	MODEL_ITEM_ROOF,
 	MODEL_ITEM_DOORWAY,
+
 };
 
 //　アイテムの位置
@@ -133,6 +135,7 @@ static XMFLOAT3 itemDecorationPositionList[ITEM_DECORATION_TYPE_MAX] = {
 	XMFLOAT3(50.0f,0.0f,0.0f),
 	HOUSE_POS,
 	HOUSE_POS,
+
 };
 //	アイテムのスカラー
 static float itemDecorationScaleList[ITEM_DECORATION_TYPE_MAX] = {
@@ -140,6 +143,7 @@ static float itemDecorationScaleList[ITEM_DECORATION_TYPE_MAX] = {
 	 3.0f,
 	 1.0f,
 	 1.0f,
+
 };
 
 //	家のドア関連

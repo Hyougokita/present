@@ -26,12 +26,12 @@
 #define ENEMY_SHADOW_SIZE	(0.4f)						// 影の大きさ
 #define ENEMY_OFFSET_Y		(17.0f)						// エネミーの足元をあわせる
 
-#define MODE_BERA_BODY			"data/MODEL/bear_body.obj"
-#define MODE_BERA_RIGHT_HAND	"data/MODEL/bear_righthand.obj"
-#define MODE_BERA_LEFT_HAND		"data/MODEL/bear_lefthand.obj"
-#define MODE_BEAR_HEAD			"data/MODEL/bear_head.obj"
-#define MODE_BEAR_RIGHT_LEG		"data/MODEL/bear_rightleg.obj"
-#define MODE_BEAR_LEFT_LEG		"data/MODEL/bear_leftleg.obj"
+#define MODE_BERA_BODY			"data/MODEL/zombiebody.obj"
+#define MODE_BERA_RIGHT_HAND	"data/MODEL/zombierighthand.obj"
+#define MODE_BERA_LEFT_HAND		"data/MODEL/zombielefthand.obj"
+#define MODE_BEAR_HEAD			"data/MODEL/zombiehead.obj"
+#define MODE_BEAR_RIGHT_LEG		"data/MODEL/zombierightleg.obj"
+#define MODE_BEAR_LEFT_LEG		"data/MODEL/zombieleftleg.obj"
 
 //*****************************************************************************
 // プロトタイプ宣言

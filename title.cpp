@@ -225,17 +225,19 @@ void UpdateTitle(void)
 
 	if (GetKeyboardTrigger(DIK_RETURN))
 	{// Enter押したら、ステージを切り替える
-		SetFade(FADE_OUT, MODE_GAME);
+		if (g_IsSelectNo == SELECTION_START) {
+			SetFade(FADE_OUT, MODE_GAME);
+		}
 	}
 	// ゲームパッドで入力処理
-	else if (IsButtonTriggered(0, BUTTON_START))
-	{
-		SetFade(FADE_OUT, MODE_GAME);
-	}
-	else if (IsButtonTriggered(0, BUTTON_B))
-	{
-		SetFade(FADE_OUT, MODE_GAME);
-	}
+	//else if (IsButtonTriggered(0, BUTTON_START))
+	//{
+	//	SetFade(FADE_OUT, MODE_GAME);
+	//}
+	//else if (IsButtonTriggered(0, BUTTON_B))
+	//{
+	//	SetFade(FADE_OUT, MODE_GAME);
+	//}
 
 
 
