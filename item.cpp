@@ -435,7 +435,7 @@ void UpdateItem(void)
 			}
 		}
 
-		// ドア開閉の繰り返し防止
+		// ドア開閉の繰り返し防止 と　カメラ視点の切り替え
 		if (g_CanOpenController == false) {
 			TurnOnOffUIAll(false);
 			ChangeViewPort(TYPE_LEFT_HALF_SCREEN);

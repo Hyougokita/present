@@ -315,7 +315,8 @@ void Update(void)
 	case MODE_TITLE:		// タイトル画面の更新
 		UpdateTitle();
 		break;
-
+	case MODE_TUTORIAL:
+		break;
 	case MODE_GAME:			// ゲーム画面の更新
 		UpdateGame();
 		break;
@@ -445,7 +446,8 @@ void SetMode(int mode)
 		// タイトル画面の初期化
 		InitTitle();
 		break;
-
+	case MODE_TUTORIAL:
+		break;
 	case MODE_GAME:
 		// ゲーム画面の初期化
 		InitGame();
