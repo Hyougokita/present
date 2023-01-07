@@ -199,146 +199,149 @@ HRESULT InitItem(void)
 
 	}
 #endif // _DEBUG
-	// 家の壁の初期化
-	for (int i = 0; i < ITEM_WALL_MAX; i++) {
-		XMFLOAT3 pos = HOUSE_POS;
-		InitItemWithHitBoxFromCsvSingle(&g_ItemHouseWall[i], itemHouseWallModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 4.0f, true, 2 + i, i, ITEM_TYPE_WALL);
-	}
 
-	// 窓の初期化
-	for (int i = 0; i < ITEM_WINDOW_MAX; i++)
-	{
-		XMFLOAT3 pos = HOUSE_POS;
-		InitItemWithHitBoxFromCsvSingle(&g_ItemWindow[i], MODEL_ITEM_WINDOW, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, 1, i, ITEM_TYPE_WINDOW);
-	}
-
-	//　ドアの初期化
-	for (int i = 0; i < ITEM_HOUSE_DOOR_MAX; i++) {
-		XMFLOAT3 pos = HOUSE_POS;
-		pos.x -= 90.0f;
-		pos.z -= 8.5f;
-		InitItemWithHitBoxFromCsvSingle(&g_ItemDoor[i], itemDoorModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, doorDataList[i], i, ITEM_TYPE_DOOR);
-	}
-
-	// コントローラーの初期化
-	for (int i = 0; i < ITEM_CONTROLLER_MAX; i++) {
-		XMFLOAT3 pos = HOUSE_POS;
-		InitItemWithHitBoxFromCsvSingle(&g_ItemController[i], itemControllerModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, controllerDataList[i], i, ITEM_TYPE_CONTROLLER);
-	}
-
-
-	//	飾り用アイテムの初期化
-	for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
-		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		InitItemSingle(&g_ItemDecoration[i], itemDecorationList[i], true, itemDecorationPositionList[i], XMFLOAT3(0.0f, 0.0f, 0.0f), itemDecorationScaleList[i], 4.0f, true);
-	}
-	g_ItemDecoration[ITEM_DECORATION_HOUSETEST].use = false;
-	g_ItemDecoration[ITEM_DECORATION_DOORTEST].use = false;
-	//g_ItemDecoration[ITEM_DECORATION_DOORTEST].pos = HOUSE_POS;
-
-
-	// 机の初期化
-	for (int i = 0; i < ITEM_TABLE_MAX; i++) {
-		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		InitItemWithHitBoxFromCsvSingle(&g_ItemTable[i], MODEL_ITEM_TABLE00, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.5f, 5.0f, true, DATA_TABLE,i,ITEM_TYPE_TABLE);
-	}
-
-	// AMMOの初期化
-	for (int i = 0; i < ITEM_AMMO_MAX; i++)
-	{
-		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		if (i == ITEM_AMMO_TABLE) {
-			// 机上の弾ボックス
-			pos = g_ItemTable[ITEM_TABLE].pos;
-			pos.x += 14.0f;
-			pos.y += 14.0f;
-
-		}
-		InitItemWithHitBoxSingle(&g_ItemBullet[i], MODEL_ITEM_AMMO, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.5f, ITEM_SIZE, true, 28.0f, 8.0f, 18.0f, i, ITEM_AMMO_BOX);
-
-	}
-
-	//　ピストルの初期化
-	for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
-	{
-		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		// 机の上ピストル
-		if (i == ITEM_HANDGUN_TABLE) {
-			pos = g_ItemTable[ITEM_TABLE].pos;
-			pos.x -= 14.0f;
-			pos.y += 14.0f;
-		}
-		InitItemWithHitBoxSingle(&g_ItemHandgun[i], MODEL_ITEM_HANDGUN, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.2f, ITEM_SIZE, true, 60.0f, 16.0f, 56.0f, i, ITEM_HAND_GUN);
-	}
-
-	// ボックスの初期化
-	for (int i = 0; i < ITEM_BOX_MAX; i++)
-	{
-		XMFLOAT3 pos = g_BoxPos;
-		InitItemWithHitBoxSingle(&g_ItemBox[i], MODEL_ITEM_BOX, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_BOX);
-	}
-
-	// マップ周辺の壁の初期化
-	for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
-		XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		if (0 <= i && i < CASTLE_WALL_NUMBER) {
-			pos = XMFLOAT3(MAP_TOP - 100.0f * i - 50.0f, 0.0f, MAP_RIGHT);
-			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
-		}
-		else if (CASTLE_WALL_NUMBER <= i && i < CASTLE_WALL_NUMBER * 2) {
-			pos = XMFLOAT3(MAP_TOP - 100.0f * (i - CASTLE_WALL_NUMBER) - 50.0f, 0.0f, MAP_LEFT + 50.0f);
-			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
-		}
-		else if (CASTLE_WALL_NUMBER * 2 <= i && i < CASTLE_WALL_NUMBER * 3) {
-			pos = XMFLOAT3(MAP_TOP , 0.0f, MAP_RIGHT - 100.0f * (i - CASTLE_WALL_NUMBER * 2));
-			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
-		}
-		else if (CASTLE_WALL_NUMBER * 3 <= i && i < CASTLE_WALL_NUMBER * 4) {
-			pos = XMFLOAT3(MAP_DOWN, 0.0f, MAP_RIGHT - 100.0f * (i - CASTLE_WALL_NUMBER * 3));
-			InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+	if (GetMode() == MODE_GAME) {
+		// 家の壁の初期化
+		for (int i = 0; i < ITEM_WALL_MAX; i++) {
+			XMFLOAT3 pos = HOUSE_POS;
+			InitItemWithHitBoxFromCsvSingle(&g_ItemHouseWall[i], itemHouseWallModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 4.0f, true, 2 + i, i, ITEM_TYPE_WALL);
 		}
 
-	}
-
-	// ゲート両辺の壁の初期化
-	for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2; i++) {
-		XMFLOAT3 pos = GATE_WALL_POS;
-		if (0 <= i && i < GATE_WALL_NUMER) {
-			pos.x -= 100.0f * i;
-			InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+		// 窓の初期化
+		for (int i = 0; i < ITEM_WINDOW_MAX; i++)
+		{
+			XMFLOAT3 pos = HOUSE_POS;
+			InitItemWithHitBoxFromCsvSingle(&g_ItemWindow[i], MODEL_ITEM_WINDOW, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, 1, i, ITEM_TYPE_WINDOW);
 		}
-		else if (GATE_WALL_NUMER <= i && i < GATE_WALL_NUMER + GATE_WALL_NUMER2) {
+
+		//　ドアの初期化
+		for (int i = 0; i < ITEM_HOUSE_DOOR_MAX; i++) {
+			XMFLOAT3 pos = HOUSE_POS;
+			pos.x -= 90.0f;
+			pos.z -= 8.5f;
+			InitItemWithHitBoxFromCsvSingle(&g_ItemDoor[i], itemDoorModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, doorDataList[i], i, ITEM_TYPE_DOOR);
+		}
+
+		// コントローラーの初期化
+		for (int i = 0; i < ITEM_CONTROLLER_MAX; i++) {
+			XMFLOAT3 pos = HOUSE_POS;
+			InitItemWithHitBoxFromCsvSingle(&g_ItemController[i], itemControllerModelList[i], true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, ITEM_SIZE, true, controllerDataList[i], i, ITEM_TYPE_CONTROLLER);
+		}
+
+
+		//	飾り用アイテムの初期化
+		for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			InitItemSingle(&g_ItemDecoration[i], itemDecorationList[i], true, itemDecorationPositionList[i], XMFLOAT3(0.0f, 0.0f, 0.0f), itemDecorationScaleList[i], 4.0f, true);
+		}
+		g_ItemDecoration[ITEM_DECORATION_HOUSETEST].use = false;
+		g_ItemDecoration[ITEM_DECORATION_DOORTEST].use = false;
+		//g_ItemDecoration[ITEM_DECORATION_DOORTEST].pos = HOUSE_POS;
+
+
+		// 机の初期化
+		for (int i = 0; i < ITEM_TABLE_MAX; i++) {
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			InitItemWithHitBoxFromCsvSingle(&g_ItemTable[i], MODEL_ITEM_TABLE00, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.5f, 5.0f, true, DATA_TABLE, i, ITEM_TYPE_TABLE);
+		}
+
+		// AMMOの初期化
+		for (int i = 0; i < ITEM_AMMO_MAX; i++)
+		{
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			if (i == ITEM_AMMO_TABLE) {
+				// 机上の弾ボックス
+				pos = g_ItemTable[ITEM_TABLE].pos;
+				pos.x += 14.0f;
+				pos.y += 14.0f;
+
+			}
+			InitItemWithHitBoxSingle(&g_ItemBullet[i], MODEL_ITEM_AMMO, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.5f, ITEM_SIZE, true, 28.0f, 8.0f, 18.0f, i, ITEM_AMMO_BOX);
+
+		}
+
+		//　ピストルの初期化
+		for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
+		{
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			// 机の上ピストル
+			if (i == ITEM_HANDGUN_TABLE) {
+				pos = g_ItemTable[ITEM_TABLE].pos;
+				pos.x -= 14.0f;
+				pos.y += 14.0f;
+			}
+			InitItemWithHitBoxSingle(&g_ItemHandgun[i], MODEL_ITEM_HANDGUN, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.2f, ITEM_SIZE, true, 60.0f, 16.0f, 56.0f, i, ITEM_HAND_GUN);
+		}
+
+		// ボックスの初期化
+		for (int i = 0; i < ITEM_BOX_MAX; i++)
+		{
+			XMFLOAT3 pos = g_BoxPos;
+			InitItemWithHitBoxSingle(&g_ItemBox[i], MODEL_ITEM_BOX, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 3.0f, ITEM_SIZE, true, 10.0f, 10.0f, 10.0f, i, ITEM_TYPE_BOX);
+		}
+
+		// マップ周辺の壁の初期化
+		for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			if (0 <= i && i < CASTLE_WALL_NUMBER) {
+				pos = XMFLOAT3(MAP_TOP - 100.0f * i - 50.0f, 0.0f, MAP_RIGHT);
+				InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+			else if (CASTLE_WALL_NUMBER <= i && i < CASTLE_WALL_NUMBER * 2) {
+				pos = XMFLOAT3(MAP_TOP - 100.0f * (i - CASTLE_WALL_NUMBER) - 50.0f, 0.0f, MAP_LEFT + 50.0f);
+				InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+			else if (CASTLE_WALL_NUMBER * 2 <= i && i < CASTLE_WALL_NUMBER * 3) {
+				pos = XMFLOAT3(MAP_TOP, 0.0f, MAP_RIGHT - 100.0f * (i - CASTLE_WALL_NUMBER * 2));
+				InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+			else if (CASTLE_WALL_NUMBER * 3 <= i && i < CASTLE_WALL_NUMBER * 4) {
+				pos = XMFLOAT3(MAP_DOWN, 0.0f, MAP_RIGHT - 100.0f * (i - CASTLE_WALL_NUMBER * 3));
+				InitItemWithHitBoxFromCsvSingle(&g_CastleWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+
+		}
+
+		// ゲート両辺の壁の初期化
+		for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2; i++) {
+			XMFLOAT3 pos = GATE_WALL_POS;
+			if (0 <= i && i < GATE_WALL_NUMER) {
+				pos.x -= 100.0f * i;
+				InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+			else if (GATE_WALL_NUMER <= i && i < GATE_WALL_NUMER + GATE_WALL_NUMER2) {
+				pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
+				pos.z -= 100.0f * (i - GATE_WALL_NUMER) + 50.0f;
+				InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+			else {
+				pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
+				pos.z -= 100.0f * (1.5 + i - GATE_WALL_NUMER) + 50.0f;
+				InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+		}
+
+		// ゲートの初期化
+		for (int i = 0; i < 2; i++) {
+			XMFLOAT3 pos = GATE_WALL_POS;
 			pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
-			pos.z -= 100.0f * (i - GATE_WALL_NUMER) + 50.0f;
-			InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			pos.z -= 100.0f * (GATE_WALL_NUMER2 + i) + 50.0f;
+			InitItemWithHitBoxFromCsvSingle(&g_ItemGate[i], MODEL_ITEM_GATE, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
 		}
-		else {
-			pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
-			pos.z -= 100.0f * (1.5 + i - GATE_WALL_NUMER) + 50.0f;
-			InitItemWithHitBoxFromCsvSingle(&g_GateWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
-		}
+
+
+
+
+
+		//g_ItemBullet[ITEM_AMMO_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
+		//g_ItemHandgun[ITEM_HANDGUN_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
+
+		// ドア最初は閉じる状態
+		ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], false);
+
+		// コントローラー最初はOFF状態
+		ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_ON], false);
 	}
-
-	// ゲートの初期化
-	for (int i = 0; i < 2; i++) {
-		XMFLOAT3 pos = GATE_WALL_POS;
-		pos.x -= 100.0f * GATE_WALL_NUMER - 50.0f;
-		pos.z -= 100.0f * (GATE_WALL_NUMER2 + i) + 50.0f;
-		InitItemWithHitBoxFromCsvSingle(&g_ItemGate[i], MODEL_ITEM_GATE, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
-	}
-
-
-
-
-
-	//g_ItemBullet[ITEM_AMMO_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
-	//g_ItemHandgun[ITEM_HANDGUN_TABLE].pos = g_ItemDecoration[ITEM_DECORATION_TABLE00].pos;
-
-	// ドア最初は閉じる状態
-	ChangeItemUse(&g_ItemDoor[ITEM_HOUSE_DOOR_OPENED], false);
-
-	// コントローラー最初はOFF状態
-	ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_ON], false);
 	g_Load = TRUE;
 	return S_OK;
 }
@@ -363,6 +366,11 @@ void UninitItem(void)
 	// ドアの終了
 	for (int i = 0; i < ITEM_HOUSE_DOOR_MAX; i++) {
 		UninitItemSingle(&g_ItemDoor[i]);
+	}
+
+	// コントローラーの終了
+	for (int i = 0; i < ITEM_CONTROLLER_MAX; i++) {
+		UninitItemSingle(&g_ItemController[i]);
 	}
 
 	// 飾りの終了
@@ -390,6 +398,16 @@ void UninitItem(void)
 		UninitItemSingle(&g_ItemBox[i]);
 	}
 
+	// マップ周辺の壁の終了
+	for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
+		UninitItemSingle(&g_CastleWall[i]);
+	}
+
+	// ゲート両辺の壁の終了
+	for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2;i++) {
+		UninitItemSingle(&g_ItemGate[i]);
+	}
+
 	g_Load = FALSE;
 
 }
@@ -407,32 +425,32 @@ void UpdateItem(void)
 #ifdef _DEBUG
 	PrintDebugProc("boxHit:%d\n", g_boxHit);
 #endif // _DEBUG
-
-	// ドア開閉の繰り返し防止
-	if (g_CanOpenDoor == false) {
-		g_OpenDoorCount++;
-		if (g_OpenDoorCount > OPENDOOR_CD) {
-			g_OpenDoorCount = 0;
-			g_CanOpenDoor = true;
+	if (GetMode() == MODE_GAME) {
+		// ドア開閉の繰り返し防止
+		if (g_CanOpenDoor == false) {
+			g_OpenDoorCount++;
+			if (g_OpenDoorCount > OPENDOOR_CD) {
+				g_OpenDoorCount = 0;
+				g_CanOpenDoor = true;
+			}
 		}
-	}
 
-	// ドア開閉の繰り返し防止
-	if (g_CanOpenController == false) {
-		TurnOnOffUIAll(false);
-		ChangeViewPort(TYPE_LEFT_HALF_SCREEN);
-		g_OpenControllerCount++;
-		if (g_OpenControllerCount > OPENCONTROLLER_CD) {
-			g_OpenControllerCount = 0;
-			g_CanOpenController = true;
-			TurnOnOffUIAll(true);
-			ChangeViewPort(TYPE_FULL_SCREEN);
+		// ドア開閉の繰り返し防止
+		if (g_CanOpenController == false) {
+			TurnOnOffUIAll(false);
+			ChangeViewPort(TYPE_LEFT_HALF_SCREEN);
+			g_OpenControllerCount++;
+			if (g_OpenControllerCount > OPENCONTROLLER_CD) {
+				g_OpenControllerCount = 0;
+				g_CanOpenController = true;
+				TurnOnOffUIAll(true);
+				ChangeViewPort(TYPE_FULL_SCREEN);
+			}
 		}
+
+		// ゲートの開閉
+		GateOpenClose();
 	}
-
-	// ゲートの開閉
-	GateOpenClose();
-
 }
 
 
@@ -444,89 +462,90 @@ void DrawItem(void)
 {
 	// カリング無効
 	SetCullingMode(CULL_MODE_NONE);
+	if (GetMode() == MODE_GAME) {
 #ifdef _DEBUG
-	for (int i = 0; i < ITEM_TEST_AMMO_MAX; i++) {
-		if (g_ItemTestAmmo[i].use == false)	continue;
-		DrawItemSingle(&g_ItemTestAmmo[i]);
-	}
+		for (int i = 0; i < ITEM_TEST_AMMO_MAX; i++) {
+			if (g_ItemTestAmmo[i].use == false)	continue;
+			DrawItemSingle(&g_ItemTestAmmo[i]);
+		}
 #endif // _DEBUG
 
-	// 家の壁の描画
-	for (int i = 0; i < ITEM_WALL_MAX; i++) {
-		if (g_ItemHouseWall[i].use == false) continue;
-		DrawItemSingle(&g_ItemHouseWall[i]);
-	}
+		// 家の壁の描画
+		for (int i = 0; i < ITEM_WALL_MAX; i++) {
+			if (g_ItemHouseWall[i].use == false) continue;
+			DrawItemSingle(&g_ItemHouseWall[i]);
+		}
 
-	//　ドアの描画
-	for (int i = 0; i < ITEM_HOUSE_DOOR_MAX; i++) {
-		if (g_ItemDoor[i].use == false) continue;
-		DrawItemSingle(&g_ItemDoor[i]);
-	}
+		//　ドアの描画
+		for (int i = 0; i < ITEM_HOUSE_DOOR_MAX; i++) {
+			if (g_ItemDoor[i].use == false) continue;
+			DrawItemSingle(&g_ItemDoor[i]);
+		}
 
-	// 机の描画
-	for (int i = 0; i < ITEM_TABLE_MAX; i++) {
-		if (g_ItemTable[i].use == false) continue;
-		DrawItemSingle(&g_ItemTable[i]);
-	}
+		// 机の描画
+		for (int i = 0; i < ITEM_TABLE_MAX; i++) {
+			if (g_ItemTable[i].use == false) continue;
+			DrawItemSingle(&g_ItemTable[i]);
+		}
 
-	// 弾ボックスの描画
-	for (int i = 0; i < ITEM_AMMO_MAX; i++)
-	{
-		if (g_ItemBullet[i].use == false) continue;
-		DrawItemSingle(&g_ItemBullet[i]);
-	}
+		// 弾ボックスの描画
+		for (int i = 0; i < ITEM_AMMO_MAX; i++)
+		{
+			if (g_ItemBullet[i].use == false) continue;
+			DrawItemSingle(&g_ItemBullet[i]);
+		}
 
-	// ピストルの描画
-	for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
-	{
-		if (g_ItemHandgun[i].use == false) continue;
-		DrawItemSingle(&g_ItemHandgun[i]);
-	}
+		// ピストルの描画
+		for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
+		{
+			if (g_ItemHandgun[i].use == false) continue;
+			DrawItemSingle(&g_ItemHandgun[i]);
+		}
 
-	// ボックスの描画
-	for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
-	{
-		if (g_ItemBox[i].use == false) continue;
-		DrawItemSingle(&g_ItemBox[i]);
-	}
+		// ボックスの描画
+		for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
+		{
+			if (g_ItemBox[i].use == false) continue;
+			DrawItemSingle(&g_ItemBox[i]);
+		}
 
-	// 窓の描画
-	for (int i = 0; i < ITEM_WINDOW_MAX; i++)
-	{
-		if (g_ItemWindow[i].use == false) continue;
-		DrawItemSingle(&g_ItemWindow[i]);
-	}
+		// 窓の描画
+		for (int i = 0; i < ITEM_WINDOW_MAX; i++)
+		{
+			if (g_ItemWindow[i].use == false) continue;
+			DrawItemSingle(&g_ItemWindow[i]);
+		}
 
-	//　飾り用アイテムの描画
-	for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
-		if (g_ItemDecoration[i].use == false) continue;
-		DrawItemSingle(&g_ItemDecoration[i]);
-	}
+		//　飾り用アイテムの描画
+		for (int i = 0; i < ITEM_DECORATION_TYPE_MAX; i++) {
+			if (g_ItemDecoration[i].use == false) continue;
+			DrawItemSingle(&g_ItemDecoration[i]);
+		}
 
-	// マップ周りの壁の描画
-	for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
-		if (g_CastleWall[i].use == false) continue;
-		DrawItemSingle(&g_CastleWall[i]);
-	}
+		// マップ周りの壁の描画
+		for (int i = 0; i < CASTLE_WALL_NUMBER * 4; i++) {
+			if (g_CastleWall[i].use == false) continue;
+			DrawItemSingle(&g_CastleWall[i]);
+		}
 
-	// コントローラーの描画
-	for (int i = 0; i < ITEM_CONTROLLER_MAX; i++) {
-		if (g_ItemController[i].use == false) continue;
-		DrawItemSingle(&g_ItemController[i]);
-	}
+		// コントローラーの描画
+		for (int i = 0; i < ITEM_CONTROLLER_MAX; i++) {
+			if (g_ItemController[i].use == false) continue;
+			DrawItemSingle(&g_ItemController[i]);
+		}
 
-	// ゲート両辺の壁の描画
-	for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2; i++) {
-		if (g_GateWall[i].use == false) continue;
-		DrawItemSingle(&g_GateWall[i]);
-	}
+		// ゲート両辺の壁の描画
+		for (int i = 0; i < GATE_WALL_NUMER + GATE_WALL_NUMER2 * 2; i++) {
+			if (g_GateWall[i].use == false) continue;
+			DrawItemSingle(&g_GateWall[i]);
+		}
 
-	// ゲートの描画
-	for (int i = 0; i < 2; i++) {
-		if (g_ItemGate[i].use == false) continue;
-		DrawItemSingle(&g_ItemGate[i]);
+		// ゲートの描画
+		for (int i = 0; i < 2; i++) {
+			if (g_ItemGate[i].use == false) continue;
+			DrawItemSingle(&g_ItemGate[i]);
+		}
 	}
-
 
 	// カリング設定を戻す
 	SetCullingMode(CULL_MODE_BACK);
