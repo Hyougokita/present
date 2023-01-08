@@ -19,6 +19,13 @@ enum UITexture
 	UI_RELOAD_TEXT,		//  リロードのテキスト
 	UI_DOOR_LOCK_TEXT,	//	ドアがロックされているテキスト
 	UI_CLOSE,			//	ドアなど閉じる
+
+	//チュートリアル用UI
+	UI_MOVE_TUTORIAL,			//	移動
+	UI_JUMP_TUTORIAL,			//	ジャンプ
+	UI_GET_TUTORIAL,			//  アイテムとのやり取り
+	UI_CHANGEWEAPON_TUTORIAL,	//	武器の切り替え
+	UI_RELOAD_TUTORIAL,			//	弾のリロード
 	UI_MAX,
 };
 

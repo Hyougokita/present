@@ -124,6 +124,8 @@ int g_TargetPosArrowCount = 0;
 // プレーヤーの位置チェック用
 bool g_PlayerInTargetPos = false;
 
+// 的倒した数のカウント
+int g_HitMatoCount = 0;
 #ifdef _DEBUG
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
 #endif // _DEBUG
@@ -1060,6 +1062,7 @@ void CheckMatoBullet() {
 				if (bullet[j].use) {
 					// 当たり判定
 					if (CollisionBBXYZ(g_ItemMato[i * 2].pos, 36.0f, 52.6f, 10.0f, bullet[j].pos, 10.0f, 10.0f,10.0f)) {
+						g_HitMatoCount++;
 						// 弾を消す
 						bullet[j].use = false;
 						ReleaseShadow(bullet[j].shadowIdx);

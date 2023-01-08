@@ -11,6 +11,7 @@
 #include "sound.h"
 #include "sprite.h"
 #include "gamemodeUI.h"
+#include "player.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -55,6 +56,12 @@
 #define UI_LOCK_HEIGHT				(334.0f * UI_LOCK_SCALE)
 #define UI_LOCK_POSITION			(XMFLOAT3(SCREEN_CENTER_X,SCREEN_CENTER_Y - UI_CROSS_HEIGHT,0.0f))
 
+// チュートリアル用UI
+#define UI_TUTORIAL_SCALE		(0.3f)
+#define UI_TUTORIAL_WIDTH		(1156.0f * UI_TUTORIAL_SCALE)
+#define UI_TUTORIAL_HEIGHT		(216.0f * UI_TUTORIAL_SCALE)
+#define UI_TUTORIAL_POS			(XMFLOAT3(SCREEN_WIDTH - 0.5f * UI_TUTORIAL_WIDTH,100.0f,0.0f))
+#define UI_TUTORIAL_POS2		(XMFLOAT3(SCREEN_WIDTH - 0.5f * UI_TUTORIAL_WIDTH,100.0f + UI_TUTORIAL_HEIGHT,0.0f))
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -67,17 +74,24 @@ static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[UI_MAX] = { NULL };	// テクスチャ情報
 
 static char *g_TexturName[UI_MAX] = {
-		"data/TEXTURE/gamemodeUI/cross.png",
-		"data/TEXTURE/gamemodeUI/get.png",
-		"data/TEXTURE/gamemodeUI/move.png",
-		"data/TEXTURE/gamemodeUI/open.png",
-		"data/TEXTURE/gamemodeUI/handgun.png",
-		"data/TEXTURE/gamemodeUI/weaponNone.png",
-		"data/TEXTURE/gamemodeUI/loading_background.png",
-		"data/TEXTURE/gamemodeUI/loading_fill.png",
-		"data/TEXTURE/gamemodeUI/loading_text.png",
-		"data/TEXTURE/gamemodeUI/lock.png",
-		"data/TEXTURE/gamemodeUI/close.png",
+		"data/TEXTURE/gamemodeUI/cross.png",					//	照準
+		"data/TEXTURE/gamemodeUI/get.png",						//	入手	
+		"data/TEXTURE/gamemodeUI/move.png",						//  箱を移動させる
+		"data/TEXTURE/gamemodeUI/open.png",						//	ドアなど開く
+		"data/TEXTURE/gamemodeUI/handgun.png",					//	ピストル
+		"data/TEXTURE/gamemodeUI/weaponNone.png",				//	武器なしのアイコン
+		"data/TEXTURE/gamemodeUI/loading_background.png",		//　リロードのBG
+		"data/TEXTURE/gamemodeUI/loading_fill.png",				//　リロードの真ん中の部分
+		"data/TEXTURE/gamemodeUI/loading_text.png",				//  リロードのテキスト
+		"data/TEXTURE/gamemodeUI/lock.png",						//	ドアがロックされているテキスト
+		"data/TEXTURE/gamemodeUI/close.png",					//	ドアなど閉じる
+
+		//チュートリアル用
+		"data/TEXTURE/gamemodeUI/movetutorial.png",				//　移動
+		"data/TEXTURE/gamemodeUI/jumptutorial.png",				//	ジャンプ
+		"data/TEXTURE/gamemodeUI/gettutorial.png",				//	アイテムとのやり取り
+		"data/TEXTURE/gamemodeUI/changeweapontutorial.png",		//　武器の切り替え
+		"data/TEXTURE/gamemodeUI/reloadtutorial.png",			//　リロード
 
 };
 
@@ -85,45 +99,63 @@ static char *g_TexturName[UI_MAX] = {
 static GMUI g_GMUI[UI_MAX];
 
 static float uiTextureWidthList[UI_MAX] = {
-	UI_CROSS_WIDTH,
-	UI_GET_WIDTH,
-	UI_GET_WIDTH,
-	UI_GET_WIDTH,
-	UI_HANDGUN_WIDTH,
-	UI_HANDGUN_WIDTH,
-	UI_RELOAD_WIDTH,
-	UI_RELOAD_WIDTH,
-	UI_RELOAD_WIDTH,
-	UI_LOCK_WIDTH,
-	UI_GET_WIDTH,
+	UI_CROSS_WIDTH,		//	照準
+	UI_GET_WIDTH,		//	入手	
+	UI_GET_WIDTH,		//  箱を移動させる
+	UI_GET_WIDTH,		//	ドアなど開く
+	UI_HANDGUN_WIDTH,	//	ピストル
+	UI_HANDGUN_WIDTH,	//	武器なしのアイコン
+	UI_RELOAD_WIDTH,	//　リロードのBG
+	UI_RELOAD_WIDTH,	//　リロードの真ん中の部分
+	UI_RELOAD_WIDTH,	//  リロードのテキスト
+	UI_LOCK_WIDTH,		//	ドアがロックされているテキスト
+	UI_GET_WIDTH,		//	ドアなど閉じる
+	//チュートリアル用
+	UI_TUTORIAL_WIDTH,	//　移動
+	UI_TUTORIAL_WIDTH,	//	ジャンプ
+	UI_TUTORIAL_WIDTH,	//	アイテムとのやり取り
+	UI_TUTORIAL_WIDTH,	//　武器の切り替え
+	UI_TUTORIAL_WIDTH,	//　リロード
 };
 
 static float uiTextureHeightList[UI_MAX] = {
-	UI_CROSS_HEIGHT,
-	UI_GET_HEIGHT,
-	UI_GET_HEIGHT,
-	UI_GET_HEIGHT,
-	UI_HANDGUN_HEIGHT,
-	UI_HANDGUN_HEIGHT,
-	UI_RELOAD_HEIGHT,
-	UI_RELOAD_HEIGHT,
-	UI_RELOAD_HEIGHT,
-	UI_LOCK_HEIGHT,
-	UI_GET_HEIGHT,
+	UI_CROSS_HEIGHT,   //	照準
+	UI_GET_HEIGHT,	   //	入手	
+	UI_GET_HEIGHT,	   //  箱を移動させる
+	UI_GET_HEIGHT,	   //	ドアなど開く
+	UI_HANDGUN_HEIGHT, //	ピストル
+	UI_HANDGUN_HEIGHT, //	武器なしのアイコン
+	UI_RELOAD_HEIGHT,  //　リロードのBG
+	UI_RELOAD_HEIGHT,  //　リロードの真ん中の部分
+	UI_RELOAD_HEIGHT,  //  リロードのテキスト
+	UI_LOCK_HEIGHT,	   //	ドアがロックされているテキスト
+	UI_GET_HEIGHT,     //	ドアなど閉じる
+	//チュートリアル用
+	UI_TUTORIAL_HEIGHT,//　移動
+	UI_TUTORIAL_HEIGHT,//	ジャンプ
+	UI_TUTORIAL_HEIGHT,//	アイテムとのやり取り
+	UI_TUTORIAL_HEIGHT,//　武器の切り替え
+	UI_TUTORIAL_HEIGHT,//　リロード
 };
 
 static XMFLOAT3 uiTexturePositionList[UI_MAX] = {
-	UI_CROSS_POSITION,
-	UI_GET_POSITION,
-	UI_GET_POSITION,
-	UI_GET_POSITION,
-	UI_HANDGUN_POSITION,
-	UI_WEAPON_NONE_POSITION,
-	UI_RELOAD_BG_POSITION,
-	UI_RELOAD_BG_POSITION,
-	UI_RELOAD_TEXT_POSITION,
-	UI_LOCK_POSITION,
-	UI_GET_POSITION,
+	UI_CROSS_POSITION,			//	照準
+	UI_GET_POSITION,			//	入手	
+	UI_GET_POSITION,			//  箱を移動させる
+	UI_GET_POSITION,			//	ドアなど開く
+	UI_HANDGUN_POSITION,		//	ピストル
+	UI_WEAPON_NONE_POSITION,	//	武器なしのアイコン
+	UI_RELOAD_BG_POSITION,		//　リロードのBG
+	UI_RELOAD_BG_POSITION,		//　リロードの真ん中の部分
+	UI_RELOAD_TEXT_POSITION,	//  リロードのテキスト
+	UI_LOCK_POSITION,			//	ドアがロックされているテキスト
+	UI_GET_POSITION,			//	ドアなど閉じる
+	//チュートリアル用
+	UI_TUTORIAL_POS,			//　移動
+	UI_TUTORIAL_POS2,			//	ジャンプ
+	UI_TUTORIAL_POS,			//	アイテムとのやり取り
+	UI_TUTORIAL_POS,			//　武器の切り替え
+	UI_TUTORIAL_POS,			//　リロード
 };
 
 static bool g_CanDrawUI = true;
@@ -185,6 +217,10 @@ HRESULT InitGMUI(void)
 	g_GMUI[UI_MOVE].use = false;
 	g_GMUI[UI_CLOSE].use = false;
 
+	g_GMUI[UI_GET_TUTORIAL].use = false;
+	g_GMUI[UI_CHANGEWEAPON_TUTORIAL].use = false;
+	g_GMUI[UI_RELOAD_TUTORIAL].use = false;
+
 
 
 
@@ -230,6 +266,8 @@ void UpdateGMUI(void)
 			g_GMUI[UI_DOOR_LOCK_TEXT].use = false;
 		}
 	}
+
+
 	
 
 #ifdef _DEBUG	// デバッグ情報を表示する
@@ -336,4 +374,11 @@ void TurnOnOffUIAll(bool OnOff) {
 
 bool GetCanDrawUI() {
 	return g_CanDrawUI;
+}
+
+void CheckPlayerTutorialStage(void) {
+	PLAYER* player = GetPlayer();
+	if (player->moveStage == false && player->changeWeaponStage == false && player->reloadStage == false) {
+
+	}
 }

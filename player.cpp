@@ -291,6 +291,11 @@ HRESULT InitPlayer(void)
 	g_Player.use = TRUE;			// true:生きてる
 	g_Player.size = PLAYER_SIZE;	// 当たり判定の大きさ
 
+	// チュートリアル用
+	g_Player.moveStage = false;
+	g_Player.changeWeaponStage = false;
+	g_Player.reloadStage = false;
+
 	// ウェポン用
 	g_Player.curWeapon = 0;
 	g_Player.preWeapon = 0;

@@ -94,6 +94,11 @@ struct PLAYER
 	// クォータニオン
 	XMFLOAT4			Quaternion;
 	XMFLOAT3			UpVector;			// 自分が立っている所
+
+	// チュートリアル用
+	bool				moveStage;			//	移動の項目
+	bool				changeWeaponStage;	//	武器変換の項目
+	bool				reloadStage;		//	弾をリロードするの項目
 };
 
 enum PARTS_NAME {
