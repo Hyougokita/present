@@ -28,4 +28,5 @@ void crossProduct(XMVECTOR *ret, XMVECTOR *v1, XMVECTOR *v2);
 bool RayCast(XMFLOAT3 p0, XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 pos0, XMFLOAT3 pos1, XMFLOAT3 *hit, XMFLOAT3 *normal);
 BOOL CollisionBBXZ(XMFLOAT3 mpos, float mw, float mh,
 	XMFLOAT3 ypos, float yw, float yh);
-
+BOOL CollisionBBXYZ(XMFLOAT3 mpos, float mw, float mh, float md,
+	XMFLOAT3 ypos, float yw, float yh, float yd);

@@ -41,6 +41,8 @@ enum DATA_NAME
 	DATA_CONTROLLER_OFF,
 	DATA_CONTROLLER_ON,
 	DATA_GATE,
+	DATA_MATO_ON,
+	DATA_MATO_OFF,
 	DATA_MAX
 };
 
@@ -77,7 +79,6 @@ struct WALL
 	XMFLOAT3			pos;				// モデルの位置
 	XMFLOAT3			rot;				// モデルの向き(回転)
 	XMFLOAT3			scl;				// モデルの大きさ(スケール)
-
 	bool				use;
 	bool				load;
 	DX11_MODEL			model;				// モデル情報

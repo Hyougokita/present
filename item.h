@@ -163,3 +163,4 @@ XMFLOAT3 GetHousePos(void);
 
 bool IsDoorOpened(void);
 bool IsControllerOpened(void);
+void ChangeMatoToOn();

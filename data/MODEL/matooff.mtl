@@ -1,11 +1,11 @@
-newmtl lambert2SG
+newmtl matoon:lambert2SG
 illum 4
 Kd 0.00 0.00 0.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 map_Kd mato.png
 Ni 1.00
-newmtl lambert3SG
+newmtl matoon:lambert3SG
 illum 4
 Kd 1.00 1.00 1.00
 Ka 0.00 0.00 0.00

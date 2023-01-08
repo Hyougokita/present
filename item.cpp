@@ -50,6 +50,8 @@
 #define MODEL_ITEM_GATE							"data/MODEL/gate.obj"
 #define MODEL_ITEM_TARGETPOS					"data/MODEL/targetpos.obj"
 #define MODEL_ITEM_TARGETPOSARROW				"data/MODEL/targetposarrow.obj"
+#define MODEL_ITEM_MATOON						"data/MODEL/matoon.obj"
+#define MODEL_ITEM_MATOOFF						"data/MODEL/matooff.obj"
 
 #define	VALUE_MOVE			(5.0f)						// ˆÚ“®—Ê
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// ‰ñ“]—Ê
@@ -78,6 +80,7 @@ void UninitItemSingle(ITEM* item);
 void GateOpenClose(void);
 void MoveTargetArrow();
 void CheckPlayerTargetPos();
+void CheckMatoBullet();
 //*****************************************************************************
 // ƒOƒ[ƒoƒ‹•Ï”
 //*****************************************************************************
@@ -97,13 +100,29 @@ static ITEM			g_ItemController[ITEM_CONTROLLER_MAX];		// ƒQ[ƒg‚ğƒRƒ“ƒgƒ[ƒ‹‚·‚
 static ITEM			g_ItemGate[2];								// ƒQ[ƒg
 
 // TUTORIAL MODE
+static char* itemMatoModelList[2] = {
+	MODEL_ITEM_MATOON,
+	MODEL_ITEM_MATOOFF,
+};
+
+static int itemMatoDataList[2] = {
+	DATA_MATO_ON,
+	DATA_MATO_OFF,
+};
+
+
 #define CASTLE_WALL_TUTORIAL_MODE	(5)			// •Ğ•Ó‚Ì”
+#define MATO_NUMBER	(3)
 static ITEM			g_TutorialMapWall[CASTLE_WALL_TUTORIAL_MODE * 4];
 static ITEM			g_TargetPos[1];
 static ITEM			g_TargetPosArrow[1];
+static ITEM			g_ItemMato[MATO_NUMBER * 2];
 
 // arrowƒAƒjƒ[ƒVƒ‡ƒ“—p
 int g_TargetPosArrowCount = 0;
+
+// ƒvƒŒ[ƒ„[‚ÌˆÊ’uƒ`ƒFƒbƒN—p
+bool g_PlayerInTargetPos = false;
 
 #ifdef _DEBUG
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
@@ -415,15 +434,28 @@ HRESULT InitItem(void)
 			InitItemWithHitBoxSingle(&g_ItemHandgun[i], MODEL_ITEM_HANDGUN, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.2f, ITEM_SIZE, true, 60.0f, 16.0f, 56.0f, i, ITEM_HAND_GUN);
 		}
 
-		ChangeItemUse(&g_ItemBullet[0],false);
-		ChangeItemUse(&g_ItemHandgun[0], false);
 
+
+
+		// –Ú•W’n“_‚Ì‰Šú‰»
 		XMFLOAT3 targetPos = XMFLOAT3(0.0f, 0.0f, -40.0f);
 		XMFLOAT3 arrowPos = targetPos;
 		arrowPos.y += 30.0f;
 		InitItemSingle(&g_TargetPos[0], MODEL_ITEM_TARGETPOS, true, targetPos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 5.0f, true);
 		InitItemSingle(&g_TargetPosArrow[0], MODEL_ITEM_TARGETPOSARROW, true, arrowPos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 5.0f, true);
 	
+		// “I‚Ì‰Šú‰»
+		for (int i = 0; i < MATO_NUMBER * 2; i++) {
+			XMFLOAT3 matoPos = XMFLOAT3(-60.0f + 60.0f * (i / 2),0.0f,80.0f);
+			InitItemWithHitBoxFromCsvSingle(&g_ItemMato[i], itemMatoModelList[i % 2], true, matoPos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 5.0f, true, itemMatoDataList[i % 2], i, ITEM_TYPE_CASTLE_WALL);
+		}
+		// “IÅ‰‚Í“|‚ê‚Ä‚¢‚éó‘Ô
+		for (int i = 0; i < MATO_NUMBER; i++) {
+			ChangeItemUse(&g_ItemMato[i*2], false);
+		}
+
+		ChangeItemUse(&g_ItemBullet[0], false);
+		ChangeItemUse(&g_ItemHandgun[0], false);
 }
 	g_Load = TRUE;
 	return S_OK;
@@ -537,6 +569,7 @@ void UpdateItem(void)
 	else if (GetMode() == MODE_TUTORIAL) {
 		MoveTargetArrow();
 		CheckPlayerTargetPos();
+		CheckMatoBullet();
 	}
 }
 
@@ -670,6 +703,12 @@ void DrawItem(void)
 
 		if (g_TargetPosArrow[0].use) {
 			DrawItemSingle(&g_TargetPosArrow[0]);
+		}
+
+		// “I‚Ì•`‰æˆ—
+		for (int i = 0; i < MATO_NUMBER * 2; i++) {
+			if (g_ItemMato[i].use == false) continue;
+			DrawItemSingle(&g_ItemMato[i]);
 		}
 	}
 
@@ -836,6 +875,7 @@ void OpenCloseController() {
 	}
 }
 
+// •Ç‚Æƒ{ƒbƒNƒX‚Ì“–‚½‚è”»’è
 bool BoxCheckWall(void) {
 	// ƒ{ƒbƒNƒX‚Æ•Ç‚Ì“–‚½‚è”»’è
 	XMFLOAT3 housePos = HOUSE_POS;
@@ -900,6 +940,7 @@ bool BoxCheckWall(void) {
 	return false;
 }
 
+// ƒvƒŒ[ƒ„[‚ª‰Æ‚Ì’†‚É‚¢‚é‚©‚Ç‚¤‚©‚ğƒ`ƒFƒbƒN
 bool CheckPlayerInHouse(void) {
 	PLAYER* player = GetPlayer();
 	XMFLOAT3 housePos = HOUSE_POS;
@@ -939,6 +980,7 @@ void MoveItemWithHitBox(ITEM *item, XMFLOAT3 moveDistance) {
 	}
 }
 
+// ƒQ[ƒg‚ÌŠJ•Â
 void GateOpenClose(void) {
 	if (IsControllerOpened()) {
 		g_GateCount++;
@@ -968,6 +1010,7 @@ void GateOpenClose(void) {
 	}
 }
 
+// TargetPos‰ñ“]‚³‚¹‚é
 void MoveTargetArrow() {
 	if (g_TargetPosArrow[0].use) {
 		g_TargetPosArrowCount++;
@@ -981,12 +1024,51 @@ void MoveTargetArrow() {
 	}
 }
 
+// ƒvƒŒ[ƒ„[‚Æ–Ú•W’n“_‚Ì“–‚½‚è”»’è
 void CheckPlayerTargetPos() {
-	bool ans = CollisionBBXZ(GetPlayer()->pos, 10.0f, 10.0f, g_TargetPos[0].pos, 10.0f, 10.0f);
-	if (ans) {
-		ChangeItemUse(&g_TargetPos[0], false);
-		ChangeItemUse(&g_TargetPosArrow[0], false);
-		ChangeItemUse(&g_ItemBullet[0], true);
-		ChangeItemUse(&g_ItemHandgun[0], true);
+	if (g_PlayerInTargetPos == false) {
+		bool ans = CollisionBBXZ(GetPlayer()->pos, 10.0f, 10.0f, g_TargetPos[0].pos, 12.5f, 12.5f);
+		if (ans) {
+			// –Ú•W’n“_‚Ì•\¦‚ğOFF
+			ChangeItemUse(&g_TargetPos[0], false);
+			ChangeItemUse(&g_TargetPosArrow[0], false);
+			// Š÷ã‚Ì“¹‹ï‚Ì•\¦‚ğON
+			ChangeItemUse(&g_ItemBullet[0], true);
+			ChangeItemUse(&g_ItemHandgun[0], true);
+
+			g_PlayerInTargetPos = true;
+		}
+	}
+}
+
+// ƒvƒŒ[ƒ„[‚ªƒsƒXƒgƒ‹‚ğ‚Á‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğƒ`ƒFƒbƒN‚·‚é
+void ChangeMatoToOn() {
+	// “I‚ğOn‚É‚·‚é
+	for (int i = 0; i < MATO_NUMBER; i++) {
+		ChangeItemUse(&g_ItemMato[(i * 2)], true);
+		ChangeItemUse(&g_ItemMato[(i * 2 + 1)], false);
+	}
+}
+
+// “I‚Æ’e‚Ì“–‚½‚è”»’è
+void CheckMatoBullet() {
+	BULLET* bullet = GetBullet();
+	for (int i = 0; i < MATO_NUMBER; i++) {
+		// Onó‘Ô‚Ì“I‚µ‚©”»’è‚µ‚È‚¢
+		if (g_ItemMato[(i * 2)].use) {
+			for (int j = 0; j < MAX_BULLET; j++) {
+				if (bullet[j].use) {
+					// “–‚½‚è”»’è
+					if (CollisionBBXYZ(g_ItemMato[i * 2].pos, 36.0f, 52.6f, 10.0f, bullet[j].pos, 10.0f, 10.0f,10.0f)) {
+						// ’e‚ğÁ‚·
+						bullet[j].use = false;
+						ReleaseShadow(bullet[j].shadowIdx);
+						// “I‚ğ“|‚·
+						ChangeItemUse(&g_ItemMato[i * 2], false);
+						ChangeItemUse(&g_ItemMato[i * 2 + 1], true);
+					}
+				}
+			}
+		}
 	}
 }

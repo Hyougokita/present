@@ -104,8 +104,8 @@ bool g_PlayerOnBox = false;
 // プレーヤーの初期位置
 XMFLOAT3 g_PlayerPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
-#define PLAYER_TUTORIAL_POS (XMFLOAT3(0.0f,PLAYER_OFFSET_Y,-100.0f))
-#define PLAYER_GAME_POS	(XMFLOAT3(300.0f, PLAYER_OFFSET_Y, -200.0f))
+#define PLAYER_TUTORIAL_POS (XMFLOAT3(0.0f,PLAYER_OFFSET_Y + 10.0f,-100.0f))
+#define PLAYER_GAME_POS	(XMFLOAT3(300.0f, PLAYER_OFFSET_Y + 10.0f, -200.0f))
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -448,6 +448,10 @@ void UpdatePlayer(void)
 	//	アイテムとの当たり
 	g_checkItem = CheckItemHitBox();
 	if (g_checkItem != -1) {
+		TurnOnOffUI(UI_GET, false);
+		TurnOnOffUI(UI_MOVE, false);
+		TurnOnOffUI(UI_OPEN, false);
+		TurnOnOffUI(UI_CLOSE, false);
 		// アイテムを移動させる場合
 		if (meshbox[g_checkItem].itemType == ITEM_TYPE_BOX)
 			TurnOnOffUI(UI_MOVE, true);
@@ -541,6 +545,9 @@ void UpdatePlayer(void)
 		}
 		//　アイテムを得る場合
 		else if(meshbox[g_checkItem].itemType == ITEM_AMMO_BOX || meshbox[g_checkItem].itemType == ITEM_HANDGUN_MAX){
+			if (GetMode() == MODE_TUTORIAL) {
+				ChangeMatoToOn();
+			}
 			DestoryMeshBox(g_checkItem);
 		}
 	}
@@ -772,8 +779,10 @@ void UpdatePlayer(void)
 	//　重力より落下する
 	g_Player.pos.y -= G;
 
-	if (g_Player.pos.y <= PLAYER_OFFSET_Y) {
-		//g_Player.pos.y = PLAYER_OFFSET_Y;
+	if (GetMode() == MODE_TUTORIAL) {
+		if (g_Player.pos.y <= PLAYER_OFFSET_Y) {
+			g_Player.pos.y = PLAYER_OFFSET_Y;
+		}
 	}
 
 
