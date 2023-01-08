@@ -431,7 +431,7 @@ void CheckHit(void)
 	// エネミーが０匹？
 	if (enemy_count == 0)
 	{
-		SetFade(FADE_OUT, MODE_RESULT);
+		//SetFade(FADE_OUT, MODE_RESULT);
 	}
 
 }

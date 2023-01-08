@@ -101,7 +101,11 @@ bool g_HasWindow = false;
 // ボックスに乗せているかどうか
 bool g_PlayerOnBox = false;
 
+// プレーヤーの初期位置
+XMFLOAT3 g_PlayerPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
+#define PLAYER_TUTORIAL_POS (XMFLOAT3(0.0f,PLAYER_OFFSET_Y,-100.0f))
+#define PLAYER_GAME_POS	(XMFLOAT3(300.0f, PLAYER_OFFSET_Y, -200.0f))
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -261,6 +265,13 @@ enum PLAYER_HOKAN_TYPE
 //=============================================================================
 HRESULT InitPlayer(void)
 {
+	if (GetMode() == MODE_TUTORIAL) {
+		g_PlayerPos = PLAYER_TUTORIAL_POS;
+	}
+	else if (GetMode() == MODE_GAME) {
+		g_PlayerPos = PLAYER_GAME_POS;
+	}
+
 	WALL* wall = GetWall();
 	XMFLOAT3 wallScale = wall[0].scl;
 	for (int i = 0; i < 8; i++) {
@@ -311,7 +322,7 @@ HRESULT InitPlayer(void)
 		LoadModel(MODE_BERA_BODY, &g_Player.model);
 		g_Player.load = true;
 
-		g_Player.pos = { 300.0f, PLAYER_OFFSET_Y, -200.0f };
+		g_Player.pos = g_PlayerPos;
 		g_Player.rot = { 0.0f, 0.0f, 0.0f };
 		g_Player.scl = XMFLOAT3(0.2f, 0.2f, 0.2f);
 

@@ -77,7 +77,7 @@ void UninitCamera(void)
 void UpdateCamera(void)
 {
 
-	if (GetMode() == MODE_GAME) {
+	if (GetMode() == MODE_GAME || GetMode() == MODE_TUTORIAL) {
 		ShowCursor(false);
 
 		//　マウスの位置をスクリーンの真ん中に固定する

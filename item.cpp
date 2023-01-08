@@ -49,6 +49,7 @@
 #define MODEL_ITEM_CONTROLLER_ON				"data/MODEL/controlleron.obj"
 #define MODEL_ITEM_GATE							"data/MODEL/gate.obj"
 #define MODEL_ITEM_TARGETPOS					"data/MODEL/targetpos.obj"
+#define MODEL_ITEM_TARGETPOSARROW				"data/MODEL/targetposarrow.obj"
 
 #define	VALUE_MOVE			(5.0f)						// 移動量
 #define	VALUE_ROTATE		(XM_PI * 0.02f)				// 回転量
@@ -75,9 +76,13 @@ void InitItemSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOA
 void InitItemWithHitBoxFromCsvSingle(ITEM* item, char* ModelName, bool load, XMFLOAT3 pos, XMFLOAT3 rot, float scl, float size, bool use, int dateNum, int num, int type);
 void UninitItemSingle(ITEM* item);
 void GateOpenClose(void);
+void MoveTargetArrow();
+void CheckPlayerTargetPos();
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
+
+// GAME MODE
 static ITEM			g_ItemBullet[ITEM_AMMO_MAX];				// AMMO
 static ITEM			g_ItemDecoration[ITEM_DECORATION_TYPE_MAX];	// 飾り用アイテム
 static ITEM			g_ItemHandgun[ITEM_HANDGUN_MAX];			// ピストル
@@ -90,6 +95,16 @@ static ITEM			g_CastleWall[CASTLE_WALL_NUMBER * 4];		// マップ周辺の壁
 static ITEM			g_GateWall[GATE_WALL_NUMER * 2];			// ゲート両辺の壁
 static ITEM			g_ItemController[ITEM_CONTROLLER_MAX];		// ゲートをコントロールするコントローラー
 static ITEM			g_ItemGate[2];								// ゲート
+
+// TUTORIAL MODE
+#define CASTLE_WALL_TUTORIAL_MODE	(5)			// 片辺の数
+static ITEM			g_TutorialMapWall[CASTLE_WALL_TUTORIAL_MODE * 4];
+static ITEM			g_TargetPos[1];
+static ITEM			g_TargetPosArrow[1];
+
+// arrowアニメーション用
+int g_TargetPosArrowCount = 0;
+
 #ifdef _DEBUG
 static ITEM g_ItemTestAmmo[ITEM_TEST_AMMO_MAX];
 #endif // _DEBUG
@@ -342,6 +357,74 @@ HRESULT InitItem(void)
 		// コントローラー最初はOFF状態
 		ChangeItemUse(&g_ItemController[ITEM_CONTROLLER_ON], false);
 	}
+
+	else if (GetMode() == MODE_TUTORIAL) {
+
+	// マップ周辺の壁の初期化
+		for (int i = 0; i < CASTLE_WALL_TUTORIAL_MODE * 4; i++) {
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			if (0 <= i && i < CASTLE_WALL_TUTORIAL_MODE) {
+				pos = XMFLOAT3(250.0f - 100.0f * i - 50.0f, 0.0f, 250.0f);
+				InitItemWithHitBoxFromCsvSingle(&g_TutorialMapWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+			else if (CASTLE_WALL_TUTORIAL_MODE <= i && i < CASTLE_WALL_TUTORIAL_MODE * 2) {
+				pos = XMFLOAT3(250.0f - 100.0f * (i - CASTLE_WALL_TUTORIAL_MODE) - 50.0f, 0.0f, -250.0f + 50.0f);
+				InitItemWithHitBoxFromCsvSingle(&g_TutorialMapWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+			else if (CASTLE_WALL_TUTORIAL_MODE * 2 <= i && i < CASTLE_WALL_TUTORIAL_MODE * 3) {
+				pos = XMFLOAT3(250.0f, 0.0f, 250.0f - 100.0f * (i - CASTLE_WALL_TUTORIAL_MODE * 2));
+				InitItemWithHitBoxFromCsvSingle(&g_TutorialMapWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+			else if (CASTLE_WALL_TUTORIAL_MODE * 3 <= i && i < CASTLE_WALL_TUTORIAL_MODE * 4) {
+				pos = XMFLOAT3(-250.0f, 0.0f, 250.0f - 100.0f * (i - CASTLE_WALL_TUTORIAL_MODE * 3));
+				InitItemWithHitBoxFromCsvSingle(&g_TutorialMapWall[i], MODEL_ITEM_CASTLEWALL, true, pos, XMFLOAT3(0.0f, XM_PI / 2, 0.0f), 0.1f, ITEM_SIZE, true, DATA_CASTLE_WALL, i, ITEM_TYPE_CASTLE_WALL);
+			}
+		}
+
+		// 机の初期化
+		for (int i = 0; i < ITEM_TABLE_MAX; i++) {
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			InitItemWithHitBoxFromCsvSingle(&g_ItemTable[i], MODEL_ITEM_TABLE00, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.5f, 5.0f, true, DATA_TABLE, i, ITEM_TYPE_TABLE);
+		}
+
+		// AMMOの初期化
+		for (int i = 0; i < ITEM_AMMO_MAX; i++)
+		{
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			if (i == ITEM_AMMO_TABLE) {
+				// 机上の弾ボックス
+				pos = g_ItemTable[ITEM_TABLE].pos;
+				pos.x += 14.0f;
+				pos.y += 14.0f;
+
+			}
+			InitItemWithHitBoxSingle(&g_ItemBullet[i], MODEL_ITEM_AMMO, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.5f, ITEM_SIZE, true, 28.0f, 8.0f, 18.0f, i, ITEM_AMMO_BOX);
+
+		}
+
+		//　ピストルの初期化
+		for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
+		{
+			XMFLOAT3 pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			// 机の上ピストル
+			if (i == ITEM_HANDGUN_TABLE) {
+				pos = g_ItemTable[ITEM_TABLE].pos;
+				pos.x -= 14.0f;
+				pos.y += 14.0f;
+			}
+			InitItemWithHitBoxSingle(&g_ItemHandgun[i], MODEL_ITEM_HANDGUN, true, pos, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.2f, ITEM_SIZE, true, 60.0f, 16.0f, 56.0f, i, ITEM_HAND_GUN);
+		}
+
+		ChangeItemUse(&g_ItemBullet[0],false);
+		ChangeItemUse(&g_ItemHandgun[0], false);
+
+		XMFLOAT3 targetPos = XMFLOAT3(0.0f, 0.0f, -40.0f);
+		XMFLOAT3 arrowPos = targetPos;
+		arrowPos.y += 30.0f;
+		InitItemSingle(&g_TargetPos[0], MODEL_ITEM_TARGETPOS, true, targetPos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 5.0f, true);
+		InitItemSingle(&g_TargetPosArrow[0], MODEL_ITEM_TARGETPOSARROW, true, arrowPos, XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 5.0f, true);
+	
+}
 	g_Load = TRUE;
 	return S_OK;
 }
@@ -451,6 +534,10 @@ void UpdateItem(void)
 		// ゲートの開閉
 		GateOpenClose();
 	}
+	else if (GetMode() == MODE_TUTORIAL) {
+		MoveTargetArrow();
+		CheckPlayerTargetPos();
+	}
 }
 
 
@@ -544,6 +631,45 @@ void DrawItem(void)
 		for (int i = 0; i < 2; i++) {
 			if (g_ItemGate[i].use == false) continue;
 			DrawItemSingle(&g_ItemGate[i]);
+		}
+
+
+		
+	}
+	// TUTORIAL MODE
+	else if (GetMode() == MODE_TUTORIAL) {
+		for (int i = 0; i < CASTLE_WALL_TUTORIAL_MODE * 4; i++) {
+			if (g_TutorialMapWall[i].use == false) continue;
+			DrawItemSingle(&g_TutorialMapWall[i]);
+		}
+
+		// 机の描画
+		for (int i = 0; i < ITEM_TABLE_MAX; i++) {
+			if (g_ItemTable[i].use == false) continue;
+			DrawItemSingle(&g_ItemTable[i]);
+		}
+
+		// 弾ボックスの描画
+		for (int i = 0; i < ITEM_AMMO_MAX; i++)
+		{
+			if (g_ItemBullet[i].use == false) continue;
+			DrawItemSingle(&g_ItemBullet[i]);
+		}
+
+		// ピストルの描画
+		for (int i = 0; i < ITEM_HANDGUN_MAX; i++)
+		{
+			if (g_ItemHandgun[i].use == false) continue;
+			DrawItemSingle(&g_ItemHandgun[i]);
+		}
+
+		// TargetPosの描画
+		if (g_TargetPos[0].use){
+			DrawItemSingle(&g_TargetPos[0]);
+		}
+
+		if (g_TargetPosArrow[0].use) {
+			DrawItemSingle(&g_TargetPosArrow[0]);
 		}
 	}
 
@@ -839,5 +965,28 @@ void GateOpenClose(void) {
 			// 右のゲート右へ移動する
 			MoveItemWithHitBox(&g_ItemGate[1], XMFLOAT3(0.0f, 0.0f, +g_GateSpeed));
 		}
+	}
+}
+
+void MoveTargetArrow() {
+	if (g_TargetPosArrow[0].use) {
+		g_TargetPosArrowCount++;
+		g_TargetPosArrow[0].rot.y += 0.03f;
+		if (g_TargetPosArrowCount % 80 < 40) {
+			g_TargetPosArrow[0].pos.y -= 0.3f;
+		}
+		else {
+			g_TargetPosArrow[0].pos.y += 0.3f;
+		}
+	}
+}
+
+void CheckPlayerTargetPos() {
+	bool ans = CollisionBBXZ(GetPlayer()->pos, 10.0f, 10.0f, g_TargetPos[0].pos, 10.0f, 10.0f);
+	if (ans) {
+		ChangeItemUse(&g_TargetPos[0], false);
+		ChangeItemUse(&g_TargetPosArrow[0], false);
+		ChangeItemUse(&g_ItemBullet[0], true);
+		ChangeItemUse(&g_ItemHandgun[0], true);
 	}
 }

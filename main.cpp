@@ -18,6 +18,7 @@
 #include "title.h"
 #include "result.h"
 #include "debugproc.h"
+#include "tutorial.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -52,7 +53,7 @@ char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
 #endif
 
 #ifdef DEBUG
-	int g_Mode = MODE_TITLE;					// 起動時の画面を設定	
+	int g_Mode = MODE_TUTORIAL;					// 起動時の画面を設定	
 #else
 	int g_Mode = MODE_TITLE;					// 起動時の画面を設定	
 #endif // DEBUG
@@ -316,6 +317,7 @@ void Update(void)
 		UpdateTitle();
 		break;
 	case MODE_TUTORIAL:
+		UpdateTutorial();
 		break;
 	case MODE_GAME:			// ゲーム画面の更新
 		UpdateGame();
@@ -362,6 +364,9 @@ void Draw(void)
 
 		// Z比較あり
 		SetDepthEnable(true);
+		break;
+	case MODE_TUTORIAL:
+		DrawTutorial();
 		break;
 
 	case MODE_GAME:			// ゲーム画面の描画
@@ -431,6 +436,9 @@ void SetMode(int mode)
 	// タイトル画面の終了処理
 	UninitTitle();
 
+	// チュートリアルの終了処理
+	UninitTutorial();
+
 	// ゲーム画面の終了処理
 	UninitGame();
 
@@ -447,6 +455,7 @@ void SetMode(int mode)
 		InitTitle();
 		break;
 	case MODE_TUTORIAL:
+		InitTutorial();
 		break;
 	case MODE_GAME:
 		// ゲーム画面の初期化

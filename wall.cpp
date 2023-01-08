@@ -369,20 +369,20 @@ int SetMeshBox(XMFLOAT3 pos, XMFLOAT3 rot, XMFLOAT4 diff, float width, float hei
 			leftPos.x -= 0.5 * width;
 			XMFLOAT3 leftRot = rot;
 			leftRot.y = XM_PI / 2;
-			InitMeshWall(leftPos, leftRot, diff, 1, 1, depth, height);
+			//InitMeshWall(leftPos, leftRot, diff, 1, 1, depth, height);
 
 			// right
 			XMFLOAT3 rightPos = pos;
 			rightPos.x += 0.5 * width;
 			XMFLOAT3 rightRot = rot;
 			rightRot.y = -XM_PI / 2;
-			InitMeshWall(rightPos, rightRot, diff, 1, 1, depth, height);
+			//InitMeshWall(rightPos, rightRot, diff, 1, 1, depth, height);
 
 			// front
-			InitMeshWall(frontPos, rot, diff, 1, 1, width, height);
+			//InitMeshWall(frontPos, rot, diff, 1, 1, width, height);
 
 			// back
-			InitMeshWall(backPos, backrot, diff, 1, 1, width, height);
+			//InitMeshWall(backPos, backrot, diff, 1, 1, width, height);
 
 			// up
 			XMFLOAT3 upPos = pos;
